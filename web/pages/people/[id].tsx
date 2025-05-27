@@ -410,7 +410,7 @@ const EmployeeProfile = () => {
                 <div className="text-xl text-red-500 mb-2">Employee Not Found</div>
                 <p className="text-gray-500 mb-6">The employee you're looking for doesn't exist or has been removed.</p>
                 <Button 
-                  variant="primary" 
+                  variant="default" 
                   onClick={() => router.push('/people')}
                 >
                   Return to Directory

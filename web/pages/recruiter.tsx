@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useState } from 'react';
 import { Job, Application } from '../../packages/types';
-import { Card } from '../components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Button } from '../components/ui/button';
 
 const mockJobs: Job[] = [

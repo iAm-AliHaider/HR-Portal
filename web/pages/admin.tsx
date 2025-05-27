@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Organization, User } from '../../packages/types';
-import { Card } from '../components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { Button } from '../components/ui/button';
 import { RequireRole } from '../components/RequireRole';
 

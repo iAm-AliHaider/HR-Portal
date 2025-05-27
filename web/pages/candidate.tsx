@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Application, Job } from '../../packages/types';
-import { Card } from '../components/ui/Card';
+import { Card } from '@/components/ui/card';
 import { RequireRole } from '../components/RequireRole';
 
 const mockJobs: Job[] = [
