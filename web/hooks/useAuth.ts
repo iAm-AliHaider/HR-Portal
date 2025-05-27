@@ -64,9 +64,61 @@ export function useAuth() {
     };
   };
 
+  // Helper to fetch user profile with retry logic
+  const fetchUserProfile = async (userId: string, retries = 3): Promise<{role?: string, profile?: any} | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116' && retries > 0) {
+          // Row not found, try to create profile
+          const { data: authUser } = await supabase.auth.getUser();
+          if (authUser.user) {
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert([{
+                id: authUser.user.id,
+                email: authUser.user.email,
+                first_name: authUser.user.user_metadata?.first_name || 'User',
+                last_name: authUser.user.user_metadata?.last_name || '',
+                role: 'employee'
+              }])
+              .select()
+              .single();
+            
+            if (!createError && newProfile) {
+              return { role: newProfile.role, profile: newProfile };
+            }
+          }
+        }
+        
+        if (retries > 0) {
+          console.warn(`Error fetching profile, retrying... (${retries} attempts left)`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+          return fetchUserProfile(userId, retries - 1);
+        }
+        
+        console.error('Error fetching user profile:', error.message);
+        return null;
+      }
+
+      return { role: data?.role, profile: data };
+    } catch (err) {
+      console.error('Unexpected error fetching profile:', err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const getInitialSession = async () => {
       try {
+        // Clear any previous errors
+        setError(null);
+
         // If in development mode or demo mode
         if (isDevelopment || isDemoMode) {
           // Check if we're on the login page
@@ -147,11 +199,19 @@ export function useAuth() {
         
         if (error) {
           console.error('Error getting session:', error.message);
-          setError(error.message);
+          setError(`Authentication error: ${error.message}`);
         } else if (data.session?.user) {
-          setUser(convertSupabaseUser(data.session.user));
+          const supabaseUser = convertSupabaseUser(data.session.user);
+          setUser(supabaseUser);
+          
+          // Fetch user profile and role
+          const profileData = await fetchUserProfile(data.session.user.id);
+          if (profileData?.role) {
+            setRole(profileData.role);
+          }
         } else {
           setUser(null);
+          setRole(null);
         }
       } catch (err) {
         console.error('Unexpected error in getSession:', err);
@@ -165,11 +225,19 @@ export function useAuth() {
 
     // Only set up the auth change listener in non-development/non-demo mode
     if (!isDevelopment && !isDemoMode) {
-      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
-          setUser(convertSupabaseUser(session.user));
+          const supabaseUser = convertSupabaseUser(session.user);
+          setUser(supabaseUser);
+          
+          // Fetch user profile and role
+          const profileData = await fetchUserProfile(session.user.id);
+          if (profileData?.role) {
+            setRole(profileData.role);
+          }
         } else {
           setUser(null);
+          setRole(null);
         }
       });
 
@@ -181,117 +249,79 @@ export function useAuth() {
     return () => {}; // No cleanup needed in development/demo mode
   }, [isDevelopment, isDemoMode]);
 
+  // Simplified role fetching since it's handled above
   useEffect(() => {
-    if (user && !isDevelopment && !isDemoMode) {
-      const fetchUserRole = async () => {
-        try {
-          // Normal role fetching from Supabase
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-          if (error) {
-            console.error('Error fetching user role:', error.message);
-            setError(error.message);
-          } else {
-            setRole(data?.role ?? null);
-          }
-        } catch (err) {
-          console.error('Unexpected error in fetchUserRole:', err);
-          setError('Failed to fetch user information');
-        }
-      };
-
-      fetchUserRole();
-    }
-  }, [user, isDevelopment, isDemoMode]);
+    // Role is now fetched in the main useEffect above
+  }, [user]);
 
   const signIn = async (email: string, password: string) => {
     try {
-      // In development or demo mode with mock users, set localStorage
-      if (isDevelopment || isDemoMode) {
-        const matchedAccount = mockAccounts.find(account => 
-          account.email === email && account.password === password
-        );
-        
-        if (matchedAccount) {
-          safeLocalStorage.setItem('mockUserEmail', email);
-          
-          const mockUser: User = {
-            id: `mock-${email}`,
-            email: email,
-            name: matchedAccount.name,
-            department: matchedAccount.department,
-            position: matchedAccount.position,
-            avatar: `/avatars/${matchedAccount.role}.png`,
-            role: matchedAccount.role,
-          };
-          
-          setUser(mockUser);
-          setRole(matchedAccount.role);
-          return { success: true, user: mockUser };
-        } else {
-          return { success: false, error: 'Invalid credentials' };
-        }
-      }
-
-      // Normal Supabase sign in
+      setError(null);
+      setLoading(true);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
       if (error) {
         setError(error.message);
         return { success: false, error: error.message };
       }
-      
+
       if (data.user) {
-        const convertedUser = convertSupabaseUser(data.user);
-        setUser(convertedUser);
-        return { success: true, user: convertedUser };
+        const supabaseUser = convertSupabaseUser(data.user);
+        setUser(supabaseUser);
+        
+        // Fetch user profile
+        const profileData = await fetchUserProfile(data.user.id);
+        if (profileData?.role) {
+          setRole(profileData.role);
+        }
+        
+        return { success: true };
       }
-      
-      return { success: false, error: 'No user data returned' };
-    } catch (err) {
-      console.error('Unexpected error in signIn:', err);
-      setError('Failed to sign in');
-      return { success: false, error: 'Failed to sign in' };
+
+      return { success: false, error: 'Login failed' };
+    } catch (err: any) {
+      const errorMessage = err.message || 'An unexpected error occurred';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
-      // In development or demo mode with mock users, just clear localStorage
-      if (isDevelopment || isDemoMode) {
-        safeLocalStorage.removeItem('mockUserEmail');
-        setUser(null);
-        setRole(null);
-        return { success: true };
-      }
-
-      // Normal Supabase sign out
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Error signing out:', error.message);
-        setError(error.message);
-        return { success: false, error: error.message };
       }
       setUser(null);
       setRole(null);
-      return { success: true };
+      
+      // Clear localStorage for development mode
+      if (isDevelopment || isDemoMode) {
+        safeLocalStorage.removeItem('mockUserEmail');
+      }
     } catch (err) {
-      console.error('Unexpected error in signOut:', err);
-      setError('Failed to sign out');
-      return { success: false, error: 'Failed to sign out' };
+      console.error('Unexpected error during sign out:', err);
     }
   };
 
+  // Alias for signOut for compatibility
   const logout = async () => {
-    return signOut();
+    await signOut();
   };
 
-  return { user, role, loading, error, signIn, signOut, logout };
+  return {
+    user,
+    role,
+    loading,
+    error,
+    signIn,
+    signOut,
+    logout,
+  };
 } 
