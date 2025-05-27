@@ -65,7 +65,7 @@ export function useAuth() {
   };
 
   // Helper to fetch user profile with retry logic
-  const fetchUserProfile = async (userId: string, retries = 3): Promise<{role?: string, profile?: any} | null> => {
+  const fetchUserProfile = async (userId: string, retries: number = 3): Promise<{ role: string; profile: any } | null> => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -83,9 +83,9 @@ export function useAuth() {
               .insert([{
                 id: authUser.user.id,
                 email: authUser.user.email,
-                first_name: authUser.user.user_metadata?.first_name || 'User',
+                first_name: authUser.user.user_metadata?.first_name || authUser.user.user_metadata?.full_name || 'User',
                 last_name: authUser.user.user_metadata?.last_name || '',
-                role: 'employee'
+                role: authUser.user.user_metadata?.role || 'employee'
               }])
               .select()
               .single();
@@ -106,7 +106,36 @@ export function useAuth() {
         return null;
       }
 
-      return { role: data?.role, profile: data };
+      // If profile exists but role is null/undefined, try to fix it
+      if (data && (!data.role || data.role === null)) {
+        console.warn('Profile exists but role is missing, attempting to fix...');
+        
+        // Try to get role from auth metadata
+        const { data: authUser } = await supabase.auth.getUser();
+        const roleFromAuth = authUser.user?.user_metadata?.role || 'employee';
+        
+        // Update the profile with the role
+        const { data: updatedProfile, error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            role: roleFromAuth,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+          .select()
+          .single();
+        
+        if (!updateError && updatedProfile) {
+          console.log('Successfully updated profile with role:', roleFromAuth);
+          return { role: updatedProfile.role, profile: updatedProfile };
+        } else {
+          console.error('Failed to update profile role:', updateError);
+          // Return with default role as fallback
+          return { role: 'employee', profile: { ...data, role: 'employee' } };
+        }
+      }
+
+      return { role: data?.role || 'employee', profile: data };
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
       return null;
