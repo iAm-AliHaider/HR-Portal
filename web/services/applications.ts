@@ -344,7 +344,7 @@ export async function getAssessments(applicationId: string): Promise<CandidateAs
 
 export async function getCandidateById(id: string): Promise<User | null> {
   try {
-    const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
     if (error) throw error;
     return data;
   } catch (error) {

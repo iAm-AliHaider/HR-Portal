@@ -21,7 +21,7 @@ export const AnnouncementsService = {
 
   async getRelevantAnnouncements(tenantId: string, userId: string) {
     const { data: user } = await supabase
-      .from('users')
+      .from('profiles')
       .select('role')
       .eq('id', userId)
       .single()

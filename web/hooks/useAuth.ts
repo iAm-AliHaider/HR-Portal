@@ -187,7 +187,7 @@ export function useAuth() {
         try {
           // Normal role fetching from Supabase
           const { data, error } = await supabase
-            .from('users')
+            .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();

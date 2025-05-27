@@ -23,7 +23,7 @@ export async function middleware(req: NextRequest) {
     // Verify tenant access
     try {
       const { data: user } = await supabase
-        .from('users')
+        .from('profiles')
         .select('tenant_id')
         .eq('id', session.user.id)
         .single()
