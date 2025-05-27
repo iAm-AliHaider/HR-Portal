@@ -44,6 +44,15 @@ const safeLocalStorage = {
     } catch (err) {
       console.warn('localStorage remove error:', err);
     }
+  },
+  clear: () => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.clear();
+      }
+    } catch (err) {
+      console.warn('localStorage clear error:', err);
+    }
   }
 };
 
@@ -323,19 +332,49 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error.message);
-      }
+      console.log('Starting sign out process...');
+      
+      // First, clear local state immediately
       setUser(null);
       setRole(null);
+      setError(null);
       
       // Clear localStorage for development mode
       if (isDevelopment || isDemoMode) {
         safeLocalStorage.removeItem('mockUserEmail');
+        safeLocalStorage.removeItem('mockUserRole');
+        console.log('Cleared localStorage for dev mode');
+      }
+      
+      // Call Supabase sign out
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Supabase signOut error:', error.message);
+        // Don't throw error, just log it since we've already cleared local state
+      } else {
+        console.log('Successfully signed out from Supabase');
+      }
+      
+      // Force a page reload to ensure complete session cleanup
+      if (typeof window !== 'undefined') {
+        // Clear any remaining session data
+        try {
+          safeLocalStorage.clear();
+        } catch (err) {
+          console.warn('Error clearing localStorage:', err);
+        }
+        
+        // Redirect to login page with a clean reload
+        window.location.href = '/login';
       }
     } catch (err) {
       console.error('Unexpected error during sign out:', err);
+      // Even if there's an error, ensure we clear local state and redirect
+      setUser(null);
+      setRole(null);
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
   };
 

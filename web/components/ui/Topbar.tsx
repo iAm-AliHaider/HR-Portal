@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   DropdownMenu, 
@@ -53,8 +53,21 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
   };
 
   const handleLogout = async () => {
-    await signOut();
-    router.push('/login');
+    try {
+      console.log('Logout button clicked');
+      
+      // Call signOut from useAuth hook
+      await signOut();
+      
+      // Note: The signOut function now handles the redirect internally
+      // so we don't need to call router.push here
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force redirect even if there's an error
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
   };
 
   const markAsRead = (id: string) => {
