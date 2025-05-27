@@ -22,7 +22,7 @@ After creating the GitHub repository, run these commands in your terminal:
 
 ```bash
 # Add GitHub repository as remote origin
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+git remote add origin https://github.com/iAm-AliHaider/HR-Portal.git
 
 # Rename main branch to match GitHub default
 git branch -M main
@@ -30,8 +30,6 @@ git branch -M main
 # Push code to GitHub
 git push -u origin main
 ```
-
-**Replace `YOUR_USERNAME` and `YOUR_REPO_NAME` with your actual GitHub username and repository name.**
 
 ### Step 3: Deploy to Vercel
 
