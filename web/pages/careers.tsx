@@ -106,8 +106,11 @@ export default function CareersPage() {
               <h1 className="text-2xl font-bold text-gray-900">Careers</h1>
             </div>
             <div className="flex space-x-4">
+              <Link href="/login" className="text-gray-600 hover:text-gray-900">
+                HR Portal
+              </Link>
               <Link href="/candidate/login" className="text-gray-600 hover:text-gray-900">
-                Sign In
+                Candidate Login
               </Link>
               <Link href="/candidate/register" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                 Join Us

@@ -4,7 +4,10 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
  
 export async function middleware(request: NextRequest) {
   // Public pages that don't require authentication
-  const publicPages = ['/login', '/register', '/forgot-password', '/reset-password', '/logout', '/dev-entry'];
+  const publicPages = [
+    '/login', '/register', '/forgot-password', '/reset-password', '/logout', '/dev-entry',
+    '/careers', '/candidate', '/'
+  ];
   const url = request.nextUrl.pathname;
   
   // Skip auth for public pages, static assets, and API routes
@@ -12,7 +15,9 @@ export async function middleware(request: NextRequest) {
     publicPages.some(page => url === page || url.startsWith(page + '/')) ||
     url.startsWith('/_next/') ||
     url.startsWith('/favicon.ico') ||
-    url.startsWith('/public/')
+    url.startsWith('/public/') ||
+    url.startsWith('/careers/') ||
+    url.startsWith('/candidate/')
   ) {
     return NextResponse.next();
   }
@@ -41,11 +46,15 @@ export async function middleware(request: NextRequest) {
     // Check if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     
-    // If no session, redirect to login
+    // If no session, redirect to careers page (public landing)
     if (!session) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', url);
-      return NextResponse.redirect(loginUrl);
+      // Prevent redirect loops - if already on careers, allow access
+      if (url.startsWith('/careers') || url.startsWith('/candidate')) {
+        return NextResponse.next();
+      }
+      
+      const careersUrl = new URL('/careers', request.url);
+      return NextResponse.redirect(careersUrl);
     }
     
     return res;

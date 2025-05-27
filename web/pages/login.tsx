@@ -99,6 +99,11 @@ export default function LoginPage() {
         <p className="mt-2 text-center text-sm text-gray-600">
           Sign in to access the HR management system
         </p>
+        <p className="mt-2 text-center text-sm">
+          <a href="/careers" className="text-blue-600 hover:text-blue-500">
+            Looking for jobs? Visit our careers page
+          </a>
+        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
