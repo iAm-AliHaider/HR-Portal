@@ -40,10 +40,12 @@ git push -u origin main
 3. Import your GitHub repository
 4. Configure the project:
    - **Framework Preset**: Next.js
-   - **Root Directory**: `web` (important!)
+   - **Root Directory**: `web` (⚠️ CRITICAL - Must be set to `web`!)
    - **Build Command**: `npm run build`
    - **Output Directory**: `.next`
    - **Install Command**: `npm install`
+
+   > ⚠️ **IMPORTANT**: If you get "No Next.js version detected" error, make sure the Root Directory is set to `web` in your Vercel project settings.
 
 #### Option B: Deploy via Vercel CLI
 
@@ -119,6 +121,13 @@ Your app is now set up for continuous deployment:
 ### Common Issues:
 
 **Build Failures:**
+
+**"No Next.js version detected" Error:**
+- ✅ **Solution**: Set Root Directory to `web` in Vercel project settings
+- Go to Project Settings → General → Root Directory → Change to `web`
+- This is the most common deployment issue with this project structure
+
+**Other Build Issues:**
 - Check that build command is `npm run build`
 - Ensure all dependencies are in `package.json`
 - Check for TypeScript errors in build logs
