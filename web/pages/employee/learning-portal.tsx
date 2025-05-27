@@ -8,7 +8,7 @@ import {
   Grid, List, ChevronRight, ThumbsUp, MessageSquare, Bookmark,
   Award as Certificate, PlayCircle, TrendingUp, Plus, Zap, Heart, User
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
