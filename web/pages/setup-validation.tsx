@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { GetServerSideProps } from 'next';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, AlertCircle, XCircle, RefreshCw } from 'lucide-react';
-import { validateHRPortalSetup, SetupValidator } from '@/lib/validateSetup';
 
 interface ValidationResult {
   component: string;
@@ -27,23 +27,46 @@ interface SetupValidation {
 export default function SetupValidationPage() {
   const [validation, setValidation] = useState<SetupValidation | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure we're on the client side before running validation
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const runValidation = async () => {
+    if (!isClient) return;
+    
     setIsValidating(true);
     try {
+      // Dynamic import to avoid build-time issues
+      const { validateHRPortalSetup, SetupValidator } = await import('@/lib/validateSetup');
       const result = await validateHRPortalSetup();
       setValidation(result);
       SetupValidator.printResults(result);
     } catch (error) {
       console.error('Validation failed:', error);
+      // Create a fallback error result
+      setValidation({
+        overall: 'error',
+        results: [{
+          component: 'Validation System',
+          status: 'error',
+          message: 'Failed to run validation',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        }],
+        summary: { total: 1, success: 0, warnings: 0, errors: 1 }
+      });
     } finally {
       setIsValidating(false);
     }
   };
 
   useEffect(() => {
-    runValidation();
-  }, []);
+    if (isClient) {
+      runValidation();
+    }
+  }, [isClient]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -71,6 +94,22 @@ export default function SetupValidationPage() {
       </Badge>
     );
   };
+
+  // Don't render anything until we're on the client
+  if (!isClient) {
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto p-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-500" />
+              <p className="mt-4 text-gray-600">Loading validation system...</p>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -223,4 +262,11 @@ export default function SetupValidationPage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+// Prevent this page from running during build
+export const getServerSideProps: GetServerSideProps = async () => {
+  return {
+    props: {}
+  };
+}; 

@@ -1,5 +1,14 @@
-import nodemailer from 'nodemailer';
-import { validateEnvironment } from '../config/environment.example';
+// Email service for server-side use only
+// For client-side, use the API routes
+
+// Conditional import for server-side only
+const getNodemailer = async () => {
+  if (typeof window === 'undefined') {
+    // Server-side only
+    return await import('nodemailer');
+  }
+  return null;
+};
 
 // Email configuration interface
 interface EmailConfig {
@@ -32,23 +41,32 @@ interface SendEmailParams {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: any = null;
   private isDevelopment: boolean;
+  private isServer: boolean;
 
   constructor() {
     this.isDevelopment = process.env.NODE_ENV === 'development';
-    this.initialize();
+    this.isServer = typeof window === 'undefined';
   }
 
   private async initialize() {
+    if (!this.isServer) {
+      console.log('📧 Email service: Client-side, use API routes');
+      return;
+    }
+
     if (this.isDevelopment) {
       console.log('📧 Email service initialized in development mode');
       return;
     }
 
     try {
+      const nodemailer = await getNodemailer();
+      if (!nodemailer) return;
+
       // Validate environment variables
-      if (!validateEnvironment()) {
+      if (!this.validateEnvironment()) {
         throw new Error('Missing required email environment variables');
       }
 
@@ -62,7 +80,7 @@ class EmailService {
         }
       };
 
-      this.transporter = nodemailer.createTransporter(config);
+      this.transporter = nodemailer.default.createTransport(config);
 
       // Verify connection
       await this.transporter.verify();
@@ -71,6 +89,24 @@ class EmailService {
       console.error('❌ Email service initialization failed:', error);
       this.transporter = null;
     }
+  }
+
+  private validateEnvironment(): boolean {
+    const requiredVars = [
+      'SMTP_HOST',
+      'SMTP_USER',
+      'SMTP_PASS',
+      'EMAIL_FROM'
+    ];
+
+    const missing = requiredVars.filter(varName => !process.env[varName]);
+    
+    if (missing.length > 0) {
+      console.warn('Missing environment variables:', missing);
+      return false;
+    }
+    
+    return true;
   }
 
   // Email templates
@@ -196,6 +232,16 @@ class EmailService {
   // Send email method
   async sendEmail({ to, template, data, attachments }: SendEmailParams): Promise<{ success: boolean; error?: string }> {
     try {
+      // Client-side: redirect to API
+      if (!this.isServer) {
+        return { success: false, error: 'Use API route /api/send-email for client-side email sending' };
+      }
+
+      // Initialize if not done
+      if (!this.transporter && this.isServer) {
+        await this.initialize();
+      }
+
       // Development mode - log email instead of sending
       if (this.isDevelopment) {
         console.log('📧 [DEV] Email would be sent:');
@@ -294,6 +340,11 @@ class EmailService {
       template: 'notification',
       data: notificationData
     });
+  }
+
+  // Method to check if email service is available
+  isAvailable(): boolean {
+    return this.isServer && (this.isDevelopment || this.validateEnvironment());
   }
 }
 

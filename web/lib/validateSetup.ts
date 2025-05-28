@@ -2,7 +2,6 @@
 // This file helps validate that all production components are properly configured
 
 import { supabase, checkConnection } from '../services/supabase';
-import { emailService } from '../services/emailService';
 import { storageService } from '../services/storageService';
 
 interface ValidationResult {
@@ -102,43 +101,69 @@ export class SetupValidator {
     }
   }
 
-  // Validate email service
+  // Validate email service configuration
   private async validateEmailService(): Promise<ValidationResult> {
     try {
-      // Test email configuration
-      const testResult = await emailService.sendGenericNotification(
-        {
-          recipientName: 'Test User',
-          title: 'Setup Validation Test',
-          message: 'This is a test email to validate email service configuration.',
-          actionUrl: process.env.NEXTAUTH_URL || 'http://localhost:3000',
-          actionText: 'Visit Portal'
-        },
-        'test@example.com'
-      );
+      // Check if email environment variables are set
+      const emailVars = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'EMAIL_FROM'];
+      const missingEmailVars = emailVars.filter(varName => !process.env[varName]);
 
-      if (testResult.success) {
-        if (process.env.NODE_ENV === 'development') {
+      if (missingEmailVars.length === emailVars.length) {
+        return {
+          component: 'Email Service',
+          status: 'warning',
+          message: 'Email service not configured',
+          details: 'Email notifications will be disabled. Configure SMTP settings to enable email features.'
+        };
+      }
+
+      if (missingEmailVars.length > 0) {
+        return {
+          component: 'Email Service',
+          status: 'warning',
+          message: `Email service partially configured. Missing: ${missingEmailVars.join(', ')}`,
+          details: 'Some email environment variables are missing. Check your configuration.'
+        };
+      }
+
+      // If we're on the server side, we can test the email service
+      if (typeof window === 'undefined') {
+        try {
+          // Dynamic import for server-side only
+          const { emailService } = await import('../services/emailService');
+          
+          if (emailService.isAvailable()) {
+            return {
+              component: 'Email Service',
+              status: 'success',
+              message: 'Email service is configured and ready',
+              details: process.env.NODE_ENV === 'development' 
+                ? 'Running in development mode - emails will be logged to console'
+                : 'Email will be sent via configured SMTP provider'
+            };
+          } else {
+            return {
+              component: 'Email Service',
+              status: 'warning',
+              message: 'Email service configuration incomplete',
+              details: 'Email service is configured but not available'
+            };
+          }
+        } catch (error) {
           return {
             component: 'Email Service',
-            status: 'success',
-            message: 'Email service is configured and ready',
-            details: 'Running in development mode - emails will be logged to console'
-          };
-        } else {
-          return {
-            component: 'Email Service',
-            status: 'success',
-            message: 'Email service is configured and ready',
-            details: 'Email will be sent via configured SMTP provider'
+            status: 'warning',
+            message: 'Email service validation failed',
+            details: error instanceof Error ? error.message : 'Unknown email service error'
           };
         }
       } else {
+        // Client-side validation
         return {
           component: 'Email Service',
-          status: 'error',
-          message: 'Email service configuration failed',
-          details: testResult.error || 'Unknown email configuration error'
+          status: 'success',
+          message: 'Email service configuration looks good',
+          details: 'All required email environment variables are set. Full validation available on server side.'
         };
       }
     } catch (error) {
@@ -231,10 +256,14 @@ export class SetupValidator {
     try {
       const criticalModules = [
         '@supabase/supabase-js',
-        'nodemailer',
         'next',
         'react'
       ];
+
+      // Only check nodemailer on server side
+      if (typeof window === 'undefined') {
+        criticalModules.push('nodemailer');
+      }
 
       const missingModules = [];
       
