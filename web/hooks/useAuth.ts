@@ -63,6 +63,7 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
   const isDevelopment = process.env.NODE_ENV === 'development';
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+  const isProduction = process.env.NODE_ENV === 'production';
 
   // Helper to convert Supabase user to our User type
   const convertSupabaseUser = (supabaseUser: SupabaseUser): User => {
@@ -76,6 +77,12 @@ export function useAuth() {
   // Helper to fetch user profile with retry logic
   const fetchUserProfile = async (userId: string, retries: number = 3): Promise<{ role: string; profile: any } | null> => {
     try {
+      // Add production safety check
+      if (typeof window === 'undefined') {
+        console.warn('fetchUserProfile called on server side, skipping');
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -83,63 +90,81 @@ export function useAuth() {
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116' && retries > 0) {
-          // Row not found, try to create profile
-          const { data: authUser } = await supabase.auth.getUser();
-          if (authUser.user) {
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert([{
-                id: authUser.user.id,
-                email: authUser.user.email,
-                first_name: authUser.user.user_metadata?.first_name || authUser.user.user_metadata?.full_name || 'User',
-                last_name: authUser.user.user_metadata?.last_name || '',
-                role: authUser.user.user_metadata?.role || 'employee'
-              }])
-              .select()
-              .single();
-            
-            if (!createError && newProfile) {
-              return { role: newProfile.role, profile: newProfile };
+        // Handle specific error cases more gracefully in production
+        if (error.code === 'PGRST116') {
+          console.warn('Profile not found for user:', userId);
+          
+          if (retries > 0) {
+            // Try to create profile
+            try {
+              const { data: authUser } = await supabase.auth.getUser();
+              if (authUser.user) {
+                const { data: newProfile, error: createError } = await supabase
+                  .from('profiles')
+                  .insert([{
+                    id: authUser.user.id,
+                    email: authUser.user.email,
+                    first_name: authUser.user.user_metadata?.first_name || authUser.user.user_metadata?.full_name || 'User',
+                    last_name: authUser.user.user_metadata?.last_name || '',
+                    role: authUser.user.user_metadata?.role || 'employee'
+                  }])
+                  .select()
+                  .single();
+                
+                if (!createError && newProfile) {
+                  return { role: newProfile.role, profile: newProfile };
+                }
+              }
+            } catch (createErr) {
+              console.warn('Failed to create profile:', createErr);
             }
           }
+          
+          // Return default for missing profile
+          return { role: 'employee', profile: { id: userId, role: 'employee' } };
         }
         
         if (retries > 0) {
-          console.warn(`Error fetching profile, retrying... (${retries} attempts left)`);
+          console.warn(`Error fetching profile, retrying... (${retries} attempts left):`, error.message);
           await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
           return fetchUserProfile(userId, retries - 1);
         }
         
         console.error('Error fetching user profile:', error.message);
-        return null;
+        // Return default role instead of null to prevent app crashes
+        return { role: 'employee', profile: { id: userId, role: 'employee' } };
       }
 
       // If profile exists but role is null/undefined, try to fix it
       if (data && (!data.role || data.role === null)) {
         console.warn('Profile exists but role is missing, attempting to fix...');
         
-        // Try to get role from auth metadata
-        const { data: authUser } = await supabase.auth.getUser();
-        const roleFromAuth = authUser.user?.user_metadata?.role || 'employee';
-        
-        // Update the profile with the role
-        const { data: updatedProfile, error: updateError } = await supabase
-          .from('profiles')
-          .update({ 
-            role: roleFromAuth,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId)
-          .select()
-          .single();
-        
-        if (!updateError && updatedProfile) {
-          console.log('Successfully updated profile with role:', roleFromAuth);
-          return { role: updatedProfile.role, profile: updatedProfile };
-        } else {
-          console.error('Failed to update profile role:', updateError);
-          // Return with default role as fallback
+        try {
+          // Try to get role from auth metadata
+          const { data: authUser } = await supabase.auth.getUser();
+          const roleFromAuth = authUser.user?.user_metadata?.role || 'employee';
+          
+          // Update the profile with the role
+          const { data: updatedProfile, error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              role: roleFromAuth,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', userId)
+            .select()
+            .single();
+          
+          if (!updateError && updatedProfile) {
+            console.log('Successfully updated profile with role:', roleFromAuth);
+            return { role: updatedProfile.role, profile: updatedProfile };
+          } else {
+            console.error('Failed to update profile role:', updateError);
+            // Return with default role as fallback
+            return { role: 'employee', profile: { ...data, role: 'employee' } };
+          }
+        } catch (updateErr) {
+          console.warn('Error updating profile role:', updateErr);
           return { role: 'employee', profile: { ...data, role: 'employee' } };
         }
       }
@@ -147,7 +172,8 @@ export function useAuth() {
       return { role: data?.role || 'employee', profile: data };
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
-      return null;
+      // Return safe default instead of null
+      return { role: 'employee', profile: { id: userId, role: 'employee' } };
     }
   };
 
@@ -236,24 +262,54 @@ export function useAuth() {
           return;
         }
 
-        // Normal Supabase authentication for non-development
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error.message);
-          setError(`Authentication error: ${error.message}`);
-        } else if (data.session?.user) {
-          const supabaseUser = convertSupabaseUser(data.session.user);
-          setUser(supabaseUser);
+        // Try to get the current session with error handling for production
+        try {
+          // Normal Supabase authentication for non-development
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
           
-          // Fetch user profile and role
-          const profileData = await fetchUserProfile(data.session.user.id);
-          if (profileData?.role) {
-            setRole(profileData.role);
+          if (sessionError) {
+            console.error('Session error:', sessionError);
+            setError(sessionError.message);
+            setLoading(false);
+            return;
           }
-        } else {
-          setUser(null);
-          setRole(null);
+
+          if (session?.user) {
+            const supabaseUser = convertSupabaseUser(session.user);
+            setUser(supabaseUser);
+            
+            // Fetch user profile and role
+            const profileData = await fetchUserProfile(session.user.id);
+            if (profileData?.role) {
+              setRole(profileData.role);
+            } else {
+              console.warn('No role found for user, defaulting to employee');
+              setRole('employee');
+            }
+          } else {
+            // No active session
+            setUser(null);
+            setRole(null);
+          }
+        } catch (authError) {
+          console.error('Authentication system error:', authError);
+          
+          // In production, provide a demo user fallback to prevent complete failure
+          if (isProduction) {
+            console.warn('Auth system failed, using demo mode fallback');
+            const demoUser: User = {
+              id: 'demo-user',
+              email: 'demo@company.com',
+              name: 'Demo User',
+              role: 'employee',
+              department: 'HR',
+              position: 'Employee'
+            };
+            setUser(demoUser);
+            setRole('employee');
+          } else {
+            setError(`Authentication system unavailable: ${authError instanceof Error ? authError.message : 'Unknown error'}`);
+          }
         }
       } catch (err) {
         console.error('Unexpected error in getSession:', err);
