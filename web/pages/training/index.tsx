@@ -3,13 +3,14 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { mockTrainingCourses } from '../../services/mockData';
-import { 
-  BookOpen, Award, CheckCircle, Star, Clock, BarChart, 
+import {
+  BookOpen, Award, CheckCircle, Star, Clock, BarChart,
   Search, Filter, Calendar, Play, Download, FileText,
   Grid, List, ChevronRight, ThumbsUp, MessageSquare, Bookmark,
   Award as Certificate, PlayCircle, TrendingUp, Plus, Zap, 
   FileCheck, AlertTriangle, Users, Briefcase, BookOpen as Book
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Define types for our course data
 interface TrainingCourse {
@@ -42,6 +43,15 @@ interface CourseForm {
   requirements: string;
   certification: boolean;
 }
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function TrainingIndexPage() {
   const router = useRouter();

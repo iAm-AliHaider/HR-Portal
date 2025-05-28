@@ -77,7 +77,7 @@ import {
   TrainingAssessment,
   TrainingCertificate
 } from '../../../../packages/types/hr';
-import { 
+import {
   FaGraduationCap,
   FaUsers,
   FaClock,
@@ -93,6 +93,7 @@ import {
   FaTrophy,
   FaCalendarAlt
 } from 'react-icons/fa';
+import { GetServerSideProps } from 'next';
 
 const CourseDetailsPage = () => {
   const router = useRouter();
@@ -930,5 +931,14 @@ const CourseDetailsPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default CourseDetailsPage; 

@@ -6,6 +6,7 @@ import { usePermissions } from '../hooks/usePermissions';
 import { PermissionGuard, PermissionButton } from '../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 // Offboarding types
 interface OffboardingCase {
@@ -1083,8 +1084,17 @@ const OffboardingManagementPage = () => {
           </div>
         )}
       </div>
-      </DashboardLayout>
+    </DashboardLayout>
   );
 };
 
-export default OffboardingManagementPage; 
+export default OffboardingManagementPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

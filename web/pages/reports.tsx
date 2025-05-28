@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import TabGroup, { Tab } from '@/components/ui/TabGroup';
+import { GetServerSideProps } from 'next';
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState('general');
@@ -211,4 +212,13 @@ export default function ReportsPage() {
       <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
     </DashboardLayout>
   );
-} 
+}
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

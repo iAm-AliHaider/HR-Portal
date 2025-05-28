@@ -5,6 +5,16 @@ import { Box, Heading, Container, Spinner, Flex } from '@chakra-ui/react';
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import InterviewForm from '../../../../components/interviews/InterviewForm';
 import { getApplicationById } from '../../../../services/applications';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function NewInterviewPage() {
   const router = useRouter();

@@ -19,6 +19,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock data for demonstration
 const loanPrograms = [
@@ -42,6 +43,15 @@ const upcomingRepayments = [
   { id: 'PMT-2023-040', employeeName: 'Alex Johnson', loanId: 'LN-2023-001', amount: 2250, dueDate: '2023-11-25', status: 'Upcoming' },
   { id: 'PMT-2023-039', employeeName: 'Jordan Miller', loanId: 'LN-2022-156', amount: 12000, dueDate: '2023-11-15', status: 'Overdue' },
 ];
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function LoansManagementPage() {
   const router = useRouter();

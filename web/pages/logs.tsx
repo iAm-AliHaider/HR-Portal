@@ -3,6 +3,7 @@ import Head from 'next/head';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/router';
+import { GetServerSideProps } from 'next';
 
 // Log entry interface
 interface LogEntry {
@@ -384,6 +385,15 @@ const LogsPage = () => {
       </div>
     </DashboardLayout>
   );
+};
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
 };
 
 export default withoutRedirect(LogsPage); 

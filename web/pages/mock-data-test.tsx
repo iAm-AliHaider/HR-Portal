@@ -9,6 +9,7 @@ import {
   useCompliance, 
   useWorkflows 
 } from '../hooks/useApi';
+import { GetServerSideProps } from 'next';
 
 const MockDataTestPage = () => {
   const [activeTab, setActiveTab] = useState('employees');
@@ -315,4 +316,13 @@ const MockDataTestPage = () => {
   );
 };
 
-export default MockDataTestPage; 
+export default MockDataTestPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

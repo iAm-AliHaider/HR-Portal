@@ -75,6 +75,7 @@ import {
 import { format } from 'date-fns';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Interview, User, Job, Application } from '../../packages/types';
+import { GetServerSideProps } from 'next';
 
 // Extended interfaces for this component
 interface ApplicationWithDetails extends Application {
@@ -635,4 +636,13 @@ const InterviewsPage = () => {
   );
 };
 
-export default InterviewsPage; 
+export default InterviewsPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

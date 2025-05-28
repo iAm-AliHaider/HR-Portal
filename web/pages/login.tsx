@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { useAuth } from '../hooks/useAuth';
 import MockAccountInfo, { MockAccount } from '../components/ui/MockAccountInfo';
 import Link from 'next/link';
+import { GetServerSideProps } from 'next';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -219,4 +220,11 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+}; 

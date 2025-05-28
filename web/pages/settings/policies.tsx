@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { usePermissions } from '../../hooks/usePermissions';
 import { PermissionGuard, PermissionButton } from '../../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
+import { GetServerSideProps } from 'next';
 
 // Policy and Compliance types
 interface Policy {
@@ -1182,5 +1183,14 @@ const PolicyComplianceManagementPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default PolicyComplianceManagementPage; 

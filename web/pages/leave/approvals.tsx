@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 interface LeaveRequest {
   id: string;
@@ -362,5 +363,14 @@ const LeaveRequestCard = ({ request, onStatusChange }: {
     </div>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default LeaveApprovalsPage; 

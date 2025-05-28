@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { GetServerSideProps } from 'next';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export default function IncidentsIndexPage() {
@@ -17,4 +18,13 @@ export default function IncidentsIndexPage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

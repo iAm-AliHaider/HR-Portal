@@ -3,11 +3,18 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCalendar } from '@/hooks/useCalendar';
-import CalendarEventModal from '@/components/ui/CalendarEventModal';
 import { CalendarEvent } from '@/services/calendar';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useRouter } from 'next/router';
 import { shouldBypassAuth } from '@/lib/auth';
+import { GetServerSideProps } from 'next';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for modal only (complex UI component)
+const CalendarEventModal = dynamic(() => import('@/components/ui/CalendarEventModal'), {
+  ssr: false,
+  loading: () => <div>Loading...</div>
+});
 
 // Helper function to get days in month
 const getDaysInMonth = (year: number, month: number) => {
@@ -241,7 +248,7 @@ const Calendar = () => {
             </div>
             <div className="flex space-x-2">
               <Button 
-                variant="default" 
+                variant="solid" 
                 size="sm" 
                 onClick={handleCreateEvent}
               >
@@ -278,7 +285,7 @@ const Calendar = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Button>
-          <Button variant="secondary" size="sm" onClick={navigateToday}>
+          <Button variant="outline" size="sm" onClick={navigateToday}>
             Today
           </Button>
           <h2 className="text-xl font-semibold ml-4">{viewTitles[view]}</h2>
@@ -574,7 +581,7 @@ const Calendar = () => {
                   Delete
                 </Button>
                 <Button 
-                  variant="default" 
+                  variant="solid" 
                   size="sm"
                   onClick={() => handleEditEvent(selectedEvent)}
                 >
@@ -620,4 +627,14 @@ const CalendarPage = () => {
   );
 };
 
-export default CalendarPage; 
+export default CalendarPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      // Pass any necessary data
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

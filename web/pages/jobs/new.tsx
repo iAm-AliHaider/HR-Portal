@@ -9,6 +9,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { jobService } from '@/services/api';
 import { useToast } from '@/hooks/useApi';
 import RequireRole from '@/components/auth/RequireRole';
+import { GetServerSideProps } from 'next';
 
 interface FormData {
   title: string;
@@ -28,6 +29,15 @@ interface FormErrors {
   location?: string;
   type?: string;
 }
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function NewJobPage() {
   const router = useRouter();

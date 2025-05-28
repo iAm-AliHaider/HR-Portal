@@ -10,6 +10,7 @@ import {
   usePagination, 
   useSearch 
 } from '../hooks/useApi';
+import { GetServerSideProps } from 'next';
 
 // Workflow form interface
 interface WorkflowForm {
@@ -664,4 +665,13 @@ const WorkflowManagementPage = () => {
   );
 };
 
-export default WorkflowManagementPage; 
+export default WorkflowManagementPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

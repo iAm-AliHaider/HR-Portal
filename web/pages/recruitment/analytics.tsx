@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useJobs, useApplications, useInterviews, useOffers } from '@/hooks/useApi';
 import { format, subDays, subMonths, subWeeks, subYears } from 'date-fns';
+import { GetServerSideProps } from 'next';
 
 interface MetricsData {
   totalJobs: number;
@@ -40,6 +41,15 @@ interface TimeToHire {
   previousDaysToHire: number;
   change: number;
 }
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function RecruitmentAnalytics() {
   const [timeframe, setTimeframe] = useState('30days');

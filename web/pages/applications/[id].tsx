@@ -111,6 +111,7 @@ import { getJobById, getJobStageById } from '../../services/jobs';
 import { getInterviewsByApplicationId, createInterview } from '../../services/interviews';
 import { getAssessments } from '../../services/applications';
 import { getCandidateById } from '../../services/applications';
+import { GetServerSideProps } from 'next';
 
 // Enhanced status colors with gradients
 const statusColors = {
@@ -1320,5 +1321,14 @@ const ApplicationDetailPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default ApplicationDetailPage; 

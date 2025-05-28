@@ -10,6 +10,7 @@ import {
   usePagination, 
   useSearch 
 } from '../../hooks/useApi';
+import { GetServerSideProps } from 'next';
 
 // Expense form interface
 interface ExpenseForm {
@@ -667,5 +668,14 @@ const ExpensesPage = () => {
     </DashboardLayout>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default ExpensesPage; 

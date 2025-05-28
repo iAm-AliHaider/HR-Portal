@@ -152,6 +152,12 @@ export function useAuth() {
   };
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
+    }
+
     const getInitialSession = async () => {
       try {
         // Clear any previous errors
@@ -160,8 +166,8 @@ export function useAuth() {
         // If in development mode or demo mode
         if (isDevelopment || isDemoMode) {
           // Check if we're on the login page
-          const isLoginPage = typeof window !== 'undefined' && window.location.pathname.includes('login');
-          const isLogoutPage = typeof window !== 'undefined' && window.location.pathname.includes('logout');
+          const isLoginPage = window.location.pathname.includes('login');
+          const isLogoutPage = window.location.pathname.includes('logout');
           
           // Skip auto-login if on login or logout page
           if (isLoginPage || isLogoutPage) {
@@ -172,46 +178,44 @@ export function useAuth() {
           }
           
           // Check for query parameters (fallback auth method)
-          if (typeof window !== 'undefined') {
-            const urlParams = new URLSearchParams(window.location.search);
-            const mockEmail = urlParams.get('mockEmail');
-            const mockRole = urlParams.get('mockRole');
-            const mockName = urlParams.get('mockName');
-            const mockBypass = urlParams.get('mockBypass');
+          const urlParams = new URLSearchParams(window.location.search);
+          const mockEmail = urlParams.get('mockEmail');
+          const mockRole = urlParams.get('mockRole');
+          const mockName = urlParams.get('mockName');
+          const mockBypass = urlParams.get('mockBypass');
             
-            if (mockEmail && mockRole && mockBypass === 'true') {
-              // Create a mock user from URL parameters
-              const mockUser: User = {
-                id: `mock-${mockEmail}`,
-                email: mockEmail,
-                name: mockName || 'Test User',
-                role: mockRole,
-              };
-              
-              setUser(mockUser);
-              setRole(mockRole);
-              
-              // Try to store in localStorage for future sessions
-              try {
-                safeLocalStorage.setItem('mockUserEmail', mockEmail);
-              } catch (err) {
-                console.warn('Could not save to localStorage:', err);
-              }
-              
-              setLoading(false);
-              return;
+          if (mockEmail && mockRole && mockBypass === 'true') {
+            // Create a mock user from URL parameters
+            const mockUser: User = {
+              id: `mock-${mockEmail}`,
+              email: mockEmail,
+              name: mockName || 'Test User',
+              role: mockRole,
+            };
+            
+            setUser(mockUser);
+            setRole(mockRole);
+            
+            // Try to store in localStorage for future sessions
+            try {
+              safeLocalStorage.setItem('mockUserEmail', mockEmail);
+            } catch (err) {
+              console.warn('Could not save to localStorage:', err);
             }
+            
+            setLoading(false);
+            return;
           }
           
           // Try to get the mock user from localStorage
-          const mockEmail = safeLocalStorage.getItem('mockUserEmail');
+          const mockEmail2 = safeLocalStorage.getItem('mockUserEmail');
           
-          if (mockEmail) {
-            const matchedAccount = mockAccounts.find(account => account.email === mockEmail);
+          if (mockEmail2) {
+            const matchedAccount = mockAccounts.find(account => account.email === mockEmail2);
             if (matchedAccount) {
               const mockUser: User = {
-                id: `mock-${mockEmail}`,
-                email: mockEmail,
+                id: `mock-${mockEmail2}`,
+                email: mockEmail2,
                 name: matchedAccount.name,
                 department: matchedAccount.department,
                 position: matchedAccount.position,

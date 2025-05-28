@@ -16,6 +16,7 @@ import {
   useSearch 
 } from '../../hooks/useApi';
 import JobFilters, { JobFilterValues } from '@/components/jobs/JobFilters';
+import { GetServerSideProps } from 'next';
 
 // Job form interface
 interface JobForm {
@@ -55,6 +56,15 @@ const typeOptions = [
   { id: 'contract', label: 'Contract' },
   { id: 'internship', label: 'Internship' }
 ];
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function JobsPage() {
   const router = useRouter();

@@ -8,6 +8,7 @@ import { RequireRole } from '@/components/RequireRole';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useJob, useJobApplications, useToast, useModal } from '@/hooks/useApi';
 import ShareJobModal from '@/components/jobs/ShareJobModal';
+import { GetServerSideProps } from 'next';
 
 // Application statuses with their colors
 const applicationStatusColors = {
@@ -18,6 +19,15 @@ const applicationStatusColors = {
   'Hired': 'bg-green-100 text-green-800',
   'Rejected': 'bg-red-100 text-red-800'
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function JobDetailPage() {
   const router = useRouter();

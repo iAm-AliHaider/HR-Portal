@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Download, Calendar, AlertCircle, Check, DollarSign } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock loan data
 const LOAN_DATA = {
@@ -97,6 +98,15 @@ const generateRepaymentSchedule = (loan) => {
   
   return schedule;
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function RepaymentSchedulePage() {
   const router = useRouter();

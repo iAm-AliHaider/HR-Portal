@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabase/client';
+import { GetServerSideProps } from 'next';
 
 interface Job {
   id: string;
@@ -307,4 +308,11 @@ export default function CareersPage() {
       </footer>
     </div>
   );
-} 
+}
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+}; 

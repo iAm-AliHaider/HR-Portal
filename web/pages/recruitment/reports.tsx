@@ -80,6 +80,7 @@ import {
 } from '@chakra-ui/icons';
 import { format, subDays, subMonths, subWeeks } from 'date-fns';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 // Mock data interfaces
 interface RecruitmentMetrics {
@@ -711,5 +712,14 @@ const ReportsPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default ReportsPage; 

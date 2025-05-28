@@ -5,9 +5,19 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import ApplicationsList from '../../components/applications/ApplicationsList';
 import { Box, Heading } from '@chakra-ui/react';
 import { supabase } from '../../lib/supabase/client';
+import { GetServerSideProps } from 'next';
 
 // Mock org ID for development
 const DEFAULT_ORG_ID = 'org1';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function ApplicationsPage() {
   const router = useRouter();

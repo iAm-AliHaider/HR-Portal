@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '../../../../lib/supabase/client';
+import { GetServerSideProps } from 'next';
 
 interface Job {
   id: string;
@@ -18,6 +19,15 @@ interface Job {
   closing_date: string;
   created_at: string;
 }
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function JobDetailsPage() {
   const [job, setJob] = useState<Job | null>(null);

@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { supabase } from '../../lib/supabase/client';
 import { useAuth } from '../../hooks/useAuth';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function AuthDebugPage() {
   const { user, role, loading, error } = useAuth();

@@ -6,6 +6,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { PermissionGuard, PermissionButton } from '../../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
+import { GetServerSideProps } from 'next';
 
 // Enhanced workflow types
 interface WorkflowStep {
@@ -1164,5 +1165,14 @@ const WorkflowManagementPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default WorkflowManagementPage; 

@@ -5,6 +5,16 @@ import { Box, Heading, Container, Spinner, Flex } from '@chakra-ui/react';
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import OfferForm from '../../../../components/offers/OfferForm';
 import { getApplicationById } from '../../../../services/applications';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function NewOfferPage() {
   const router = useRouter();

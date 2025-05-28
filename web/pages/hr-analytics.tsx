@@ -3,6 +3,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useDashboardAnalytics } from '@/hooks/useApi';
 import { Card, CardContent } from '@/components/ui/card';
 import TabGroup, { Tab } from '@/components/ui/TabGroup';
+import { GetServerSideProps } from 'next';
 
 export default function HRAnalyticsPage() {
   const { analytics, loading, error } = useDashboardAnalytics();
@@ -180,4 +181,13 @@ export default function HRAnalyticsPage() {
       <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
     </DashboardLayout>
   );
-} 
+}
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

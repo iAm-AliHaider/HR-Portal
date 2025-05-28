@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Badge } from '../../components/ui/badge';
-import { 
+import {
   BarChart,
   AlertTriangle,
   CheckCircle,
@@ -19,6 +19,16 @@ import {
   Calendar,
   Activity
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function WorkplaceSafetyPage() {
   const { 

@@ -4,9 +4,19 @@ import { Box, Container } from '@chakra-ui/react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import RecruitmentDashboard from '../../components/dashboard/RecruitmentDashboard';
 import { supabase } from '../../lib/supabase/client';
+import { GetServerSideProps } from 'next';
 
 // Mock org ID for development
 const DEFAULT_ORG_ID = 'org1';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function RecruitmentDashboardPage() {
   const [orgId, setOrgId] = useState(DEFAULT_ORG_ID);

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { 
-  DollarSign, TrendingUp, TrendingDown, BarChart2, 
+import {
+  DollarSign, TrendingUp, TrendingDown, BarChart2,
   PieChart, Users, Calendar, CreditCard, Briefcase,
   Activity, FileText, ChevronDown, ChevronUp, ArrowRight
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock data for financial reports
 const financialOverview = {
@@ -88,6 +89,15 @@ const recentTransactions = [
     status: 'completed'
   }
 ];
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function FinancialReportPage() {
   const [dateRange, setDateRange] = useState('lastQuarter');

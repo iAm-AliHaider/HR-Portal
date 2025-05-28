@@ -7,6 +7,7 @@ import { shouldBypassAuth } from '@/lib/auth';
 import Modal from '../../components/ui/Modal';
 import { BookingService } from '../../services/booking';
 import { Asset } from '../../../packages/types/hr';
+import { GetServerSideProps } from 'next';
 
 interface AssetFormData {
   name: string;
@@ -955,5 +956,14 @@ const EquipmentInventoryPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default EquipmentInventoryPage; 

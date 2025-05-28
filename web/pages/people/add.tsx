@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
+import { GetServerSideProps } from 'next';
 
 // Mock data for departments and locations - same as in directory
 const DEPARTMENTS = [
@@ -941,5 +942,14 @@ const AddEmployeePage = () => {
     </DashboardLayout>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default AddEmployeePage; 

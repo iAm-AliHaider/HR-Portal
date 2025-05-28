@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import DataTable, { Column } from '@/components/ui/DataTable';
+import { GetServerSideProps } from 'next';
 
 // Import same mock data used in the directory
 const MOCK_PEOPLE = [
@@ -509,5 +510,14 @@ const EmployeeReportsPage = () => {
     </DashboardLayout>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default EmployeeReportsPage; 

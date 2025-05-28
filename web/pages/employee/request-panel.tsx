@@ -27,6 +27,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   Accordion, AccordionContent, AccordionItem, AccordionTrigger 
 } from '@/components/ui/accordion';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function RequestPanel() {
   const [activeTab, setActiveTab] = useState('all');

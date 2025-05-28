@@ -10,6 +10,7 @@ import {
   usePagination, 
   useSearch 
 } from '../../hooks/useApi';
+import { GetServerSideProps } from 'next';
 
 // Room form interface
 interface RoomForm {
@@ -353,5 +354,14 @@ const FacilitiesRoomsPage = () => {
       </DashboardLayout>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default FacilitiesRoomsPage; 

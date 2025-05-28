@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { usePermissions } from '../../hooks/usePermissions';
 import { PermissionGuard } from '../../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
+import { GetServerSideProps } from 'next';
 
 const RBACGuidePage = () => {
   const router = useRouter();
@@ -624,5 +625,14 @@ const RBACGuidePage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default RBACGuidePage; 

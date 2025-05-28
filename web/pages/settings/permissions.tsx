@@ -6,12 +6,13 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { PermissionGuard, PermissionButton } from '../../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
 import { permissionService } from '../../services/permissionService';
-import { 
-  Permission, 
-  PermissionResource, 
+import {
+  Permission,
+  PermissionResource,
   PermissionAction, 
   PermissionGroup 
 } from '../../../packages/types/src/hr';
+import { GetServerSideProps } from 'next';
 
 interface CustomPermission extends Permission {
   isCustom: boolean;
@@ -686,5 +687,14 @@ const PermissionsManagePage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default PermissionsManagePage; 

@@ -118,4 +118,11 @@ export default function DashboardIndexPage() {
       </div>
     </DashboardLayout>
   );
+}
+
+// Disable static generation to prevent SSR issues
+export async function getServerSideProps() {
+  return {
+    props: {},
+  };
 } 

@@ -17,6 +17,7 @@ import {
   Download,
   Eye
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock data for loan applications
 const mockApplications = [
@@ -81,6 +82,15 @@ const mockApplications = [
     nextStep: 'Contact HR for details'
   }
 ];
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function LoanApplicationsPage() {
   const router = useRouter();

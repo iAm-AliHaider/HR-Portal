@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/hooks/useAuth';
+import { GetServerSideProps } from 'next';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -44,4 +45,11 @@ export default function HomePage() {
       </div>
     </div>
   );
-} 
+}
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+}; 

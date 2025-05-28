@@ -6,6 +6,7 @@ import {
   BarChart2, PieChart, TrendingUp, TrendingDown, Shield,
   AlertOctagon, BookOpen, Layers, FileText, Flag
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock data
 const complianceOverview = {
@@ -78,6 +79,15 @@ const upcomingDeadlines = [
     category: 'Legal'
   }
 ];
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function ComplianceReportPage() {
   const [dateRange, setDateRange] = useState('last6Months');

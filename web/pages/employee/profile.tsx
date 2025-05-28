@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
+import { GetServerSideProps } from 'next';
 
 interface EmployeeProfile {
   id: string;
@@ -441,5 +442,14 @@ const EmployeeProfilePage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default EmployeeProfilePage; 

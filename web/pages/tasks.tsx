@@ -5,6 +5,7 @@ import { useTasks, TaskFilter } from '@/hooks/useTasks';
 import { Task, TaskChecklistItem, Project } from '../../packages/types';
 import { fetchUsers, getTaskCategories } from '@/services/tasks';
 import { format, isAfter, parseISO, addDays, addWeeks, addMonths } from 'date-fns';
+import { GetServerSideProps } from 'next';
 
 const TaskPriorityBadge = ({ priority }: { priority: Task['priority'] }) => {
   const getColor = () => {
@@ -1211,3 +1212,12 @@ const TasksPage = () => {
 };
 
 export default TasksPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+};

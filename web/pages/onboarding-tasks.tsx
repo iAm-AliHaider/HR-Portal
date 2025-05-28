@@ -83,6 +83,7 @@ import {
 } from '@chakra-ui/icons';
 import { format, formatDistanceToNow } from 'date-fns';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 // Enhanced Task Interface
 interface EnhancedOnboardingTask {
@@ -718,4 +719,13 @@ const OnboardingTasksPage = () => {
   );
 };
 
-export default OnboardingTasksPage; 
+export default OnboardingTasksPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

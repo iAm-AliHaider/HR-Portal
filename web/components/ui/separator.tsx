@@ -1,34 +1,19 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import React from 'react';
+import { Divider, DividerProps } from '@chakra-ui/react';
 
-interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
-  orientation?: "horizontal" | "vertical"
-  decorative?: boolean
-}
+export interface SeparatorProps extends DividerProps {}
 
-export function Separator({
-  className,
-  orientation = "horizontal",
-  decorative = true,
-  ...props
-}: SeparatorProps) {
-  const orientationStyles = {
-    horizontal: "w-full h-px",
-    vertical: "h-full w-px"
+const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
+  (props, ref) => {
+    return (
+      <Divider
+        ref={ref}
+        {...props}
+      />
+    );
   }
+);
 
-  return (
-    <div
-      role={decorative ? "none" : "separator"}
-      aria-orientation={decorative ? undefined : orientation}
-      className={cn(
-        "shrink-0 bg-gray-200",
-        orientationStyles[orientation],
-        className
-      )}
-      {...props}
-    />
-  )
-}
+Separator.displayName = "Separator";
 
-export default Separator; 
+export { Separator }; 

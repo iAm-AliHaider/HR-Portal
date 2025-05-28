@@ -84,6 +84,7 @@ import {
 import { format, formatDistanceToNow } from 'date-fns';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Application, User, Job, Offer } from '../../packages/types';
+import { GetServerSideProps } from 'next';
 
 // Extended types for better typing
 interface ApplicationWithDetails extends Application {
@@ -829,7 +830,7 @@ const OffersPage = () => {
               </Button>
             </ModalFooter>
           </ModalContent>
-            </Modal>
+        </Modal>
 
         {/* Withdraw Modal */}
         <Modal isOpen={isWithdrawOpen} onClose={onWithdrawClose}>
@@ -865,7 +866,7 @@ const OffersPage = () => {
               </Button>
             </ModalFooter>
           </ModalContent>
-            </Modal>
+        </Modal>
 
         {/* Details Modal */}
         <Modal isOpen={isDetailsOpen} onClose={onDetailsClose} size="xl">
@@ -928,4 +929,13 @@ const OffersPage = () => {
   );
 };
 
-export default OffersPage; 
+export default OffersPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { usePermissions } from '../hooks/usePermissions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { GetServerSideProps } from 'next';
 
 // Enhanced types for role-workflow integration
 interface RoleWorkflowAssignment {
@@ -633,4 +634,13 @@ export default function RoleWorkflowManagementPage() {
       {/* Add other tab contents here */}
     </div>
   );
-} 
+}
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

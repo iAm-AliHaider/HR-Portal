@@ -6,11 +6,12 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { PermissionGuard, PermissionButton } from '../../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
 import { permissionService } from '../../services/permissionService';
-import { 
-  Permission, 
-  Role, 
+import {
+  Permission,
+  Role,
   PermissionGroup 
 } from '../../../packages/types/src/hr';
+import { GetServerSideProps } from 'next';
 
 interface RoleFormData {
   name: string;
@@ -572,5 +573,14 @@ const RolesPermissionsPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default RolesPermissionsPage; 

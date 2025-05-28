@@ -75,6 +75,7 @@ import {
 } from '@chakra-ui/icons';
 import { format } from 'date-fns';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 // Enhanced interfaces for teams
 interface EnhancedTeam {
@@ -687,4 +688,13 @@ const TeamsPage = () => {
   );
 };
 
-export default TeamsPage; 
+export default TeamsPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

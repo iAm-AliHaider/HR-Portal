@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Calendar, InfoIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { GetServerSideProps } from 'next';
 
 // Mock loan programs
 const loanPrograms = [
@@ -14,6 +15,15 @@ const loanPrograms = [
   { id: 3, name: 'Home Loan', interestRate: '6-9%', maxAmount: 5000000, term: '5-30 years', eligibility: 'Confirmed employees with >3 years tenure' },
   { id: 4, name: 'Emergency Loan', interestRate: '0-3%', maxAmount: 30000, term: '1-3 years', eligibility: 'All employees (case-by-case approval)' },
 ];
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function LoanApplicationPage() {
   const router = useRouter();

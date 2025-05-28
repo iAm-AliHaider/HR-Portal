@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { GetServerSideProps } from 'next';
 
 // Mock data for payslips
 const mockPayslips = [
@@ -730,9 +731,9 @@ export default function PayslipsPage() {
                                     <div className="mt-2 pt-2 border-t border-gray-200">
                                       <p className="text-xs text-gray-500">Resolution:</p>
                                       <p className="text-sm">{correction.resolution}</p>
-          </div>
-        )}
-      </div>
+                                    </div>
+                                  )}
+                                </div>
                               ))}
                             </div>
                           </CardContent>
@@ -779,4 +780,13 @@ export default function PayslipsPage() {
     </div>
     </DashboardLayout>
   );
-} 
+}
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

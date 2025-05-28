@@ -4,6 +4,16 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useDashboardAnalytics } from '@/hooks/useApi';
 import { Card, CardContent } from '@/components/ui/card';
 import TabGroup, { Tab } from '@/components/ui/TabGroup';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function DashboardAnalyticsPage() {
   const router = useRouter();

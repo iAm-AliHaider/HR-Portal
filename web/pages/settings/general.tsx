@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import type { NextPage } from 'next';
+import { GetServerSideProps } from 'next';
 
 interface GeneralSettings {
   language: string;
@@ -336,5 +337,14 @@ const GeneralSettingsPage: NextPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default GeneralSettingsPage; 

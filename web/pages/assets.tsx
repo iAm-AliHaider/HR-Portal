@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { GetServerSideProps } from 'next';
 
 export default function AssetManagementPage() {
   const { user, role } = useAuth();
@@ -205,4 +206,13 @@ export default function AssetManagementPage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

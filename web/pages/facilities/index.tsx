@@ -1,6 +1,16 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function FacilitiesIndexPage() {
   const router = useRouter();

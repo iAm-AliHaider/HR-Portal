@@ -7,6 +7,7 @@ import {
   useForm 
 } from '../../hooks/useApi';
 import type { NextPage } from 'next';
+import { GetServerSideProps } from 'next';
 
 // Company settings form interface
 interface CompanySettingsForm {
@@ -619,5 +620,14 @@ const CompanySettingsPage: NextPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default CompanySettingsPage; 

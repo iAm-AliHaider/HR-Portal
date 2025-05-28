@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { supabase } from '../../lib/supabase/client';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/router';
+import { GetServerSideProps } from 'next';
 
 interface Profile {
   id: string;
@@ -12,6 +13,15 @@ interface Profile {
   role: string | null;
   created_at: string;
 }
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function FixRolesPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);

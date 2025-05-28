@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import Link from 'next/link';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 const SettingsPage = () => {
   const router = useRouter();
@@ -205,6 +206,13 @@ const SettingsPage = () => {
       </div>
     </DashboardLayout>
   );
+};
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
 };
 
 export default SettingsPage; 

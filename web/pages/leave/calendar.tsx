@@ -8,6 +8,7 @@ import {
   useForm, 
   useModal 
 } from '../../hooks/useApi';
+import { GetServerSideProps } from 'next';
 
 // Calendar Component
 const Calendar = ({ currentDate, onDateChange, leaveRequests, onDateClick }: any) => {
@@ -644,5 +645,14 @@ const LeaveCalendarPage = () => {
     </DashboardLayout>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default LeaveCalendarPage; 

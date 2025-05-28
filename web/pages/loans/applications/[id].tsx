@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Download, FileText, Check, X, AlertCircle, User, Calendar, DollarSign, Upload, Clock, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { GetServerSideProps } from 'next';
 
 // Define types for documents and timeline
 interface LoanDocument {
@@ -187,6 +188,15 @@ const mockApplicationData: Record<string, LoanApplication> = {
     ]
   }
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function LoanApplicationDetailsPage() {
   const router = useRouter();

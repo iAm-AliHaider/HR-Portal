@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { 
+import {
   Users, UserPlus, UserMinus, UserCheck, Clock, Calendar,
   BarChart2, PieChart, TrendingUp, TrendingDown, Briefcase,
   Map, Globe, DollarSign, Award, BookOpen
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock data for workforce analytics
 const departmentDistribution = [
@@ -49,6 +50,15 @@ const workforceMetrics = {
     needsImprovement: 10
   }
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function WorkforceReportPage() {
   const [activeTab, setActiveTab] = useState('overview');

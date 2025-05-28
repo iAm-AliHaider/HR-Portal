@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  ChartPie, 
-  CreditCard, 
+import {
+  ChartPie,
+  CreditCard,
   Users, 
   Settings,
   Clock,
@@ -20,6 +20,7 @@ import {
   DollarSign,
   BarChart
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock analytics data
 const LOAN_ANALYTICS = {
@@ -49,6 +50,15 @@ const LOAN_ANALYTICS = {
     { month: 'Mar', applications: 10, approvals: 8, disbursements: 7 }
   ]
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function LoanManagementDashboard() {
   const router = useRouter();

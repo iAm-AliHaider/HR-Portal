@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import TabGroup from '@/components/ui/TabGroup';
 import Timeline, { TimelineItem } from '@/components/ui/Timeline';
+import { GetServerSideProps } from 'next';
 
 // Mock people data - same as in the directory page
 const MOCK_PEOPLE = [
@@ -550,5 +551,14 @@ const EmployeeProfile = () => {
     </DashboardLayout>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default EmployeeProfile; 

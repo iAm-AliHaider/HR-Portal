@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import { BookingService } from '../../services/booking';
 import { MeetingRoom, Asset, RoomBooking, AssetBooking } from '../../../packages/types/hr';
+import { GetServerSideProps } from 'next';
 
 interface ReportMetrics {
   totalRooms: number;
@@ -532,5 +533,14 @@ const ResourceReportsPage = () => {
     </>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default ResourceReportsPage; 

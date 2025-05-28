@@ -27,6 +27,16 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import { Job } from '../../../packages/types';
 import { getJobs } from '../../services/jobs';
 import { createApplication } from '../../services/applications';
+import { GetServerSideProps } from 'next';
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function NewApplicationPage() {
   const router = useRouter();

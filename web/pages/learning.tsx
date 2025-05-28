@@ -6,6 +6,9 @@ import { shouldBypassAuth } from '@/lib/auth';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
+import { useSSR } from '@/hooks/useSSR';
+import ClientOnly from '@/components/ui/ClientOnly';
 
 interface Course {
   id: string;
@@ -57,6 +60,7 @@ const LearningPortal = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
+  const { isClient, isLoaded } = useSSR();
 
   // Ensure user has access to this page
   useEffect(() => {
@@ -701,6 +705,20 @@ const LearningPortal = () => {
     </div>
   );
 
+  // Server-safe rendering
+  if (!isLoaded) {
+    return (
+      <DashboardLayout>
+        <div className="p-4 md:p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded mb-4"></div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
   return (
     <DashboardLayout>
       <div className="p-6">
@@ -921,4 +939,13 @@ const LearningPortal = () => {
   );
 };
 
-export default LearningPortal; 
+export default LearningPortal;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

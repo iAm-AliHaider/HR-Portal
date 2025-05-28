@@ -8,8 +8,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { 
-  Settings, 
-  Save, 
+  Settings,
+  Save,
   Plus, 
   Edit, 
   Trash, 
@@ -18,6 +18,7 @@ import {
   Info,
   DollarSign
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock data for loan program settings
 const LOAN_TYPES = [
@@ -101,6 +102,15 @@ const PROGRAM_SETTINGS = {
   approvalWorkflow: ['HR Manager', 'Finance Director'],
   disbursementTime: 3 // days
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function LoanSettingsPage() {
   const router = useRouter();

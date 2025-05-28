@@ -5,9 +5,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  ArrowLeft, 
-  Calendar, 
+import {
+  ArrowLeft,
+  Calendar,
   DollarSign, 
   Search, 
   Filter,
@@ -15,6 +15,7 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
+import { GetServerSideProps } from 'next';
 
 // Mock repayment data
 const REPAYMENT_DATA = [
@@ -87,6 +88,15 @@ const REPAYMENT_DATA = [
     repaymentMethod: 'Salary Deduction',
   }
 ];
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function RepaymentScheduleListPage() {
   const router = useRouter();

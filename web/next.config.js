@@ -1,20 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  // Disable static generation to avoid build errors
+  reactStrictMode: false,
   output: 'standalone',
+  trailingSlash: false,
+  images: {
+    unoptimized: true,
+  },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-}
+  // Force all pages to be dynamic
+  experimental: {
+    isrFlushToDisk: false,
+  },
+  // Disable static optimization completely
+  poweredByHeader: false,
+  compress: true,
+  // Prevent static export
+  async exportPathMap() {
+    return {};
+  }
+};
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { Card } from '@/components/ui/card';
 import { Button } from '../components/ui/button';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 const initialProfile = {
   name: 'Jane Doe',
@@ -212,4 +213,13 @@ const Profile = () => {
   );
 };
 
-export default Profile; 
+export default Profile;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

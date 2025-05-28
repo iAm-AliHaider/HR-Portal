@@ -1,55 +1,116 @@
 "use client"
 
-import * as React from "react"
-import * as TabsPrimitive from "@radix-ui/react-tabs"
+import React from 'react';
+import { 
+  Tabs as ChakraTabs,
+  TabList as ChakraTabList,
+  Tab as ChakraTab,
+  TabPanels as ChakraTabPanels,
+  TabPanel as ChakraTabPanel,
+  TabsProps as ChakraTabsProps,
+  TabListProps as ChakraTabListProps,
+  TabProps as ChakraTabProps,
+  TabPanelsProps as ChakraTabPanelsProps,
+  TabPanelProps as ChakraTabPanelProps
+} from '@chakra-ui/react';
 
-import { cn } from "@/lib/utils"
+// Tabs Container - Enhanced to manage panels
+export interface TabsProps extends ChakraTabsProps {
+  children: React.ReactNode;
+  defaultValue?: string;
+  value?: string;
+}
 
-const Tabs = TabsPrimitive.Root
+const Tabs = ({ children, defaultValue, value, ...props }: TabsProps) => {
+  // Extract TabsList and TabsContent from children
+  const childrenArray = React.Children.toArray(children);
+  const tabsList = childrenArray.find((child: any) => child?.type?.displayName === 'TabsList');
+  const tabsContents = childrenArray.filter((child: any) => child?.type?.displayName === 'TabsContent');
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500",
-      className
-    )}
-    {...props}
-  />
-))
-TabsList.displayName = TabsPrimitive.List.displayName
+  // Convert defaultValue/value to index for Chakra
+  let defaultIndex = 0;
+  let index;
+  
+  if (defaultValue && tabsContents.length > 0) {
+    const foundIndex = tabsContents.findIndex((content: any) => content?.props?.value === defaultValue);
+    if (foundIndex !== -1) defaultIndex = foundIndex;
+  }
+  
+  if (value && tabsContents.length > 0) {
+    const foundIndex = tabsContents.findIndex((content: any) => content?.props?.value === value);
+    if (foundIndex !== -1) index = foundIndex;
+  }
 
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-gray-950 data-[state=active]:shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+  return (
+    <ChakraTabs
+      variant="line"
+      colorScheme="blue"
+      defaultIndex={defaultIndex}
+      index={index}
+      {...props}
+    >
+      {tabsList}
+      <ChakraTabPanels>
+        {tabsContents}
+      </ChakraTabPanels>
+    </ChakraTabs>
+  );
+};
 
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2",
-      className
-    )}
-    {...props}
-  />
-))
-TabsContent.displayName = TabsPrimitive.Content.displayName
+Tabs.displayName = "Tabs";
 
-export { Tabs, TabsList, TabsTrigger, TabsContent } 
+// Tabs List
+export interface TabsListProps extends ChakraTabListProps {}
+
+const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <ChakraTabList ref={ref} {...props}>
+        {children}
+      </ChakraTabList>
+    );
+  }
+);
+
+TabsList.displayName = "TabsList";
+
+// Tab Trigger
+export interface TabsTriggerProps extends ChakraTabProps {
+  value?: string;
+}
+
+const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
+  ({ value, children, ...props }, ref) => {
+    return (
+      <ChakraTab ref={ref} {...props}>
+        {children}
+      </ChakraTab>
+    );
+  }
+);
+
+TabsTrigger.displayName = "TabsTrigger";
+
+// Tab Content Container
+export interface TabsContentProps extends ChakraTabPanelProps {
+  value?: string;
+}
+
+const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
+  ({ value, children, ...props }, ref) => {
+    return (
+      <ChakraTabPanel ref={ref} {...props}>
+        {children}
+      </ChakraTabPanel>
+    );
+  }
+);
+
+TabsContent.displayName = "TabsContent";
+
+export { 
+  Tabs, 
+  TabsList, 
+  TabsTrigger, 
+  TabsContent 
+}; 

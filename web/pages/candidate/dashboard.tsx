@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '../../lib/supabase/client';
+import { GetServerSideProps } from 'next';
 
 interface CandidateProfile {
   id: string;
@@ -26,6 +27,15 @@ interface Application {
   applied_at: string;
   last_updated: string;
 }
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default function CandidateDashboard() {
   const [candidate, setCandidate] = useState<CandidateProfile | null>(null);

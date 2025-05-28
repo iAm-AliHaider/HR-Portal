@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 const TimeAndAttendance = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -1001,4 +1002,13 @@ const TimeAndAttendance = () => {
   );
 };
 
-export default TimeAndAttendance; 
+export default TimeAndAttendance;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

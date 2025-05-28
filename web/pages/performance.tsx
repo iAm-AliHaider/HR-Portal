@@ -78,6 +78,7 @@ import {
 } from '@chakra-ui/icons';
 import { format } from 'date-fns';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 // Interfaces
 interface PerformanceReview {
@@ -962,4 +963,13 @@ const PerformanceManagementPage = () => {
   );
 };
 
-export default PerformanceManagementPage; 
+export default PerformanceManagementPage;
+
+// Force server-side rendering to prevent SSR issues
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      timestamp: new Date().toISOString(),
+    },
+  };
+}; 

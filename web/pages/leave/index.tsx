@@ -7,6 +7,7 @@ import { useLeaveRequests, useToast, useForm } from '../../hooks/useApi';
 import { PermissionGuard, PermissionButton } from '../../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import { GetServerSideProps } from 'next';
 
 // Leave request form interface
 interface LeaveRequestForm {
@@ -677,5 +678,14 @@ const LeaveManagementPage = () => {
       </DashboardLayout>
   );
 };
+
+
+// Force Server-Side Rendering to prevent static generation
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {}
+  };
+};
+
 
 export default LeaveManagementPage; 
