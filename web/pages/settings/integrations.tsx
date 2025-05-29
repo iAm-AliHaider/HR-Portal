@@ -168,7 +168,7 @@ const IntegrationsSettingsPage = () => {
       enabled: true
     },
     sso: {
-      enabled: false,
+            enabled: false,
       provider: 'google',
       domain: 'company.com',
       client_id: '',
@@ -177,14 +177,14 @@ const IntegrationsSettingsPage = () => {
       certificate: ''
     },
     webhooks: {
-      enabled: true,
+            enabled: true,
       endpoints: [
         {
           id: '1',
           name: 'Slack Notifications',
           url: 'https://hooks.slack.com/services/...',
           events: ['employee.created', 'leave.approved'],
-          enabled: true,
+            enabled: true,
           last_triggered: '2024-01-20T10:30:00Z'
         }
       ],
@@ -302,14 +302,14 @@ const IntegrationsSettingsPage = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Settings
               </Button>
-              <div>
+          <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center">
                   <Link className="h-6 w-6 mr-2" />
                   Integration Settings
                 </h1>
                 <p className="text-gray-600 mt-2">Manage third-party integrations and API connections</p>
-              </div>
-            </div>
+          </div>
+        </div>
             <div className="flex items-center space-x-4">
               <Button
                 onClick={handleSave}
@@ -318,7 +318,7 @@ const IntegrationsSettingsPage = () => {
               >
                 {isSubmitting ? 'Saving...' : 'Save Settings'}
               </Button>
-            </div>
+        </div>
           </div>
 
           {/* Integration Status Overview */}
@@ -331,8 +331,8 @@ const IntegrationsSettingsPage = () => {
                     <div className="ml-3">
                       <p className="text-sm font-medium text-gray-600">Email</p>
                       <p className="text-xs text-gray-500">{integrationStatus.email.messages_sent} sent</p>
-                    </div>
-                  </div>
+          </div>
+        </div>
                   <div className={`h-3 w-3 rounded-full ${integrationStatus.email.connected ? 'bg-green-500' : 'bg-red-500'}`} />
                 </div>
               </CardContent>
@@ -382,7 +382,7 @@ const IntegrationsSettingsPage = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -422,7 +422,7 @@ const IntegrationsSettingsPage = () => {
                         <CardTitle>Email Integration</CardTitle>
                         <CardDescription>Configure email service provider and templates</CardDescription>
                       </div>
-                      <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                         <input
                           type="checkbox"
                           id="email_enabled"
@@ -608,7 +608,7 @@ const IntegrationsSettingsPage = () => {
                           <option value="outlook">Outlook Calendar</option>
                           <option value="exchange">Exchange Server</option>
                         </select>
-                      </div>
+                  </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">API Key</label>
                         <div className="relative">
@@ -619,13 +619,13 @@ const IntegrationsSettingsPage = () => {
                             className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter API key"
                           />
-                          <button
+                  <button
                             type="button"
                             onClick={() => togglePasswordVisibility('calendar_api')}
                             className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          >
+                  >
                             {showPasswords.calendar_api ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
+                  </button>
                         </div>
                       </div>
                       <div>
@@ -759,9 +759,9 @@ const IntegrationsSettingsPage = () => {
                         <span className={`text-xs ${status.connected ? 'text-green-600' : 'text-red-600'}`}>
                           {status.connected ? 'Connected' : 'Disconnected'}
                         </span>
-                      </div>
-                    </div>
-                  ))}
+                </div>
+              </div>
+            ))}
                 </div>
               </CardContent>
             </Card>
