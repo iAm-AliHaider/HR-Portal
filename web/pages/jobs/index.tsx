@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { RequireRole } from '@/components/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 import { 
   useJobs, 
   useApplications,

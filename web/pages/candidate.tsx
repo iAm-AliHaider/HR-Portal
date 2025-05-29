@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Application, Job } from '../../packages/types';
 import { Card } from '@/components/ui/card';
-import { RequireRole } from '../components/RequireRole';
-
 const mockJobs: Job[] = [
   { 
     id: '1', 
@@ -53,7 +51,7 @@ export default function CandidateJourney() {
   const [applications] = useState<Application[]>(mockApplications);
 
   return (
-    <RequireRole allowed={['candidate', 'admin']}>
+    
       <div className="p-6 max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">My Applications</h1>
         <div className="flex flex-col gap-6">
@@ -71,6 +69,6 @@ export default function CandidateJourney() {
           ))}
         </div>
       </div>
-    </RequireRole>
+    
   );
 } 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Job, Application } from '../../packages/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '../components/ui/button';
-import { RequireRole } from '../components/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 
 const mockJobs: Job[] = [
   { 
@@ -73,7 +73,7 @@ export default function HiringPipeline() {
   const [applications] = useState<Application[]>(mockApplications);
 
   return (
-    <RequireRole allowed={['admin', 'hr', 'manager']}>
+    <ModernRequireRole allowed={['admin', 'hr', 'manager']} fallbackToPublic={true}>
       <div className="p-6 max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Hiring Pipeline Overview</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -90,6 +90,6 @@ export default function HiringPipeline() {
           <Button variant="outline">View Onboarding</Button>
         </div>
       </div>
-    </RequireRole>
+    </ModernRequireRole>
   );
 } 

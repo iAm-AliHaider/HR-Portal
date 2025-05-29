@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Organization, User } from '../../packages/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '../components/ui/button';
-import { RequireRole } from '../components/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 
 const mockOrg: Organization = {
   id: 'org1',
@@ -48,7 +48,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState('org');
 
   return (
-    <RequireRole allowed={['admin']}>
+    <ModernRequireRole allowed={['admin']} fallbackToPublic={true}>
       <div className="p-6 max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Admin Panel</h1>
         <div className="flex gap-4 mb-8">
@@ -131,6 +131,6 @@ export default function AdminPage() {
           </Card>
         )}
       </div>
-    </RequireRole>
+    </ModernRequireRole>
   );
 } 

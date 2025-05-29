@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useJob, useToast, useForm } from '@/hooks/useApi';
-import { RequireRole } from '@/components/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -107,20 +107,20 @@ export default function EditJobPage() {
   // Loading state
   if (loading) {
     return (
-      <RequireRole allowed={['admin', 'hr', 'recruiter']}>
+      <ModernRequireRole allowed={['admin', 'hr', 'recruiter']} fallbackToPublic={true}>
         <ModernDashboardLayout>
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
         </ModernDashboardLayout>
-      </RequireRole>
+      </ModernRequireRole>
     );
   }
   
   // Error state
   if (error) {
     return (
-      <RequireRole allowed={['admin', 'hr', 'recruiter']}>
+      <ModernRequireRole allowed={['admin', 'hr', 'recruiter']} fallbackToPublic={true}>
         <ModernDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
@@ -135,14 +135,14 @@ export default function EditJobPage() {
             </Link>
           </div>
         </ModernDashboardLayout>
-      </RequireRole>
+      </ModernRequireRole>
     );
   }
   
   // Not found state
   if (!job) {
     return (
-      <RequireRole allowed={['admin', 'hr', 'recruiter']}>
+      <ModernRequireRole allowed={['admin', 'hr', 'recruiter']} fallbackToPublic={true}>
         <ModernDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
@@ -157,12 +157,12 @@ export default function EditJobPage() {
             </Link>
           </div>
         </ModernDashboardLayout>
-      </RequireRole>
+      </ModernRequireRole>
     );
   }
   
   return (
-    <RequireRole allowed={['admin', 'hr', 'recruiter']}>
+    <ModernRequireRole allowed={['admin', 'hr', 'recruiter']} fallbackToPublic={true}>
       <Head>
         <title>Edit Job | HR Portal</title>
         <meta name="description" content="Edit job posting" />
@@ -329,6 +329,6 @@ export default function EditJobPage() {
           </Card>
         </div>
       </ModernDashboardLayout>
-    </RequireRole>
+    </ModernRequireRole>
   );
 } 

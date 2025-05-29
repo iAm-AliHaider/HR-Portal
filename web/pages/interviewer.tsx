@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Interview, Job, User } from '../../packages/types';
 import { Card } from '@/components/ui/card';
-import { RequireRole } from '../components/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 
 const mockJobs: Job[] = [
   { 
@@ -65,7 +65,7 @@ export default function InterviewerDashboard() {
   const [interviews] = useState<Interview[]>(mockInterviews);
 
   return (
-    <RequireRole allowed={['interviewer', 'recruiter', 'admin']}>
+    <ModernRequireRole allowed={['interviewer', 'recruiter', 'admin']} fallbackToPublic={true}>
       <div className="p-6 max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Upcoming Interviews</h1>
         <div className="flex flex-col gap-6">
@@ -89,6 +89,6 @@ export default function InterviewerDashboard() {
           })}
         </div>
       </div>
-    </RequireRole>
+    </ModernRequireRole>
   );
 } 

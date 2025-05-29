@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RequireRole } from '@/components/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useJob, useJobApplications, useToast, useModal } from '@/hooks/useApi';
 import ShareJobModal from '@/components/jobs/ShareJobModal';
@@ -94,20 +94,20 @@ export default function JobDetailPage() {
   // Loading state
   if (jobLoading || applicationsLoading) {
     return (
-      <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
+      <ModernRequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']} fallbackToPublic={true}>
         <ModernDashboardLayout>
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0a3d91]"></div>
           </div>
         </ModernDashboardLayout>
-      </RequireRole>
+      </ModernRequireRole>
     );
   }
   
   // Error state
   if (jobError) {
     return (
-      <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
+      <ModernRequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']} fallbackToPublic={true}>
         <ModernDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
@@ -122,14 +122,14 @@ export default function JobDetailPage() {
             </Link>
           </div>
         </ModernDashboardLayout>
-      </RequireRole>
+      </ModernRequireRole>
     );
   }
   
   // Not found state
   if (!job) {
     return (
-      <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
+      <ModernRequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']} fallbackToPublic={true}>
         <ModernDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
@@ -144,12 +144,12 @@ export default function JobDetailPage() {
             </Link>
           </div>
         </ModernDashboardLayout>
-      </RequireRole>
+      </ModernRequireRole>
     );
   }
   
   return (
-    <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
+    <ModernRequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']} fallbackToPublic={true}>
       <ModernDashboardLayout title={job.title} subtitle={`${job.department} · ${job.location}`}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main content */}
@@ -347,6 +347,6 @@ export default function JobDetailPage() {
           </div>
         )}
       </ModernDashboardLayout>
-    </RequireRole>
+    </ModernRequireRole>
   );
 } 

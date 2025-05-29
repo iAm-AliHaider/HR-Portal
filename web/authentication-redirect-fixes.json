@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-05-29T06:35:01.842Z",
+  "filesProcessed": 9,
+  "filesChanged": 9,
+  "changes": [
+    "C:\\apps\\web\\pages\\interviewer.tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)",
+    "C:\\apps\\web\\pages\\jobs\\[id].tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)",
+    "C:\\apps\\web\\pages\\jobs\\[id]\\edit.tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)",
+    "C:\\apps\\web\\pages\\jobs\\[id]\\apply.tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)",
+    "C:\\apps\\web\\pages\\jobs\\index.tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)",
+    "C:\\apps\\web\\pages\\jobs\\application-success.tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)",
+    "C:\\apps\\web\\pages\\hiring.tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)",
+    "C:\\apps\\web\\pages\\candidate.tsx: Removed RequireRole wrapper (made public)",
+    "C:\\apps\\web\\pages\\admin.tsx: Replaced RequireRole with ModernRequireRole (fallbackToPublic)"
+  ],
+  "publicPages": [
+    "/jobs",
+    "/jobs/[id]",
+    "/jobs/[id]/apply",
+    "/candidate",
+    "/careers"
+  ],
+  "fallbackPages": [
+    "/admin",
+    "/interviewer",
+    "/hiring",
+    "/jobs/[id]/edit"
+  ]
+}

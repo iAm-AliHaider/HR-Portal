@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { RequireRole } from '@/components/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 import { GetServerSideProps } from 'next';
 
 
@@ -33,7 +33,7 @@ export default function ApplicationSuccessPage() {
   }, [router]);
   
   return (
-    <RequireRole allowed={['employee', 'manager', 'candidate']}>
+    <ModernRequireRole allowed={['employee', 'manager', 'candidate']} fallbackToPublic={true}>
       <Head>
         <title>Application Submitted | HR Portal</title>
         <meta name="description" content="Your job application has been submitted successfully" />
@@ -80,6 +80,6 @@ export default function ApplicationSuccessPage() {
           </Card>
         </div>
       </ModernDashboardLayout>
-    </RequireRole>
+    </ModernRequireRole>
   );
 } 
