@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { jobService } from '@/services/api';
 import { useToast } from '@/hooks/useApi';
-import RequireRole from '@/components/auth/RequireRole';
+import { ModernRequireRole } from '@/components/ModernRequireRole';
 import { GetServerSideProps } from 'next';
 
 interface FormData {
@@ -111,7 +111,7 @@ export default function NewJobPage() {
   };
 
   return (
-    <RequireRole roles={['admin', 'hr', 'recruiter']}>
+    <ModernRequireRole allowed={['admin', 'hr', 'recruiter']} fallbackToPublic={true}>
       <ModernDashboardLayout title="Post a Job" subtitle="Create a new job listing">
         <Card>
           <CardHeader>
@@ -272,6 +272,6 @@ export default function NewJobPage() {
           </CardContent>
         </Card>
       </ModernDashboardLayout>
-    </RequireRole>
+    </ModernRequireRole>
   );
 } 

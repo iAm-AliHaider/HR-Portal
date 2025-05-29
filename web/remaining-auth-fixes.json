@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-05-29T06:50:19.212Z",
+  "filesProcessed": 2,
+  "filesChanged": 3,
+  "changes": [
+    "pages/jobs/new.tsx: Fixed RequireRole usage",
+    "hooks/useAuth.ts: Added timeout and better error handling",
+    "pages/fix-auth.tsx: Created authentication fix page"
+  ],
+  "fixes": [
+    "Fixed jobs/new.tsx RequireRole usage",
+    "Added timeouts to prevent auth hanging",
+    "Improved error handling in useAuth hook",
+    "Created quick auth fix page"
+  ]
+}

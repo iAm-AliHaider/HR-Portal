@@ -177,12 +177,23 @@ export function useAuth() {
     }
   };
 
+  
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') {
       setLoading(false);
       return;
     }
+
+    // Set a timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.warn('Authentication timeout reached, setting default state');
+      if (loading) {
+        setUser(null);
+        setRole(null);
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
 
     const getInitialSession = async () => {
       try {
@@ -200,6 +211,7 @@ export function useAuth() {
             setUser(null);
             setRole(null);
             setLoading(false);
+            clearTimeout(timeout);
             return;
           }
           
@@ -230,6 +242,7 @@ export function useAuth() {
             }
             
             setLoading(false);
+            clearTimeout(timeout);
             return;
           }
           
@@ -251,6 +264,7 @@ export function useAuth() {
               setUser(mockUser);
               setRole(matchedAccount.role);
               setLoading(false);
+              clearTimeout(timeout);
               return;
             }
           }
@@ -259,18 +273,28 @@ export function useAuth() {
           setUser(null);
           setRole(null);
           setLoading(false);
+          clearTimeout(timeout);
           return;
         }
 
         // Try to get the current session with error handling for production
         try {
-          // Normal Supabase authentication for non-development
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          // Add timeout to supabase calls
+          const sessionPromise = supabase.auth.getSession();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Session timeout')), 5000)
+          );
+          
+          const { data: { session }, error: sessionError } = await Promise.race([
+            sessionPromise,
+            timeoutPromise
+          ]);
           
           if (sessionError) {
             console.error('Session error:', sessionError);
             setError(sessionError.message);
             setLoading(false);
+            clearTimeout(timeout);
             return;
           }
 
@@ -278,12 +302,23 @@ export function useAuth() {
             const supabaseUser = convertSupabaseUser(session.user);
             setUser(supabaseUser);
             
-            // Fetch user profile and role
-            const profileData = await fetchUserProfile(session.user.id);
-            if (profileData?.role) {
-              setRole(profileData.role);
-            } else {
-              console.warn('No role found for user, defaulting to employee');
+            // Fetch user profile and role with timeout
+            try {
+              const profileData = await Promise.race([
+                fetchUserProfile(session.user.id),
+                new Promise((_, reject) => 
+                  setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
+                )
+              ]);
+              
+              if (profileData?.role) {
+                setRole(profileData.role);
+              } else {
+                console.warn('No role found for user, defaulting to employee');
+                setRole('employee');
+              }
+            } catch (profileError) {
+              console.warn('Profile fetch failed, using default role:', profileError);
               setRole('employee');
             }
           } else {
@@ -316,6 +351,7 @@ export function useAuth() {
         setError('Failed to connect to authentication service');
       } finally {
         setLoading(false);
+        clearTimeout(timeout);
       }
     };
 
@@ -324,27 +360,47 @@ export function useAuth() {
     // Only set up the auth change listener in non-development/non-demo mode
     if (!isDevelopment && !isDemoMode) {
       const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session?.user) {
-          const supabaseUser = convertSupabaseUser(session.user);
-          setUser(supabaseUser);
-          
-          // Fetch user profile and role
-          const profileData = await fetchUserProfile(session.user.id);
-          if (profileData?.role) {
-            setRole(profileData.role);
+        try {
+          if (session?.user) {
+            const supabaseUser = convertSupabaseUser(session.user);
+            setUser(supabaseUser);
+            
+            // Fetch user profile and role with timeout
+            try {
+              const profileData = await Promise.race([
+                fetchUserProfile(session.user.id),
+                new Promise((_, reject) => 
+                  setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
+                )
+              ]);
+              
+              if (profileData?.role) {
+                setRole(profileData.role);
+              } else {
+                setRole('employee');
+              }
+            } catch (err) {
+              console.warn('Profile fetch in auth change failed:', err);
+              setRole('employee');
+            }
+          } else {
+            setUser(null);
+            setRole(null);
           }
-        } else {
-          setUser(null);
-          setRole(null);
+        } catch (err) {
+          console.error('Auth state change error:', err);
         }
       });
 
       return () => {
         listener.subscription.unsubscribe();
+        clearTimeout(timeout);
       };
     }
     
-    return () => {}; // No cleanup needed in development/demo mode
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [isDevelopment, isDemoMode]);
 
   // Simplified role fetching since it's handled above
