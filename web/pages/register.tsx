@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase/client';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { mockAccounts } from '../components/ui/MockAccountInfo';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -11,11 +9,12 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [role, setRole] = useState('employee');
+  const [department, setDepartment] = useState('');
+  const [position, setPosition] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
-  const isDev = process.env.NODE_ENV === 'development';
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,47 +34,61 @@ export default function RegisterPage() {
       return;
     }
 
-    try {
-      // In development mode, simulate successful registration
-      if (isDev) {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setSuccess(true);
-        
-        // Store in mock accounts (only for this session)
-        localStorage.setItem('mockUserEmail', email);
-        localStorage.setItem('mockUserRole', role);
-        
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
-        return;
-      }
+    if (!fullName.trim()) {
+      setError('Full name is required');
+      setLoading(false);
+      return;
+    }
 
-      // In production, use Supabase auth
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            company: companyName,
-            role: role
-          }
-        }
+    try {
+      // Split full name into first and last name
+      const nameParts = fullName.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+          fullName,
+          role,
+          department,
+          position,
+          companyName
+        }),
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-      } else {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Registration failed');
       }
+
+      setSuccess(true);
+      
+      // Store user data for development mode
+      if (process.env.NODE_ENV === 'development') {
+        localStorage.setItem('registeredUser', JSON.stringify({
+          email,
+          role,
+          firstName,
+          lastName
+        }));
+      }
+
+      setTimeout(() => {
+        router.push('/login?message=Registration successful. Please sign in.');
+      }, 2000);
+
     } catch (err) {
-      setError('An unexpected error occurred.');
-      console.error(err);
+      console.error('Registration error:', err);
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -99,10 +112,17 @@ export default function RegisterPage() {
               </div>
               <h2 className="text-2xl font-bold mb-2">Registration Successful!</h2>
               <p className="text-gray-600 mb-4">
-                {isDev 
-                  ? "Your account has been created successfully. Redirecting to login..." 
-                  : "Please check your email to verify your account. Redirecting to login..."}
+                Your account has been created and your profile has been set up automatically. 
+                Redirecting to login...
               </p>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Account Details:</strong><br />
+                  Email: {email}<br />
+                  Role: {role}<br />
+                  {department && `Department: ${department}`}
+                </p>
+              </div>
             </div>
           </div>
         ) : (
@@ -117,7 +137,7 @@ export default function RegisterPage() {
             
             <div className="mb-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                Email *
               </label>
               <input
                 id="email"
@@ -132,7 +152,7 @@ export default function RegisterPage() {
             
             <div className="mb-4">
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
+                Full Name *
               </label>
               <input
                 id="fullName"
@@ -146,23 +166,8 @@ export default function RegisterPage() {
             </div>
             
             <div className="mb-4">
-              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">
-                Company Name
-              </label>
-              <input
-                id="companyName"
-                type="text"
-                placeholder="Enter your company name"
-                value={companyName}
-                onChange={e => setCompanyName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            
-            <div className="mb-4">
               <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                Role
+                Role *
               </label>
               <select
                 id="role"
@@ -179,24 +184,69 @@ export default function RegisterPage() {
               </select>
             </div>
             
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
+                  Department
+                </label>
+                <input
+                  id="department"
+                  type="text"
+                  placeholder="e.g., Engineering"
+                  value={department}
+                  onChange={e => setDepartment(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
+                  Position
+                </label>
+                <input
+                  id="position"
+                  type="text"
+                  placeholder="e.g., Software Developer"
+                  value={position}
+                  onChange={e => setPosition(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">
+                Company Name
+              </label>
+              <input
+                id="companyName"
+                type="text"
+                placeholder="Enter your company name"
+                value={companyName}
+                onChange={e => setCompanyName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            
             <div className="mb-4">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                Password *
               </label>
               <input
                 id="password"
                 type="password"
-                placeholder="Create a password"
+                placeholder="Create a password (min 6 characters)"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                minLength={6}
               />
             </div>
             
             <div className="mb-6">
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
+                Confirm Password *
               </label>
               <input
                 id="confirmPassword"
@@ -211,7 +261,7 @@ export default function RegisterPage() {
             
             <button
               type="submit"
-              className="w-full bg-[#0a3d91] text-white py-2 rounded-md hover:bg-[#0a3d91]/90 transition"
+              className="w-full bg-[#0a3d91] text-white py-2 rounded-md hover:bg-[#0a3d91]/90 transition disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Creating Account...' : 'Create Account'}
