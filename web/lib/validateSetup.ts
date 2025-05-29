@@ -1,7 +1,7 @@
 // Setup Validation Utility
 // This file helps validate that all production components are properly configured
 
-import { supabase, checkConnection } from '../services/supabase';
+import { supabase, checkSupabaseConnection } from '../services/supabase';
 import { storageService } from '../services/storageService';
 
 interface ValidationResult {
@@ -74,21 +74,21 @@ export class SetupValidator {
   // Validate database connection
   private async validateDatabase(): Promise<ValidationResult> {
     try {
-      const isConnected = await checkConnection();
+      const connectionResult = await checkSupabaseConnection();
       
-      if (isConnected) {
+      if (connectionResult.connected) {
         return {
           component: 'Database Connection',
           status: 'success',
           message: 'Successfully connected to Supabase database',
-          details: 'Database is accessible and ready for operations'
+          details: connectionResult.message
         };
       } else {
         return {
           component: 'Database Connection',
           status: 'error',
           message: 'Failed to connect to database',
-          details: 'Check your Supabase URL and API key configuration'
+          details: connectionResult.message
         };
       }
     } catch (error) {
