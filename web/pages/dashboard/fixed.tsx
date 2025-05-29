@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import {
   Card,
   CardContent,
@@ -78,7 +78,7 @@ export default function DashboardFixed() {
   ];
 
   return (
-    <SimpleDashboardLayout title="Dashboard" subtitle="Welcome to your HR Portal dashboard">
+    <ModernDashboardLayout title="Dashboard" subtitle="Welcome to your HR Portal dashboard">
       <div className="space-y-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -124,6 +124,6 @@ export default function DashboardFixed() {
           <p><strong>✅ Fixed Dashboard:</strong> This version should work without the "Abort fetching component" error!</p>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

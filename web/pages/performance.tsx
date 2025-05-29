@@ -77,7 +77,7 @@ import {
   CalendarIcon
 } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 // Interfaces
@@ -428,7 +428,7 @@ const PerformanceManagementPage = () => {
         <meta name="description" content="Comprehensive performance management and goal tracking system" />
       </Head>
       
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
@@ -958,7 +958,7 @@ const PerformanceManagementPage = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 };

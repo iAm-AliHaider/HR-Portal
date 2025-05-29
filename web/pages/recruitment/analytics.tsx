@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useJobs, useApplications, useInterviews, useOffers } from '@/hooks/useApi';
@@ -294,7 +294,7 @@ export default function RecruitmentAnalytics() {
         <meta name="description" content="Recruitment analytics and insights" />
       </Head>
       
-      <SimpleDashboardLayout 
+      <ModernDashboardLayout 
         title="Recruitment Analytics" 
         subtitle="Insights and metrics for your hiring process"
       >
@@ -553,7 +553,7 @@ export default function RecruitmentAnalytics() {
             </div>
           </div>
         )}
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 } 

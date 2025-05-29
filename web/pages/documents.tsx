@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 const DocumentsManagement = () => {
@@ -805,7 +805,7 @@ const DocumentsManagement = () => {
   );
   
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Documents Management</h1>
@@ -1015,7 +1015,7 @@ const DocumentsManagement = () => {
           </div>
         )}
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

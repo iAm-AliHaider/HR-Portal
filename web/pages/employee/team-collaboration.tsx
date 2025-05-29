@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { 
   Users, MessageSquare, Calendar, FileText, PlusCircle, 
   CheckCircle, Clock, Search, Filter, ArrowUpRight, ThumbsUp, 
@@ -132,7 +132,7 @@ export default function TeamCollaboration() {
   };
   
   return (
-    <SimpleDashboardLayout title="Team Collaboration" subtitle="Connect and collaborate with your team members">
+    <ModernDashboardLayout title="Team Collaboration" subtitle="Connect and collaborate with your team members">
       <Head>
         <title>Team Collaboration | HR Portal</title>
         <meta name="description" content="Connect and collaborate with your team" />
@@ -498,6 +498,6 @@ export default function TeamCollaboration() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

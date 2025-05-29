@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import {
   Card,
   CardContent,
@@ -17,7 +17,7 @@ import {
 // Test 4: DashboardLayout + Cards + Lucide Icons
 export default function DashboardTestIcons() {
   return (
-    <SimpleDashboardLayout title="Test Icons" subtitle="Testing if Lucide icons work">
+    <ModernDashboardLayout title="Test Icons" subtitle="Testing if Lucide icons work">
       <div style={{ padding: '20px' }}>
         <h1>Dashboard with Icons - Step 4</h1>
         <p>✅ Lucide icons loading works</p>
@@ -64,6 +64,6 @@ export default function DashboardTestIcons() {
           </a>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

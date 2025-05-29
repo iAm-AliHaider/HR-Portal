@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { GetServerSideProps } from 'next';
@@ -31,7 +31,7 @@ export default function AssetManagementPage() {
   });
   
   return (
-    <SimpleDashboardLayout title="Asset Management" subtitle="Track and manage company assets and equipment">
+    <ModernDashboardLayout title="Asset Management" subtitle="Track and manage company assets and equipment">
       {/* Tabs and Actions */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
         <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-4 md:mb-0">
@@ -204,7 +204,7 @@ export default function AssetManagementPage() {
           </table>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 }
 

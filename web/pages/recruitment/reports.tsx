@@ -79,7 +79,7 @@ import {
   ExternalLinkIcon
 } from '@chakra-ui/icons';
 import { format, subDays, subMonths, subWeeks } from 'date-fns';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 // Mock data interfaces
@@ -536,7 +536,7 @@ const ReportsPage = () => {
         <meta name="description" content="Recruitment analytics and reporting dashboard" />
       </Head>
       
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
@@ -708,7 +708,7 @@ const ReportsPage = () => {
             </Tabs>
           </Container>
         </Box>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 };

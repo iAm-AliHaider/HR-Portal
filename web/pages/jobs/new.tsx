@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { jobService } from '@/services/api';
 import { useToast } from '@/hooks/useApi';
 import RequireRole from '@/components/auth/RequireRole';
@@ -112,7 +112,7 @@ export default function NewJobPage() {
 
   return (
     <RequireRole roles={['admin', 'hr', 'recruiter']}>
-      <SimpleDashboardLayout title="Post a Job" subtitle="Create a new job listing">
+      <ModernDashboardLayout title="Post a Job" subtitle="Create a new job listing">
         <Card>
           <CardHeader>
             <CardTitle>New Job Listing</CardTitle>
@@ -271,7 +271,7 @@ export default function NewJobPage() {
             </form>
           </CardContent>
         </Card>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </RequireRole>
   );
 } 

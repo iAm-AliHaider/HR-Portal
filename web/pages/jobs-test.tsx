@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 
 // Mock job data for testing
 const mockJobs = [
@@ -50,7 +50,7 @@ export default function JobsTestPage() {
         <meta name="description" content="Browse current job opportunities" />
       </Head>
       
-      <SimpleDashboardLayout 
+      <ModernDashboardLayout 
         title="Job Openings" 
         subtitle="Browse current opportunities (Test Page - No Auth Required)"
       >
@@ -128,7 +128,7 @@ export default function JobsTestPage() {
             </ul>
           </div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 }

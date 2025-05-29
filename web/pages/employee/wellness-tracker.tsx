@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { 
   Heart, Activity, BarChart, Calendar, Clock, Zap, 
   Coffee, Moon, Sun, Utensils, Droplet, BatteryCharging,
@@ -252,7 +252,7 @@ export default function WellnessTracker() {
   };
   
   return (
-    <SimpleDashboardLayout title="Wellness Tracker" subtitle="Monitor and improve your health and wellbeing">
+    <ModernDashboardLayout title="Wellness Tracker" subtitle="Monitor and improve your health and wellbeing">
       <Head>
         <title>Wellness Tracker | HR Portal</title>
         <meta name="description" content="Track and improve your wellness" />
@@ -687,6 +687,6 @@ export default function WellnessTracker() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { RequireRole } from '@/components/RequireRole';
 import { 
   useJobs, 
@@ -314,11 +314,11 @@ export default function JobsPage() {
 
   if (loading) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
@@ -329,7 +329,7 @@ export default function JobsPage() {
         <meta name="description" content="View and manage job listings" />
       </Head>
       
-      <SimpleDashboardLayout 
+      <ModernDashboardLayout 
           title="Job Openings" 
           subtitle="Browse current opportunities"
           actions={
@@ -454,7 +454,7 @@ export default function JobsPage() {
               </div>
             )}
           </div>
-        </SimpleDashboardLayout>
+        </ModernDashboardLayout>
     </>
   );
 } 

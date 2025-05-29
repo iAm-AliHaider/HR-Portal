@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 interface Request {
@@ -211,16 +211,16 @@ const ApprovalsPage = () => {
 
   if (!allowAccess && !['manager', 'admin', 'hr_manager'].includes(role)) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   return (
-    <SimpleDashboardLayout title="Approval Center" subtitle="Review and approve employee requests">
+    <ModernDashboardLayout title="Approval Center" subtitle="Review and approve employee requests">
       <Head>
         <title>Approval Center - HR Management</title>
         <meta name="description" content="Review and approve employee requests" />
@@ -345,7 +345,7 @@ const ApprovalsPage = () => {
           )}
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

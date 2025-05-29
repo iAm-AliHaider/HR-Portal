@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { Box, Heading, Container, Spinner, Flex } from '@chakra-ui/react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import InterviewForm from '../../../../components/interviews/InterviewForm';
 import { getApplicationById } from '../../../../services/applications';
 import { GetServerSideProps } from 'next';
@@ -48,11 +48,11 @@ export default function NewInterviewPage() {
 
   if (isLoading) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Flex justify="center" align="center" height="50vh">
           <Spinner size="xl" />
         </Flex>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
@@ -67,12 +67,12 @@ export default function NewInterviewPage() {
         <meta name="description" content="Schedule an interview with a candidate" />
       </Head>
       
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Container maxW="container.xl" py={6}>
           <Heading size="lg" mb={6}>Schedule Interview</Heading>
           <InterviewForm applicationId={applicationId as string} />
         </Container>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 } 

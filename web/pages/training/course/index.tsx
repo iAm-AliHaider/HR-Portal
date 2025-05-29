@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 
@@ -21,10 +21,10 @@ export default function TrainingCourseIndexPage() {
   }, [router]);
   
   return (
-    <SimpleDashboardLayout title="Training Courses" subtitle="Loading...">
+    <ModernDashboardLayout title="Training Courses" subtitle="Loading...">
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RequireRole } from '@/components/RequireRole';
@@ -39,7 +39,7 @@ export default function ApplicationSuccessPage() {
         <meta name="description" content="Your job application has been submitted successfully" />
       </Head>
       
-      <SimpleDashboardLayout title="Application Submitted" subtitle="Thank you for your application">
+      <ModernDashboardLayout title="Application Submitted" subtitle="Thank you for your application">
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardContent className="pt-6 pb-6 text-center">
@@ -79,7 +79,7 @@ export default function ApplicationSuccessPage() {
             </CardContent>
           </Card>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </RequireRole>
   );
 } 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { mockTrainingCourses } from '../../services/mockData';
 import {
   BookOpen, Award, CheckCircle, Star, Clock, BarChart,
@@ -317,16 +317,16 @@ export default function TrainingIndexPage() {
 
   if (loading) {
     return (
-      <SimpleDashboardLayout title="Training Management" subtitle="Loading...">
+      <ModernDashboardLayout title="Training Management" subtitle="Loading...">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   return (
-    <SimpleDashboardLayout title="Training Management" subtitle="Manage training courses and enrollments">
+    <ModernDashboardLayout title="Training Management" subtitle="Manage training courses and enrollments">
       <Head>
         <title>Training Management | HR Portal</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -828,6 +828,6 @@ export default function TrainingIndexPage() {
           ))}
         </div>
     </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

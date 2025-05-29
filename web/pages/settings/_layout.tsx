@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 interface SettingsLayoutWrapperProps {
@@ -17,8 +17,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function SettingsLayoutWrapper({ children }: SettingsLayoutWrapperProps) {
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       {children}
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

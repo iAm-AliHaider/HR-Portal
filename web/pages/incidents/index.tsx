@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 
 export default function IncidentsIndexPage() {
   const router = useRouter();
@@ -12,11 +12,11 @@ export default function IncidentsIndexPage() {
   }, [router]);
   
   return (
-    <SimpleDashboardLayout title="Incident Management" subtitle="Loading...">
+    <ModernDashboardLayout title="Incident Management" subtitle="Loading...">
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 }
 

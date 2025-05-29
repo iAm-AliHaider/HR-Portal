@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
 // Test 3: DashboardLayout + Card components
 export default function DashboardTestCards() {
   return (
-    <SimpleDashboardLayout title="Test Cards" subtitle="Testing if Card components work">
+    <ModernDashboardLayout title="Test Cards" subtitle="Testing if Card components work">
       <div style={{ padding: '20px' }}>
         <h1>Dashboard with Cards - Step 3</h1>
         <p>✅ Card components loading works</p>
@@ -39,6 +39,6 @@ export default function DashboardTestCards() {
           </a>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

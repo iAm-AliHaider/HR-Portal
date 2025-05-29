@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import Link from 'next/link';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 const SettingsPage = () => {
@@ -142,7 +142,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <SimpleDashboardLayout title="Settings" subtitle="Manage your application settings and configuration">
+    <ModernDashboardLayout title="Settings" subtitle="Manage your application settings and configuration">
       <Head>
         <title>Settings - HR Management</title>
         <meta name="description" content="Manage application settings and configuration" />
@@ -204,7 +204,7 @@ const SettingsPage = () => {
           </div>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

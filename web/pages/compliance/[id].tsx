@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useComplianceTraining } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { GetServerSideProps } from 'next';
@@ -76,27 +76,27 @@ export default function ComplianceTrainingDetailPage() {
   
   if (loading) {
     return (
-      <SimpleDashboardLayout title="Compliance Training">
+      <ModernDashboardLayout title="Compliance Training">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
   
   if (error || !training) {
     return (
-      <SimpleDashboardLayout title="Compliance Training">
+      <ModernDashboardLayout title="Compliance Training">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Error!</strong>
           <span className="block sm:inline"> {error || 'Training not found'}</span>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
   
   return (
-    <SimpleDashboardLayout 
+    <ModernDashboardLayout 
       title={training.title} 
       subtitle={`${training.category} • ${training.duration} • Due: ${new Date(training.dueDate).toLocaleDateString()}`}
     >
@@ -528,6 +528,6 @@ export default function ComplianceTrainingDetailPage() {
           </div>
         </div>
       )}
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

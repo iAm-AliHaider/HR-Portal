@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -390,20 +390,20 @@ const EmployeeProfile = () => {
 
   if (loading) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="p-4 md:p-6 flex items-center justify-center h-[calc(100vh-200px)]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <p className="text-gray-500">Loading employee profile...</p>
           </div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   if (!employee) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="p-4 md:p-6">
           <Card variant="elevated">
             <CardContent className="p-6">
@@ -420,12 +420,12 @@ const EmployeeProfile = () => {
             </CardContent>
           </Card>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <div className="p-4 md:p-6">
         {/* Back button */}
         <div className="mb-4">
@@ -548,7 +548,7 @@ const EmployeeProfile = () => {
           </CardContent>
         </Card>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

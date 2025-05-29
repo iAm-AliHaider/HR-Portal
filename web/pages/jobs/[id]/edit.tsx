@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useJob, useToast, useForm } from '@/hooks/useApi';
 import { RequireRole } from '@/components/RequireRole';
 import { Button } from '@/components/ui/button';
@@ -108,11 +108,11 @@ export default function EditJobPage() {
   if (loading) {
     return (
       <RequireRole allowed={['admin', 'hr', 'recruiter']}>
-        <SimpleDashboardLayout>
+        <ModernDashboardLayout>
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
-        </SimpleDashboardLayout>
+        </ModernDashboardLayout>
       </RequireRole>
     );
   }
@@ -121,7 +121,7 @@ export default function EditJobPage() {
   if (error) {
     return (
       <RequireRole allowed={['admin', 'hr', 'recruiter']}>
-        <SimpleDashboardLayout>
+        <ModernDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +134,7 @@ export default function EditJobPage() {
               <Button>Back to Jobs</Button>
             </Link>
           </div>
-        </SimpleDashboardLayout>
+        </ModernDashboardLayout>
       </RequireRole>
     );
   }
@@ -143,7 +143,7 @@ export default function EditJobPage() {
   if (!job) {
     return (
       <RequireRole allowed={['admin', 'hr', 'recruiter']}>
-        <SimpleDashboardLayout>
+        <ModernDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@ export default function EditJobPage() {
               <Button>Back to Jobs</Button>
             </Link>
           </div>
-        </SimpleDashboardLayout>
+        </ModernDashboardLayout>
       </RequireRole>
     );
   }
@@ -168,7 +168,7 @@ export default function EditJobPage() {
         <meta name="description" content="Edit job posting" />
       </Head>
       
-      <SimpleDashboardLayout title="Edit Job" subtitle={job.title}>
+      <ModernDashboardLayout title="Edit Job" subtitle={job.title}>
         <div className="max-w-5xl mx-auto">
           <Card className="w-full">
             <form onSubmit={handleSubmit}>
@@ -328,7 +328,7 @@ export default function EditJobPage() {
             </form>
           </Card>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </RequireRole>
   );
 } 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import {
   Users, UserPlus, UserMinus, UserCheck, Clock, Calendar,
   BarChart2, PieChart, TrendingUp, TrendingDown, Briefcase,
@@ -65,7 +65,7 @@ export default function WorkforceReportPage() {
   const [dateRange, setDateRange] = useState('last6Months');
   
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <Head>
         <title>Workforce Analytics | HR Portal</title>
         <meta name="description" content="Workforce analytics and reporting" />
@@ -475,6 +475,6 @@ export default function WorkforceReportPage() {
           )}
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

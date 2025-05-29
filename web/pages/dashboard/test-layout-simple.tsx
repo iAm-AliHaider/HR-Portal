@@ -16,7 +16,7 @@ function SimpleDashboardLayout({ children, title, subtitle }) {
 // Test 2A: Simplified DashboardLayout without useAuth, Sidebar, Topbar
 export default function DashboardTestLayoutSimple() {
   return (
-    <SimpleDashboardLayout title="Simple Layout Test" subtitle="Testing without complex dependencies">
+    <ModernDashboardLayout title="Simple Layout Test" subtitle="Testing without complex dependencies">
       <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', border: '1px solid #ddd' }}>
         <h2>✅ Simplified Layout Works!</h2>
         <p>This means the issue is with one of these DashboardLayout dependencies:</p>
@@ -32,6 +32,6 @@ export default function DashboardTestLayoutSimple() {
           </a>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

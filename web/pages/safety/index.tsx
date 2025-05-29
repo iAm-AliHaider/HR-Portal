@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkplaceSafety } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -67,22 +67,22 @@ export default function WorkplaceSafetyPage() {
   
   if (loading) {
     return (
-      <SimpleDashboardLayout title="Workplace Safety">
+      <ModernDashboardLayout title="Workplace Safety">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
   
   if (error) {
     return (
-      <SimpleDashboardLayout title="Workplace Safety">
+      <ModernDashboardLayout title="Workplace Safety">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Error!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
   
@@ -149,7 +149,7 @@ export default function WorkplaceSafetyPage() {
   };
   
   return (
-    <SimpleDashboardLayout title="Workplace Safety" subtitle="Monitor and manage workplace safety incidents, checks, and equipment inspections">
+    <ModernDashboardLayout title="Workplace Safety" subtitle="Monitor and manage workplace safety incidents, checks, and equipment inspections">
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
@@ -462,6 +462,6 @@ export default function WorkplaceSafetyPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

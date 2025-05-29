@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -98,7 +98,7 @@ export default function SetupValidationPage() {
   // Don't render anything until we're on the client
   if (!isClient) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="container mx-auto p-6">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -107,12 +107,12 @@ export default function SetupValidationPage() {
             </div>
           </div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -260,7 +260,7 @@ export default function SetupValidationPage() {
           </Card>
         )}
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 }
 

@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { usePermissions } from '../hooks/usePermissions';
 import { PermissionGuard, PermissionButton } from '../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 // Offboarding types
@@ -447,29 +447,29 @@ const OffboardingManagementPage = () => {
 
   if (isLoading) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   if (!allowAccess && !user) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
             <p className="text-gray-600">Please log in to access the offboarding system.</p>
           </div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <Head>
         <title>Offboarding Management | HR System</title>
       </Head>
@@ -1084,7 +1084,7 @@ const OffboardingManagementPage = () => {
           </div>
         )}
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { 
   FileCheck, AlertTriangle, CheckCircle, Clock, Calendar,
   BarChart2, PieChart, TrendingUp, TrendingDown, Shield,
@@ -119,7 +119,7 @@ export default function ComplianceReportPage() {
   };
 
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <Head>
         <title>Compliance Reports | HR Portal</title>
         <meta name="description" content="Compliance reporting and analytics" />
@@ -433,6 +433,6 @@ export default function ComplianceReportPage() {
           </div>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

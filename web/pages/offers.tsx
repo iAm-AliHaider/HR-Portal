@@ -82,7 +82,7 @@ import {
   CopyIcon
 } from '@chakra-ui/icons';
 import { format, formatDistanceToNow } from 'date-fns';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Application, User, Job, Offer } from '../../packages/types';
 import { GetServerSideProps } from 'next';
 
@@ -552,7 +552,7 @@ const OffersPage = () => {
         <meta name="description" content="Manage job offers and negotiations" />
       </Head>
       
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
@@ -924,7 +924,7 @@ const OffersPage = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 };

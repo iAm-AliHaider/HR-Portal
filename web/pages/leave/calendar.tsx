@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { 
   useLeaveRequests, 
   useToast, 
@@ -282,16 +282,16 @@ const LeaveCalendarPage = () => {
 
   if (loading) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <Head>
         <title>Leave Calendar | HR System</title>
       </Head>
@@ -642,7 +642,7 @@ const LeaveCalendarPage = () => {
           ))}
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

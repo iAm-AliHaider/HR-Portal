@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { 
   FileText, Clock, Check, X, AlertCircle, Filter, Search,
   Plus, Calendar, Laptop, CreditCard, Briefcase, Book,
@@ -442,7 +442,7 @@ export default function RequestPanel() {
   };
 
   return (
-    <SimpleDashboardLayout title="Request Panel" subtitle="Manage and track your requests">
+    <ModernDashboardLayout title="Request Panel" subtitle="Manage and track your requests">
       <Head>
         <title>Request Panel | HR Portal</title>
         <meta name="description" content="Submit and track requests" />
@@ -1004,6 +1004,6 @@ export default function RequestPanel() {
           </DialogContent>
         </Dialog>
       )}
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

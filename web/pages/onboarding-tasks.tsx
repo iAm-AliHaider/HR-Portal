@@ -82,7 +82,7 @@ import {
   ExternalLinkIcon
 } from '@chakra-ui/icons';
 import { format, formatDistanceToNow } from 'date-fns';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 // Enhanced Task Interface
@@ -345,7 +345,7 @@ const OnboardingTasksPage = () => {
         <meta name="description" content="Comprehensive onboarding task management system" />
       </Head>
       
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
@@ -714,7 +714,7 @@ const OnboardingTasksPage = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 };

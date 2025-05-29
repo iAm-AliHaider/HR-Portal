@@ -23,7 +23,7 @@ import {
   AlertDescription,
   Divider
 } from '@chakra-ui/react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Job } from '../../../packages/types';
 import { getJobs } from '../../services/jobs';
 import { createApplication } from '../../services/applications';
@@ -194,11 +194,11 @@ export default function NewApplicationPage() {
 
   if (isLoading) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Box display="flex" justifyContent="center" alignItems="center" height="200px">
           <Spinner size="lg" />
         </Box>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
@@ -209,7 +209,7 @@ export default function NewApplicationPage() {
         <meta name="description" content="Submit a new job application" />
       </Head>
 
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <Box maxWidth="800px" mx="auto" p={6}>
           <VStack spacing={6} align="stretch">
             <Box>
@@ -434,7 +434,7 @@ export default function NewApplicationPage() {
             )}
           </VStack>
         </Box>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 } 

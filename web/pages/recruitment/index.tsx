@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -53,7 +53,7 @@ export default function RecruitmentDashboard() {
         <meta name="description" content="Recruitment dashboard to manage the hiring process" />
       </Head>
       
-      <SimpleDashboardLayout 
+      <ModernDashboardLayout 
         title="Recruitment Dashboard" 
         subtitle="Manage your entire recruitment process"
         actions={
@@ -421,7 +421,7 @@ export default function RecruitmentDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     </>
   );
 } 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { 
   useExpenses, 
   useToast, 
@@ -161,16 +161,16 @@ const ExpensesPage = () => {
 
   if (loading) {
     return (
-      <SimpleDashboardLayout>
+      <ModernDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </SimpleDashboardLayout>
+      </ModernDashboardLayout>
     );
   }
 
   return (
-    <SimpleDashboardLayout title="Expense Management" subtitle="Submit and manage expense reports">
+    <ModernDashboardLayout title="Expense Management" subtitle="Submit and manage expense reports">
       <Head>
         <title>Expense Management | HR System</title>
       </Head>
@@ -665,7 +665,7 @@ const ExpensesPage = () => {
           ))}
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

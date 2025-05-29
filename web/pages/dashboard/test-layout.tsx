@@ -1,10 +1,10 @@
 import React from 'react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 
 // Test 2: Just DashboardLayout without complex components
 export default function DashboardTestLayout() {
   return (
-    <SimpleDashboardLayout title="Test Dashboard" subtitle="Testing if DashboardLayout works">
+    <ModernDashboardLayout title="Test Dashboard" subtitle="Testing if DashboardLayout works">
       <div style={{ padding: '20px' }}>
         <h1>Dashboard with Layout - Step 2</h1>
         <p>✅ DashboardLayout component loading works</p>
@@ -28,6 +28,6 @@ export default function DashboardTestLayout() {
           </a>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

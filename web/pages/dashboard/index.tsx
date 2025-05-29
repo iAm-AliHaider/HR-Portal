@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import {
   Card,
   CardContent,
@@ -74,7 +74,7 @@ const dashboardModules = [
 
 export default function DashboardIndexPage() {
   return (
-    <SimpleDashboardLayout title="Dashboard" subtitle="Welcome to your HR Portal dashboard">
+    <ModernDashboardLayout title="Dashboard" subtitle="Welcome to your HR Portal dashboard">
       <div className="space-y-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -130,6 +130,6 @@ export default function DashboardIndexPage() {
           </p>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

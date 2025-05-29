@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -387,7 +387,7 @@ const EmployeeReportsPage = () => {
   };
 
   return (
-    <SimpleDashboardLayout>
+    <ModernDashboardLayout>
       <div className="p-4 md:p-6">
         {/* Back button */}
         <div className="mb-4">
@@ -507,7 +507,7 @@ const EmployeeReportsPage = () => {
           </Button>
         </div>
       </div>
-    </SimpleDashboardLayout>
+    </ModernDashboardLayout>
   );
 };
 

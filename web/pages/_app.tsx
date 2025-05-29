@@ -1,7 +1,7 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { NextPage } from 'next';
 import { ChakraProvider } from '@chakra-ui/react';
 
@@ -86,18 +86,18 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     // For settings pages, always wrap with DashboardLayout
     if (isSettingsPage) {
       return (
-        <SimpleDashboardLayout>
+        <ModernDashboardLayout>
           <Component {...pageProps} />
-        </SimpleDashboardLayout>
+        </ModernDashboardLayout>
       );
     }
     
     // Only add layout to pages that don't have their own and need it
     if (needsLayout) {
       return (
-        <SimpleDashboardLayout>
+        <ModernDashboardLayout>
           <Component {...pageProps} />
-        </SimpleDashboardLayout>
+        </ModernDashboardLayout>
       );
     }
     
