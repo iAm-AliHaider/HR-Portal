@@ -3,9 +3,20 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variable validation
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Production-ready Supabase configuration with your actual credentials
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tqtwdkobrzzrhrqdxprs.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyOTU0MTgsImV4cCI6MjA2Mzg3MTQxOH0.xM1V6pUAOIrALa8E1o8Ma8j7csavI2kPjIfS6RPu15s';
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Validate configuration
+if (!supabaseUrl.startsWith('https://')) {
+  throw new Error('NEXT_PUBLIC_SUPABASE_URL must be a valid HTTPS URL');
+}
+
+if (!supabaseAnonKey || supabaseAnonKey.length < 100) {
+  console.warn('Supabase anon key appears to be missing or invalid');
+}
 
 // Type definitions for better TypeScript support
 export interface Database {
@@ -63,127 +74,84 @@ export interface Database {
   };
 }
 
-// Create Supabase client with proper error handling
-const createSupabaseClient = () => {
-  // Development mode - use mock client
-  if (process.env.NODE_ENV === 'development' && (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your-project-ref'))) {
-    console.log('🔄 Using mock Supabase client for development');
-    return createMockClient();
-  }
-
-  // Production mode - validate environment variables
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ Missing Supabase environment variables');
-    throw new Error('Missing required Supabase environment variables');
-  }
-
-  console.log('✅ Connecting to Supabase:', supabaseUrl);
-  
-  return createClient<Database>(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
+// Create Supabase client with production-ready configuration
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'hr-portal@1.0.0',
+      'X-Environment': process.env.NODE_ENV || 'development'
     },
-    global: {
-      headers: {
-        'X-Client-Info': 'hr-portal-web'
-      }
+  },
+  // Enhanced configuration for production
+  realtime: {
+    params: {
+      eventsPerSecond: isProduction ? 2 : 10,
+    },
+  },
+  // Database connection settings
+  db: {
+    schema: 'public',
+  },
+});
+
+// Environment-specific logging
+if (isDevelopment) {
+  console.log('✅ Supabase client initialized');
+  console.log('📍 URL:', supabaseUrl);
+  console.log('🔑 Key configured:', supabaseAnonKey ? 'Yes' : 'No');
+  console.log('🌍 Environment:', process.env.NODE_ENV);
+}
+
+// Health check function
+export const checkSupabaseConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('count').limit(1);
+    if (error) throw error;
+    return { connected: true, message: 'Supabase connection successful' };
+  } catch (error) {
+    return { 
+      connected: false, 
+      message: `Supabase connection failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+    };
+  }
+};
+
+// Enhanced error logging for production
+if (isProduction) {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN') {
+      console.log('✅ User signed in:', session?.user?.email);
+    } else if (event === 'SIGNED_OUT') {
+      console.log('🔓 User signed out');
+    } else if (event === 'TOKEN_REFRESHED') {
+      console.log('🔄 Auth token refreshed');
     }
   });
-};
+}
 
-// Mock client for development
-const createMockClient = () => {
-  const mockResponse = { data: null, error: null };
+// Export types for better TypeScript support
+export type { User, Session } from '@supabase/supabase-js';
+
+// Helper function for admin operations (server-side only)
+export const createAdminClient = () => {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
-  return {
-    from: (table: string) => ({
-      select: (columns?: string) => {
-        const queryBuilder: any = Promise.resolve({ data: [], error: null });
-        queryBuilder.order = () => queryBuilder;
-        queryBuilder.single = () => Promise.resolve({ data: null, error: null });
-        queryBuilder.eq = () => ({
-          select: () => ({
-            single: () => Promise.resolve({ data: null, error: null })
-          })
-        });
-        return queryBuilder;
-      },
-      insert: (data: any) => ({
-        select: () => ({
-          single: () => Promise.resolve({ data: { id: 'mock-id', ...data }, error: null })
-        })
-      }),
-      update: (data: any) => ({
-        eq: (column: string, value: any) => ({
-          select: () => ({
-            single: () => Promise.resolve({ data: { ...data }, error: null })
-          })
-        })
-      }),
-      upsert: (data: any) => ({
-        select: () => ({
-          single: () => Promise.resolve({ data: { id: 'mock-id', ...data }, error: null })
-        })
-      }),
-      delete: () => ({
-        eq: (column: string, value: any) => Promise.resolve({ data: null, error: null })
-      })
-    }),
-    storage: {
-      from: (bucket: string) => ({
-        upload: (path: string, file: File) => Promise.resolve({ 
-          data: { path: `mock/${path}` }, 
-          error: null 
-        }),
-        getPublicUrl: (path: string) => ({ 
-          data: { publicUrl: `/storage/${bucket}/${path}` } 
-        }),
-        remove: (paths: string[]) => Promise.resolve({ data: null, error: null }),
-        list: () => Promise.resolve({ data: [], error: null })
-      })
-    },
+  if (!serviceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for admin operations');
+  }
+  
+  return createClient(supabaseUrl, serviceKey, {
     auth: {
-      signUp: (credentials: any) => Promise.resolve({ data: { user: null }, error: null }),
-      signInWithPassword: (credentials: any) => Promise.resolve({ data: { user: null }, error: null }),
-      signOut: () => Promise.resolve({ error: null }),
-      getUser: () => Promise.resolve({ data: { user: null }, error: null }),
-      onAuthStateChange: (callback: any) => ({ data: { subscription: { unsubscribe: () => {} } } })
+      autoRefreshToken: false,
+      persistSession: false
     }
-  } as any;
-};
-
-// Export the configured client
-export const supabase = createSupabaseClient();
-
-// Database utilities
-export const withErrorHandling = async <T>(
-  operation: () => Promise<{ data: T; error: any }>
-): Promise<{ data: T | null; error: string | null }> => {
-  try {
-    const { data, error } = await operation();
-    
-    if (error) {
-      console.error('Database error:', error);
-      return { data: null, error: error.message || 'Database operation failed' };
-    }
-    
-    return { data, error: null };
-  } catch (err) {
-    console.error('Unexpected error:', err);
-    return { data: null, error: 'An unexpected error occurred' };
-  }
-};
-
-// Connection health check
-export const checkConnection = async (): Promise<boolean> => {
-  try {
-    const { data, error } = await supabase.from('employees').select('id').limit(1);
-    return !error;
-  } catch {
-    return false;
-  }
+  });
 };
 
 export default supabase;

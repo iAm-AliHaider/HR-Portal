@@ -9,7 +9,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Supabase configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tqtwdkobrzzrhrqdxprs.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_SERVICE_ROLE_KEY_HERE';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODI5NTQxOCwiZXhwIjoyMDYzODcxNDE4fQ.V4mrfOQm4kiIRBl0a7WduyKuYAR96ZoIjWq_deNX_94';
 
 // Initialize Supabase client with service role key for admin operations
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
@@ -87,6 +87,52 @@ async function createTestAccount(account) {
   console.log(`Creating test account for ${account.email}...`);
   
   try {
+    // Check if user already exists
+    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
+    
+    if (listError) {
+      console.warn(`⚠️ Could not check existing users: ${listError.message}`);
+    } else {
+      const existingUser = existingUsers.users.find(user => user.email === account.email);
+      if (existingUser) {
+        console.log(`✅ User ${account.email} already exists`);
+        
+        // Check if profile exists
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', existingUser.id)
+          .single();
+        
+        if (existingProfile) {
+          console.log(`✅ Profile already exists for ${account.email}`);
+          return true;
+        } else {
+          // Create missing profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: existingUser.id,
+              first_name: account.userData.first_name,
+              last_name: account.userData.last_name,
+              email: account.email,
+              role: account.userData.role,
+              department: account.userData.department,
+              position: account.userData.position,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (profileError) {
+            console.error(`❌ Failed to create profile for ${account.email}:`, profileError.message);
+            return false;
+          }
+          console.log(`✅ Profile created for existing user ${account.email}`);
+          return true;
+        }
+      }
+    }
+
     // Create auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: account.email,
@@ -116,7 +162,7 @@ async function createTestAccount(account) {
       // Manually create profile if trigger didn't work
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
+        .upsert({
           id: authData.user.id,
           first_name: account.userData.first_name,
           last_name: account.userData.last_name,
