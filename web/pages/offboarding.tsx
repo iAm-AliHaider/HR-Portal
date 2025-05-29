@@ -386,11 +386,21 @@ const OffboardingManagementPage = () => {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setOffboardingCases(mockOffboardingCases);
+      // Add timeout protection
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Loading timeout')), 5000)
+      );
+      const dataPromise = new Promise(resolve => {
+        setTimeout(() => {
+          setOffboardingCases(mockOffboardingCases);
+          resolve(true);
+        }, 1000);
+      });
+      
+      await Promise.race([dataPromise, timeoutPromise]);
     } catch (error) {
       console.error('Failed to load offboarding data:', error);
+      setOffboardingCases([]); // Set empty array on error
     } finally {
       setIsLoading(false);
     }
@@ -399,6 +409,9 @@ const OffboardingManagementPage = () => {
   useEffect(() => {
     if (allowAccess || user) {
       loadData();
+    } else {
+      // If no access and no user, stop loading immediately
+      setIsLoading(false);
     }
   }, [user, allowAccess]);
 

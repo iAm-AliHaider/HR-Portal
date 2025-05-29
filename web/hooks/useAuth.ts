@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase/client';
+
+// Global singleton to prevent multiple auth listeners
+let authListenerActive = false;
+let authSubscription: any = null;
 import { mockAccounts } from '../components/ui/MockAccountInfo';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 

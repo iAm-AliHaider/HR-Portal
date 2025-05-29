@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Suppress GoTrueClient warnings in development
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.infrastructureLogging = {
+        level: 'error'
+      };
+    }
+    return config;
+  },
   reactStrictMode: false,
   trailingSlash: false,
   images: {

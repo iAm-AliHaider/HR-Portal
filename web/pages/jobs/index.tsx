@@ -71,7 +71,7 @@ export default function JobsPage() {
   const toast = useToast();
   
   // API hooks
-  const { 
+  const {
     jobs, 
     loading, 
     error, 
@@ -79,6 +79,16 @@ export default function JobsPage() {
     updateJob, 
     closeJob 
   } = useJobs();
+  
+  // Handle API errors gracefully
+  const [apiError, setApiError] = useState(null);
+  
+  useEffect(() => {
+    if (error) {
+      console.warn('Jobs API error, using fallback:', error);
+      setApiError(error);
+    }
+  }, [error]);
   
   const { applications } = useApplications();
 
