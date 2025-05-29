@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
     '/'
   ];
   
-  // Skip auth for public pages, static assets, and API routes
+  // Skip middleware for public pages, static assets, and API routes
   if (
     publicPages.some(page => url === page || url.startsWith(page + '/')) ||
     url.startsWith('/_next/') ||
@@ -44,51 +44,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Production authentication logic
-  try {
-    // Handle specific protected routes
-    const protectedRoutes = [
-      '/dashboard',
-      '/people',
-      '/jobs',
-      '/applications',
-      '/interviews',
-      '/offers',
-      '/admin',
-      '/reports',
-      '/analytics',
-      '/settings',
-      '/employee',
-      '/leave',
-      '/loans',
-      '/training',
-      '/safety',
-      '/facilities',
-      '/expenses',
-      '/compliance',
-      '/recruitment',
-      '/performance',
-      '/payroll'
-    ];
-    
-    // Check if this is a protected route
-    const isProtectedRoute = protectedRoutes.some(route => 
-      url.startsWith(route) || url === route
-    );
-    
-    if (isProtectedRoute) {
-      // In production without proper auth setup, redirect to login with return URL
-      const returnUrl = encodeURIComponent(url + (request.nextUrl.search || ''));
-      return NextResponse.redirect(new URL(`/login?returnUrl=${returnUrl}`, request.url));
-    }
-    
-    return NextResponse.next();
-  } catch (error) {
-    console.error('Middleware error:', error);
-    // Fallback to login page with return URL
-    const returnUrl = encodeURIComponent(url);
-    return NextResponse.redirect(new URL(`/login?returnUrl=${returnUrl}`, request.url));
-  }
+  // In production, let the component-level authentication handle redirects
+  // This prevents middleware from interfering with the routing
+  return NextResponse.next();
 }
 
 export const config = {
