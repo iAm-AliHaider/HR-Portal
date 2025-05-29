@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useDashboardAnalytics } from '@/hooks/useApi';
 import { Card, CardContent } from '@/components/ui/card';
 import TabGroup, { Tab } from '@/components/ui/TabGroup';
@@ -41,22 +41,22 @@ export default function DashboardAnalyticsPage() {
   
   if (loading) {
     return (
-      <DashboardLayout title="Dashboard Analytics" subtitle="Loading...">
+      <SimpleDashboardLayout title="Dashboard Analytics" subtitle="Loading...">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
   
   if (error) {
     return (
-      <DashboardLayout title="Dashboard Analytics">
+      <SimpleDashboardLayout title="Dashboard Analytics">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Error!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
@@ -1219,13 +1219,13 @@ export default function DashboardAnalyticsPage() {
   ];
   
   return (
-    <DashboardLayout title="Dashboard Analytics" subtitle="Key metrics and performance indicators">
+    <SimpleDashboardLayout title="Dashboard Analytics" subtitle="Key metrics and performance indicators">
       <TabGroup 
         tabs={tabs} 
         activeTab={activeTab} 
         onChange={handleTabChange} 
         variant="underline"
       />
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 } 

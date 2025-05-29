@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import { BookingService } from '../../services/booking';
@@ -226,14 +226,14 @@ const ResourceReportsPage = () => {
 
   if (!allowAccess && !['admin', 'manager', 'hr'].includes(role)) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="p-4 md:p-6 flex items-center justify-center h-[calc(100vh-200px)]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <p className="text-gray-500">Loading...</p>
           </div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
@@ -244,7 +244,7 @@ const ResourceReportsPage = () => {
         <meta name="description" content="Analytics and reports for facilities and resource management" />
       </Head>
 
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="p-4 md:p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
@@ -529,7 +529,7 @@ const ResourceReportsPage = () => {
             </>
           )}
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </>
   );
 };

@@ -74,7 +74,7 @@ import {
   EmailIcon
 } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import DashboardLayout from '../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 // Enhanced interfaces for teams
@@ -263,7 +263,7 @@ const TeamsPage = () => {
         <meta name="description" content="Comprehensive team management and organization system" />
       </Head>
       
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
@@ -683,7 +683,7 @@ const TeamsPage = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </>
   );
 };

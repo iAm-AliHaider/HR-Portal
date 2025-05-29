@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import TabGroup, { Tab } from '@/components/ui/TabGroup';
 import { GetServerSideProps } from 'next';
@@ -208,9 +208,9 @@ export default function ReportsPage() {
   ];
 
   return (
-    <DashboardLayout title="Reports" subtitle="Access and generate company reports">
+    <SimpleDashboardLayout title="Reports" subtitle="Access and generate company reports">
       <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 }
 

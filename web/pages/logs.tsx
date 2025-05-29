@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import DashboardLayout from '../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
@@ -218,7 +218,7 @@ const LogsPage = () => {
   };
 
   return (
-    <DashboardLayout title="System Logs" subtitle="View and analyze system events and activities">
+    <SimpleDashboardLayout title="System Logs" subtitle="View and analyze system events and activities">
       <Head>
         <title>System Logs | HR Portal</title>
         <meta name="description" content="System logs and activity tracking" />
@@ -383,7 +383,7 @@ const LogsPage = () => {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

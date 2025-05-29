@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { 
   BookOpen, Award, CheckCircle, Star, Clock, BarChart, 
   Search, Filter, Calendar, Play, Download, FileText,
@@ -315,7 +315,7 @@ export default function LearningPortal() {
   };
   
   return (
-    <DashboardLayout title="Learning Portal" subtitle="Develop your skills and advance your career">
+    <SimpleDashboardLayout title="Learning Portal" subtitle="Develop your skills and advance your career">
       <Head>
         <title>Learning Portal | HR Portal</title>
         <meta name="description" content="Explore courses and training opportunities" />
@@ -882,6 +882,6 @@ export default function LearningPortal() {
           </CardFooter>
         </Card>
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 } 

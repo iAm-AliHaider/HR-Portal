@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { Box, Heading, Container, Spinner, Flex } from '@chakra-ui/react';
-import DashboardLayout from '../../../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import OfferForm from '../../../../components/offers/OfferForm';
 import { getApplicationById } from '../../../../services/applications';
 import { GetServerSideProps } from 'next';
@@ -48,11 +48,11 @@ export default function NewOfferPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Flex justify="center" align="center" height="50vh">
           <Spinner size="xl" />
         </Flex>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
@@ -67,12 +67,12 @@ export default function NewOfferPage() {
         <meta name="description" content="Create a job offer for a candidate" />
       </Head>
       
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Container maxW="container.xl" py={6}>
           <Heading size="lg" mb={6}>Create Offer</Heading>
           <OfferForm applicationId={applicationId as string} />
         </Container>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </>
   );
 } 

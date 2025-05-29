@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -294,7 +294,7 @@ const AddEmployeePage = () => {
   const relationshipOptions = ['Spouse', 'Parent', 'Sibling', 'Friend', 'Other'];
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <div className="p-4 md:p-6">
         {/* Back button */}
         <div className="mb-4">
@@ -939,7 +939,7 @@ const AddEmployeePage = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

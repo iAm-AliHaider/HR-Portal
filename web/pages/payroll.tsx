@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 const PayrollManagement = () => {
@@ -995,7 +995,7 @@ const PayrollManagement = () => {
   };
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Payroll Management</h1>
@@ -1190,7 +1190,7 @@ const PayrollManagement = () => {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

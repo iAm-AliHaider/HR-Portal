@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
-import DashboardLayout from '../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { 
   useEmployees, 
   useJobs, 
@@ -252,7 +252,7 @@ const MockDataTestPage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <Head>
         <title>Mock Data Test | HR System</title>
       </Head>
@@ -312,7 +312,7 @@ const MockDataTestPage = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

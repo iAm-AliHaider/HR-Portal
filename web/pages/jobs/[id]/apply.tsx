@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useJob, useToast, useForm, useApplications } from '@/hooks/useApi';
 import { RequireRole } from '@/components/RequireRole';
 import { Button } from '@/components/ui/button';
@@ -154,11 +154,11 @@ export default function JobApplicationPage() {
   if (jobLoading) {
     return (
       <RequireRole allowed={['employee', 'manager', 'candidate']}>
-        <DashboardLayout>
+        <SimpleDashboardLayout>
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     );
   }
@@ -167,7 +167,7 @@ export default function JobApplicationPage() {
   if (jobError) {
     return (
       <RequireRole allowed={['employee', 'manager', 'candidate']}>
-        <DashboardLayout>
+        <SimpleDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +180,7 @@ export default function JobApplicationPage() {
               <Button>Back to Jobs</Button>
             </Link>
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     );
   }
@@ -189,7 +189,7 @@ export default function JobApplicationPage() {
   if (!job) {
     return (
       <RequireRole allowed={['employee', 'manager', 'candidate']}>
-        <DashboardLayout>
+        <SimpleDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,7 +202,7 @@ export default function JobApplicationPage() {
               <Button>Back to Jobs</Button>
             </Link>
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     );
   }
@@ -211,7 +211,7 @@ export default function JobApplicationPage() {
   if (job.status !== 'open') {
     return (
       <RequireRole allowed={['employee', 'manager', 'candidate']}>
-        <DashboardLayout>
+        <SimpleDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,7 +224,7 @@ export default function JobApplicationPage() {
               <Button>View Other Jobs</Button>
             </Link>
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     );
   }
@@ -236,7 +236,7 @@ export default function JobApplicationPage() {
         <meta name="description" content={`Apply for ${job.title} position`} />
       </Head>
       
-      <DashboardLayout title={`Apply for ${job.title}`} subtitle={`${job.department} · ${job.location}`}>
+      <SimpleDashboardLayout title={`Apply for ${job.title}`} subtitle={`${job.department} · ${job.location}`}>
         <div className="max-w-4xl mx-auto mb-10">
           <div className="mb-8">
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
@@ -588,7 +588,7 @@ export default function JobApplicationPage() {
             </form>
           </Card>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </RequireRole>
   );
 } 

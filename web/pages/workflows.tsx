@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import DashboardLayout from '../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { 
   useWorkflows, 
   useToast, 
@@ -147,16 +147,16 @@ const WorkflowManagementPage = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <Head>
         <title>Workflow Management | HR System</title>
       </Head>
@@ -661,7 +661,7 @@ const WorkflowManagementPage = () => {
           ))}
         </div>
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

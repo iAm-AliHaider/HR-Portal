@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Card } from '@/components/ui/card';
 import { Button } from '../components/ui/button';
-import DashboardLayout from '../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 const initialProfile = {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
-import DashboardLayout from '../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { 
   FileText, 
   Download, 
@@ -330,7 +330,7 @@ export default function PayslipsPage() {
   };
 
   return (
-    <DashboardLayout title="Payslips" subtitle="View and manage your payslips">
+    <SimpleDashboardLayout title="Payslips" subtitle="View and manage your payslips">
       <Head>
         <title>Payslips | HR Portal</title>
         <meta name="description" content="View and download your payslips" />
@@ -778,7 +778,7 @@ export default function PayslipsPage() {
           </DialogContent>
         </Dialog>
     </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 }
 

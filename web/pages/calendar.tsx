@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCalendar } from '@/hooks/useCalendar';
 import { CalendarEvent } from '@/services/calendar';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useRouter } from 'next/router';
 import { shouldBypassAuth } from '@/lib/auth';
 import { GetServerSideProps } from 'next';
@@ -619,11 +619,11 @@ const CalendarPage = () => {
   }, [allowAccess, router]);
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <div className="p-4 md:p-6">
         <Calendar />
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

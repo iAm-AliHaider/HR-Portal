@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import {
   useToast,
   useForm, 
@@ -339,16 +339,16 @@ const PeopleDirectory = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <Head>
         <title>People Directory | HR System</title>
       </Head>
@@ -848,7 +848,7 @@ const PeopleDirectory = () => {
           ))}
         </div>
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useTasks, TaskFilter } from '@/hooks/useTasks';
 import { Task, TaskChecklistItem, Project } from '../../packages/types';
 import { fetchUsers, getTaskCategories } from '@/services/tasks';
@@ -1205,9 +1205,9 @@ const TasksList = () => {
 
 const TasksPage = () => {
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <TasksList />
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 

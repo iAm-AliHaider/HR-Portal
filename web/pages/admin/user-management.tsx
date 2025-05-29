@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/router';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { supabase } from '../../lib/supabase/client';
 
 interface AuthUser {
@@ -222,7 +222,7 @@ export default function UserManagementPage() {
   }
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <Head>
         <title>User Management - HR Portal</title>
       </Head>
@@ -442,6 +442,6 @@ export default function UserManagementPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 } 

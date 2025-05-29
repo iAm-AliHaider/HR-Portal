@@ -73,7 +73,7 @@ import {
   ChatIcon
 } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import DashboardLayout from '../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { Interview, User, Job, Application } from '../../packages/types';
 import { GetServerSideProps } from 'next';
 
@@ -423,7 +423,7 @@ const InterviewsPage = () => {
         <meta name="description" content="Manage interview scheduling and feedback" />
       </Head>
       
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
@@ -631,7 +631,7 @@ const InterviewsPage = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </>
   );
 };

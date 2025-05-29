@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { Box, Container } from '@chakra-ui/react';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import RecruitmentDashboard from '../../components/dashboard/RecruitmentDashboard';
 import { supabase } from '../../lib/supabase/client';
 import { GetServerSideProps } from 'next';
@@ -46,11 +46,11 @@ export default function RecruitmentDashboardPage() {
         <meta name="description" content="Recruitment analytics and metrics" />
       </Head>
       
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Container maxW="container.xl" py={6}>
           <RecruitmentDashboard orgId={orgId} />
         </Container>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </>
   );
 } 

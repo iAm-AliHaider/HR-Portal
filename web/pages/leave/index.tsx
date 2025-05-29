@@ -6,7 +6,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { useLeaveRequests, useToast, useForm } from '../../hooks/useApi';
 import { PermissionGuard, PermissionButton } from '../../components/ui/PermissionGuard';
 import { shouldBypassAuth } from '@/lib/auth';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { GetServerSideProps } from 'next';
 
 // Leave request form interface
@@ -268,29 +268,29 @@ const LeaveManagementPage = () => {
 
   if (loading && !requests.length) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
   if (!allowAccess && !user) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
             <p className="text-gray-600">Please log in to access leave management.</p>
           </div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <Head>
         <title>Leave Management | HR System</title>
       </Head>
@@ -675,7 +675,7 @@ const LeaveManagementPage = () => {
           ))}
           </div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
   );
 };
 

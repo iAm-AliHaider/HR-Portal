@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useDashboardAnalytics } from '@/hooks/useApi';
 import { Card, CardContent } from '@/components/ui/card';
 import TabGroup, { Tab } from '@/components/ui/TabGroup';
@@ -15,22 +15,22 @@ export default function HRAnalyticsPage() {
   
   if (loading) {
     return (
-      <DashboardLayout title="HR Analytics" subtitle="Loading...">
+      <SimpleDashboardLayout title="HR Analytics" subtitle="Loading...">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
   
   if (error) {
     return (
-      <DashboardLayout title="HR Analytics">
+      <SimpleDashboardLayout title="HR Analytics">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Error!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
@@ -177,9 +177,9 @@ export default function HRAnalyticsPage() {
   ];
 
   return (
-    <DashboardLayout title="HR Analytics" subtitle="Comprehensive HR analytics and insights">
+    <SimpleDashboardLayout title="HR Analytics" subtitle="Comprehensive HR analytics and insights">
       <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 }
 

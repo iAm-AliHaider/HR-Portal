@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { RequireRole } from '@/components/RequireRole';
 import { 
   useJobs, 
@@ -314,11 +314,11 @@ export default function JobsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
@@ -330,7 +330,7 @@ export default function JobsPage() {
       </Head>
       
       <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
-        <DashboardLayout 
+        <SimpleDashboardLayout 
           title="Job Openings" 
           subtitle="Browse current opportunities"
           actions={
@@ -455,7 +455,7 @@ export default function JobsPage() {
               </div>
             )}
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     </>
   );

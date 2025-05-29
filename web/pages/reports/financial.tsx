@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import {
   DollarSign, TrendingUp, TrendingDown, BarChart2,
   PieChart, Users, Calendar, CreditCard, Briefcase,
@@ -129,7 +129,7 @@ export default function FinancialReportPage() {
   };
   
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <Head>
         <title>Financial Reports | HR Portal</title>
         <meta name="description" content="Financial reporting and analytics" />
@@ -409,6 +409,6 @@ export default function FinancialReportPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 } 

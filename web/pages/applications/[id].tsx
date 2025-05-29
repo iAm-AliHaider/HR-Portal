@@ -103,7 +103,7 @@ import {
   ViewIcon
 } from '@chakra-ui/icons';
 import { format, formatDistanceToNow } from 'date-fns';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import ScheduleInterviewModal from '../../components/applications/ScheduleInterviewModal';
 import { Application, Interview, CandidateAssessment, Job, JobStage, User } from '../../../packages/types';
 import { getApplicationById, moveApplicationToStage, rejectApplication, withdrawApplication } from '../../services/applications';
@@ -399,20 +399,20 @@ const ApplicationDetailPage = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Container maxW="full" centerContent py={20}>
           <VStack spacing={4}>
             <Spinner size="xl" />
             <Text>Loading application details...</Text>
           </VStack>
         </Container>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
   if (!application) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Container maxW="full" centerContent py={20}>
           <VStack spacing={6}>
             <WarningIcon boxSize={16} color="orange.500" />
@@ -425,7 +425,7 @@ const ApplicationDetailPage = () => {
             </Button>
           </VStack>
         </Container>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
 
@@ -435,7 +435,7 @@ const ApplicationDetailPage = () => {
         <title>{application.candidate?.full_name || 'Candidate'} - Application Details</title>
       </Head>
       
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
@@ -1317,7 +1317,7 @@ const ApplicationDetailPage = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </>
   );
 };

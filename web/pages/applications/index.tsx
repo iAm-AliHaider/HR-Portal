@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import ApplicationsList from '../../components/applications/ApplicationsList';
 import { Box, Heading } from '@chakra-ui/react';
 import { supabase } from '../../lib/supabase/client';
@@ -65,9 +65,9 @@ export default function ApplicationsPage() {
         <meta name="description" content={pageDescription} />
       </Head>
       
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <ApplicationsList orgId={orgId} viewMode={viewMode} />
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </>
   );
 } 

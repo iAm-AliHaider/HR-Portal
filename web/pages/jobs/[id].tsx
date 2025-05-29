@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RequireRole } from '@/components/RequireRole';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { useJob, useJobApplications, useToast, useModal } from '@/hooks/useApi';
 import ShareJobModal from '@/components/jobs/ShareJobModal';
 import { GetServerSideProps } from 'next';
@@ -95,11 +95,11 @@ export default function JobDetailPage() {
   if (jobLoading || applicationsLoading) {
     return (
       <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
-        <DashboardLayout>
+        <SimpleDashboardLayout>
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0a3d91]"></div>
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     );
   }
@@ -108,7 +108,7 @@ export default function JobDetailPage() {
   if (jobError) {
     return (
       <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
-        <DashboardLayout>
+        <SimpleDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +121,7 @@ export default function JobDetailPage() {
               <Button>Back to Jobs</Button>
             </Link>
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     );
   }
@@ -130,7 +130,7 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
-        <DashboardLayout>
+        <SimpleDashboardLayout>
           <div className="text-center py-24">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,14 +143,14 @@ export default function JobDetailPage() {
               <Button>Back to Jobs</Button>
             </Link>
           </div>
-        </DashboardLayout>
+        </SimpleDashboardLayout>
       </RequireRole>
     );
   }
   
   return (
     <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
-      <DashboardLayout title={job.title} subtitle={`${job.department} · ${job.location}`}>
+      <SimpleDashboardLayout title={job.title} subtitle={`${job.department} · ${job.location}`}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
@@ -346,7 +346,7 @@ export default function JobDetailPage() {
             </div>
           </div>
         )}
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     </RequireRole>
   );
 } 

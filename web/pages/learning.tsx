@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import SimpleDashboardLayout from '@/components/layout/SimpleDashboardLayout';
 import { GetServerSideProps } from 'next';
 import { useSSR } from '@/hooks/useSSR';
 import ClientOnly from '@/components/ui/ClientOnly';
@@ -708,19 +708,19 @@ const LearningPortal = () => {
   // Server-safe rendering
   if (!isLoaded) {
     return (
-      <DashboardLayout>
+      <SimpleDashboardLayout>
         <div className="p-4 md:p-6">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
             <div className="h-64 bg-gray-200 rounded mb-4"></div>
           </div>
         </div>
-      </DashboardLayout>
+      </SimpleDashboardLayout>
     );
   }
   
   return (
-    <DashboardLayout>
+    <SimpleDashboardLayout>
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Learning Portal</h1>
@@ -935,7 +935,7 @@ const LearningPortal = () => {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </SimpleDashboardLayout>
   );
 };
 
