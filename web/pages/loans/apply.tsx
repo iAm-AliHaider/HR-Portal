@@ -3,19 +3,21 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Calendar, InfoIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/useAuth';
+import { 
+  ArrowLeft, 
+  Calendar, 
+  InfoIcon, 
+  DollarSign, 
+  Calculator,
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  FileText
+} from 'lucide-react';
 import { GetServerSideProps } from 'next';
-
-// Mock loan programs
-const loanPrograms = [
-  { id: 1, name: 'Personal Loan', interestRate: '8-12%', maxAmount: 50000, term: '1-5 years', eligibility: 'All permanent employees' },
-  { id: 2, name: 'Education Loan', interestRate: '5-7%', maxAmount: 100000, term: '1-10 years', eligibility: 'Employees with >2 years tenure' },
-  { id: 3, name: 'Home Loan', interestRate: '6-9%', maxAmount: 5000000, term: '5-30 years', eligibility: 'Confirmed employees with >3 years tenure' },
-  { id: 4, name: 'Emergency Loan', interestRate: '0-3%', maxAmount: 30000, term: '1-3 years', eligibility: 'All employees (case-by-case approval)' },
-];
-
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -24,13 +26,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 
-
 export default function LoanApplicationPage() {
   const router = useRouter();
   const { user } = useAuth();
   
-  // Form state
-  const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
+  // State management
+  const [loanPrograms, setLoanPrograms] = useState([]);
+  const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     loanAmount: '',
     loanPurpose: '',
@@ -38,24 +40,95 @@ export default function LoanApplicationPage() {
     repaymentMethod: 'salary_deduction',
     additionalComments: '',
     agreeToTerms: false,
+    documents: []
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [calculatedDetails, setCalculatedDetails] = useState<{
     monthlyPayment: number;
     totalInterest: number;
     totalRepayment: number;
   } | null>(null);
 
+  // Load loan programs on component mount
+  useEffect(() => {
+    loadLoanPrograms();
+  }, []);
+
   // Set the program from query params
   useEffect(() => {
-    if (router.query.program) {
+    if (router.query.program && loanPrograms.length > 0) {
       const programId = Number(router.query.program);
       if (!isNaN(programId)) {
-        setSelectedProgram(programId);
+        setSelectedProgram(programId.toString());
       }
     }
-  }, [router.query]);
+  }, [router.query, loanPrograms]);
+
+  // Recalculate when amount or term changes
+  useEffect(() => {
+    if (formData.loanAmount && formData.loanTerm && selectedProgram) {
+      calculateLoanDetails();
+    }
+  }, [formData.loanAmount, formData.loanTerm, selectedProgram]);
+
+  // Load loan programs from API
+  const loadLoanPrograms = async () => {
+    try {
+      const response = await fetch('/api/loans?type=settings');
+      if (response.ok) {
+        const data = await response.json();
+        setLoanPrograms(data.loan_types || []);
+      } else {
+        // Fallback to mock data
+        setLoanPrograms([
+          { 
+            id: 'personal', 
+            name: 'Personal Loan', 
+            interest_rate_min: 8, 
+            interest_rate_max: 12, 
+            max_amount: 200000, 
+            min_amount: 10000,
+            max_term_months: 60, 
+            min_term_months: 6,
+            eligibility_criteria: 'All permanent employees',
+            required_documents: ['salary_slip', 'bank_statement', 'id_proof']
+          },
+          { 
+            id: 'education', 
+            name: 'Education Loan', 
+            interest_rate_min: 7.5, 
+            interest_rate_max: 9.5, 
+            max_amount: 500000, 
+            min_amount: 25000,
+            max_term_months: 120, 
+            min_term_months: 12,
+            eligibility_criteria: 'Employees with >2 years tenure',
+            required_documents: ['admission_letter', 'fee_structure', 'salary_slip', 'guarantor_details']
+          },
+          { 
+            id: 'emergency', 
+            name: 'Emergency Loan', 
+            interest_rate_min: 6, 
+            interest_rate_max: 8, 
+            max_amount: 50000, 
+            min_amount: 5000,
+            max_term_months: 24, 
+            min_term_months: 3,
+            eligibility_criteria: 'All employees eligible',
+            required_documents: ['emergency_proof', 'salary_slip']
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error loading loan programs:', error);
+      // Use fallback data
+      setLoanPrograms([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Get the selected program details
   const currentProgram = selectedProgram 
@@ -82,15 +155,27 @@ export default function LoanApplicationPage() {
         return newErrors;
       });
     }
-    
-    // Recalculate loan details if amount or term changes
-    if ((name === 'loanAmount' || name === 'loanTerm') && currentProgram) {
-      calculateLoanDetails();
-    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setFormData(prev => ({
+      ...prev,
+      documents: [...prev.documents, ...files]
+    }));
+  };
+
+  // Remove uploaded file
+  const removeFile = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      documents: prev.documents.filter((_, i) => i !== index)
+    }));
   };
 
   // Handle program selection
-  const handleProgramSelect = (programId: number) => {
+  const handleProgramSelect = (programId: string) => {
     setSelectedProgram(programId);
     
     // Reset form when changing programs
@@ -101,11 +186,13 @@ export default function LoanApplicationPage() {
       repaymentMethod: 'salary_deduction',
       additionalComments: '',
       agreeToTerms: false,
+      documents: []
     });
     setCalculatedDetails(null);
+    setErrors({});
   };
 
-  // Calculate loan details (mock calculation)
+  // Calculate loan details
   const calculateLoanDetails = () => {
     if (!currentProgram || !formData.loanAmount || !formData.loanTerm) {
       setCalculatedDetails(null);
@@ -113,32 +200,30 @@ export default function LoanApplicationPage() {
     }
 
     const amount = parseFloat(formData.loanAmount);
-    const termInYears = parseFloat(formData.loanTerm);
+    const termInMonths = parseFloat(formData.loanTerm);
     
-    if (isNaN(amount) || isNaN(termInYears) || amount <= 0 || termInYears <= 0) {
+    if (isNaN(amount) || isNaN(termInMonths) || amount <= 0 || termInMonths <= 0) {
       setCalculatedDetails(null);
       return;
     }
 
-    // Get middle of interest rate range
-    const interestRateStr = currentProgram.interestRate;
-    const interestRates = interestRateStr.replace(/%/g, '').split('-').map(Number);
-    const avgInterestRate = interestRates.reduce((a, b) => a + b, 0) / interestRates.length;
+    // Calculate average interest rate
+    const avgInterestRate = (currentProgram.interest_rate_min + currentProgram.interest_rate_max) / 2;
     
-    // Calculate monthly payment (P * r * (1+r)^n / ((1+r)^n - 1))
+    // Calculate monthly payment using loan formula
     const monthlyRate = avgInterestRate / 100 / 12;
-    const numberOfPayments = termInYears * 12;
+    const numberOfPayments = termInMonths;
     const x = Math.pow(1 + monthlyRate, numberOfPayments);
     const monthlyPayment = (amount * monthlyRate * x) / (x - 1);
     
-    // Calculate total interest
+    // Calculate totals
     const totalRepayment = monthlyPayment * numberOfPayments;
     const totalInterest = totalRepayment - amount;
     
     setCalculatedDetails({
-      monthlyPayment,
-      totalInterest,
-      totalRepayment
+      monthlyPayment: Math.round(monthlyPayment * 100) / 100,
+      totalInterest: Math.round(totalInterest * 100) / 100,
+      totalRepayment: Math.round(totalRepayment * 100) / 100
     });
   };
 
@@ -154,20 +239,32 @@ export default function LoanApplicationPage() {
       newErrors.loanAmount = 'Loan amount is required';
     } else if (isNaN(parseFloat(formData.loanAmount)) || parseFloat(formData.loanAmount) <= 0) {
       newErrors.loanAmount = 'Please enter a valid loan amount';
-    } else if (currentProgram && parseFloat(formData.loanAmount) > currentProgram.maxAmount) {
-      newErrors.loanAmount = `Maximum amount for this loan is ₹${currentProgram.maxAmount.toLocaleString()}`;
+    } else if (currentProgram) {
+      const amount = parseFloat(formData.loanAmount);
+      if (amount < currentProgram.min_amount) {
+        newErrors.loanAmount = `Minimum amount for this loan is ₹${currentProgram.min_amount.toLocaleString()}`;
+      } else if (amount > currentProgram.max_amount) {
+        newErrors.loanAmount = `Maximum amount for this loan is ₹${currentProgram.max_amount.toLocaleString()}`;
+      }
     }
     
     if (!formData.loanPurpose) {
       newErrors.loanPurpose = 'Loan purpose is required';
     } else if (formData.loanPurpose.length < 10) {
-      newErrors.loanPurpose = 'Please provide more details about the purpose';
+      newErrors.loanPurpose = 'Please provide more details about the purpose (minimum 10 characters)';
     }
     
     if (!formData.loanTerm) {
       newErrors.loanTerm = 'Loan term is required';
     } else if (isNaN(parseFloat(formData.loanTerm)) || parseFloat(formData.loanTerm) <= 0) {
       newErrors.loanTerm = 'Please enter a valid loan term';
+    } else if (currentProgram) {
+      const termMonths = parseFloat(formData.loanTerm);
+      if (termMonths < currentProgram.min_term_months) {
+        newErrors.loanTerm = `Minimum term for this loan is ${currentProgram.min_term_months} months`;
+      } else if (termMonths > currentProgram.max_term_months) {
+        newErrors.loanTerm = `Maximum term for this loan is ${currentProgram.max_term_months} months`;
+      }
     }
     
     if (!formData.agreeToTerms) {
@@ -189,337 +286,451 @@ export default function LoanApplicationPage() {
     setIsSubmitting(true);
     
     try {
-      // Mock API call to submit loan application
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const applicationData = {
+        employee_id: user?.id || 'current-user',
+        employee_name: user?.name || 'Current User',
+        employee_email: user?.email || 'user@company.com',
+        loan_type: selectedProgram,
+        amount: parseFloat(formData.loanAmount),
+        purpose: formData.loanPurpose,
+        term_months: parseFloat(formData.loanTerm),
+        documents: formData.documents.map(file => file.name) // In production, upload files first
+      };
+
+      const response = await fetch('/api/loans?type=apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(applicationData),
+      });
       
-      // Show success message
-      alert('Loan application submitted successfully!');
-      
-      // Redirect to loans dashboard
-      router.push('/loans');
+      if (response.ok) {
+        const result = await response.json();
+        alert(`Loan application submitted successfully! Application ID: ${result.id}`);
+        router.push('/loans/applications');
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error || 'Failed to submit application'}`);
+      }
     } catch (error) {
       console.error('Error submitting application:', error);
-      setErrors({
-        form: 'An error occurred while submitting your application. Please try again.'
-      });
+      alert('Error submitting application. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
         <title>Apply for Loan | HR Portal</title>
+        <meta name="description" content="Apply for employee loan programs" />
       </Head>
-
+      
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => router.push('/loans')}
-              className="h-9 w-9 p-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Apply for Loan</h1>
-              <p className="text-gray-500">Fill out the form below to apply for an employee loan</p>
-            </div>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/loans')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Loans
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Apply for Loan</h1>
+            <p className="text-gray-600 mt-1">Complete the application form to apply for a loan</p>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Left Column - Loan Programs */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Loan Programs</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-gray-500">
-                  Select a loan program to apply for:
-                </p>
-                
-                {loanPrograms.map(program => (
-                  <div 
-                    key={program.id} 
-                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      selectedProgram === program.id 
-                        ? 'border-blue-500 bg-blue-50' 
-                        : 'hover:border-gray-300'
-                    }`}
-                    onClick={() => handleProgramSelect(program.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-medium">{program.name}</h3>
-                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        {program.interestRate}
-                      </span>
-                    </div>
-                    <div className="mt-2 text-sm text-gray-600">
-                      <p>Up to ₹{program.maxAmount.toLocaleString()}</p>
-                      <p>Term: {program.term}</p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Eligibility: {program.eligibility}
-                      </p>
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Form */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Program Selection */}
+            {!selectedProgram && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Select Loan Program</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {loanPrograms.map(program => (
+                      <div 
+                        key={program.id}
+                        className="border rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                        onClick={() => handleProgramSelect(program.id)}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-lg">{program.name}</h3>
+                          <Badge className="bg-blue-100 text-blue-800">
+                            {program.interest_rate_min}%-{program.interest_rate_max}%
+                          </Badge>
+                        </div>
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <div className="flex justify-between">
+                            <span>Amount Range:</span>
+                            <span>{formatCurrency(program.min_amount)} - {formatCurrency(program.max_amount)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Term:</span>
+                            <span>{program.min_term_months}-{program.max_term_months} months</span>
+                          </div>
+                          <div className="mt-2">
+                            <span className="font-medium">Eligibility:</span>
+                            <p className="text-gray-600 mt-1">{program.eligibility_criteria}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                
-                {errors.program && (
-                  <p className="text-red-500 text-sm mt-1">{errors.program}</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Middle Column - Application Form */}
-          <div className="md:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {currentProgram 
-                    ? `${currentProgram.name} Application` 
-                    : 'Loan Application Form'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!selectedProgram ? (
-                  <div className="py-8 text-center">
-                    <InfoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-semibold text-gray-900">No Loan Program Selected</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Please select a loan program from the left panel to continue.
-                    </p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Loan Details */}
-                    <div>
-                      <h3 className="text-lg font-medium mb-4">Loan Details</h3>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label htmlFor="loanAmount" className="block text-sm font-medium text-gray-700">
-                            Loan Amount (₹) <span className="text-red-500">*</span>
-                          </label>
-                          <div className="mt-1">
-                            <input
-                              type="number"
-                              id="loanAmount"
-                              name="loanAmount"
-                              className={`shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                                errors.loanAmount ? 'border-red-300' : ''
-                              }`}
-                              value={formData.loanAmount}
-                              onChange={handleInputChange}
-                              min="1000"
-                              max={currentProgram.maxAmount}
-                              placeholder={`Max: ₹${currentProgram.maxAmount.toLocaleString()}`}
-                            />
-                            {errors.loanAmount && (
-                              <p className="text-red-500 text-sm mt-1">{errors.loanAmount}</p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="loanTerm" className="block text-sm font-medium text-gray-700">
-                            Loan Term (Years) <span className="text-red-500">*</span>
-                          </label>
-                          <div className="mt-1">
-                            <input
-                              type="number"
-                              id="loanTerm"
-                              name="loanTerm"
-                              className={`shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                                errors.loanTerm ? 'border-red-300' : ''
-                              }`}
-                              value={formData.loanTerm}
-                              onChange={handleInputChange}
-                              min="1"
-                              max="30"
-                              placeholder="e.g., 3"
-                            />
-                            {errors.loanTerm && (
-                              <p className="text-red-500 text-sm mt-1">{errors.loanTerm}</p>
-                            )}
-                            <p className="text-xs text-gray-500 mt-1">
-                              Term range for {currentProgram.name}: {currentProgram.term}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="loanPurpose" className="block text-sm font-medium text-gray-700">
-                            Loan Purpose <span className="text-red-500">*</span>
-                          </label>
-                          <div className="mt-1">
-                            <textarea
-                              id="loanPurpose"
-                              name="loanPurpose"
-                              rows={3}
-                              className={`shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                                errors.loanPurpose ? 'border-red-300' : ''
-                              }`}
-                              value={formData.loanPurpose}
-                              onChange={handleInputChange}
-                              placeholder="Please describe the purpose of this loan"
-                            />
-                            {errors.loanPurpose && (
-                              <p className="text-red-500 text-sm mt-1">{errors.loanPurpose}</p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="repaymentMethod" className="block text-sm font-medium text-gray-700">
-                            Preferred Repayment Method
-                          </label>
-                          <div className="mt-1">
-                            <select
-                              id="repaymentMethod"
-                              name="repaymentMethod"
-                              className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                              value={formData.repaymentMethod}
-                              onChange={handleInputChange}
-                            >
-                              <option value="salary_deduction">Salary Deduction</option>
-                              <option value="bank_transfer">Bank Transfer</option>
-                              <option value="check">Check</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    {/* Loan Calculation */}
-                    {calculatedDetails && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-medium mb-4">Loan Calculation</h3>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p className="text-sm text-gray-500">Monthly Payment</p>
-                            <p className="text-xl font-bold text-blue-600">
-                              ₹{calculatedDetails.monthlyPayment.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p className="text-sm text-gray-500">Total Interest</p>
-                            <p className="text-xl font-bold text-blue-600">
-                              ₹{calculatedDetails.totalInterest.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p className="text-sm text-gray-500">Total Repayment</p>
-                            <p className="text-xl font-bold text-blue-600">
-                              ₹{calculatedDetails.totalRepayment.toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-3 text-center">
-                          This is an approximate calculation based on average interest rate. 
-                          Actual values may vary.
-                        </p>
-                      </div>
-                    )}
-                    
-                    {/* Additional Information */}
-                    <div>
-                      <h3 className="text-lg font-medium mb-4">Additional Information</h3>
-                      
-                      <div>
-                        <label htmlFor="additionalComments" className="block text-sm font-medium text-gray-700">
-                          Comments or Special Requests
-                        </label>
-                        <div className="mt-1">
-                          <textarea
-                            id="additionalComments"
-                            name="additionalComments"
-                            rows={2}
-                            className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                            value={formData.additionalComments}
-                            onChange={handleInputChange}
-                            placeholder="Any additional information you'd like to provide"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Terms and Conditions */}
-                    <div>
-                      <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                          <input
-                            id="agreeToTerms"
-                            name="agreeToTerms"
-                            type="checkbox"
-                            className={`focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded ${
-                              errors.agreeToTerms ? 'border-red-300' : ''
-                            }`}
-                            checked={formData.agreeToTerms}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-                        <div className="ml-3 text-sm">
-                          <label htmlFor="agreeToTerms" className="font-medium text-gray-700">
-                            I agree to the terms and conditions
-                          </label>
-                          <p className="text-gray-500">
-                            I confirm that all information provided is accurate and I have read and accept the
-                            <Button variant="link" className="p-0 h-auto text-blue-600" onClick={() => router.push('/loans/terms')}>
-                              Loan Terms and Conditions
-                            </Button>.
-                          </p>
-                          {errors.agreeToTerms && (
-                            <p className="text-red-500 text-sm mt-1">{errors.agreeToTerms}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Form error */}
-                    {errors.form && (
-                      <div className="bg-red-50 border-l-4 border-red-400 p-4">
-                        <div className="flex">
-                          <div className="ml-3">
-                            <p className="text-sm text-red-700">{errors.form}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Application Form */}
+            {selectedProgram && currentProgram && (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Selected Program Info */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        {currentProgram.name}
+                      </CardTitle>
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push('/loans')}
-                        className="mr-3"
-                        disabled={isSubmitting}
+                        size="sm"
+                        onClick={() => setSelectedProgram(null)}
                       >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                        Change Program
                       </Button>
                     </div>
-                  </form>
-                )}
-              </CardContent>
-            </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-500">Interest Rate</span>
+                        <p className="font-medium">{currentProgram.interest_rate_min}%-{currentProgram.interest_rate_max}%</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Amount Range</span>
+                        <p className="font-medium">{formatCurrency(currentProgram.min_amount)} - {formatCurrency(currentProgram.max_amount)}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Term Range</span>
+                        <p className="font-medium">{currentProgram.min_term_months}-{currentProgram.max_term_months} months</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Status</span>
+                        <p className="font-medium text-green-600">Available</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Loan Details */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Loan Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Loan Amount (₹) *
+                        </label>
+                        <input
+                          type="number"
+                          name="loanAmount"
+                          value={formData.loanAmount}
+                          onChange={handleInputChange}
+                          placeholder={`${currentProgram.min_amount} - ${currentProgram.max_amount}`}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.loanAmount ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.loanAmount && (
+                          <p className="text-red-500 text-xs mt-1">{errors.loanAmount}</p>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Loan Term (months) *
+                        </label>
+                        <input
+                          type="number"
+                          name="loanTerm"
+                          value={formData.loanTerm}
+                          onChange={handleInputChange}
+                          placeholder={`${currentProgram.min_term_months} - ${currentProgram.max_term_months}`}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.loanTerm ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.loanTerm && (
+                          <p className="text-red-500 text-xs mt-1">{errors.loanTerm}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Purpose of Loan *
+                      </label>
+                      <textarea
+                        name="loanPurpose"
+                        value={formData.loanPurpose}
+                        onChange={handleInputChange}
+                        placeholder="Describe the purpose of your loan application..."
+                        rows={3}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.loanPurpose ? 'border-red-500' : 'border-gray-300'}`}
+                      />
+                      {errors.loanPurpose && (
+                        <p className="text-red-500 text-xs mt-1">{errors.loanPurpose}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Repayment Method
+                      </label>
+                      <select
+                        name="repaymentMethod"
+                        value={formData.repaymentMethod}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="salary_deduction">Salary Deduction</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Additional Comments
+                      </label>
+                      <textarea
+                        name="additionalComments"
+                        value={formData.additionalComments}
+                        onChange={handleInputChange}
+                        placeholder="Any additional information..."
+                        rows={2}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                </CardContent>
+                </Card>
+
+                {/* Document Upload */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      Required Documents
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                      <h4 className="font-medium text-blue-900 mb-2">Required Documents for {currentProgram.name}:</h4>
+                      <ul className="list-disc pl-5 text-sm text-blue-800">
+                        {currentProgram.required_documents.map((doc, index) => (
+                          <li key={index} className="capitalize">{doc.replace(/_/g, ' ')}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload Documents
+                      </label>
+                      <input
+                        type="file"
+                        multiple
+                        onChange={handleFileUpload}
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 5MB each)
+                      </p>
+                    </div>
+                    
+                    {formData.documents.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-gray-700 mb-2">Uploaded Documents:</h4>
+                        <div className="space-y-2">
+                          {formData.documents.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded">
+                              <span className="text-sm">{file.name}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFile(index)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                </CardContent>
+                </Card>
+
+                {/* Terms and Conditions */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        name="agreeToTerms"
+                        checked={formData.agreeToTerms}
+                        onChange={handleInputChange}
+                        className={`mt-1 ${errors.agreeToTerms ? 'border-red-500' : ''}`}
+                      />
+                      <div className="text-sm">
+                        <p>
+                          I agree to the{' '}
+                          <button type="button" className="text-blue-600 hover:underline">
+                            terms and conditions
+                          </button>{' '}
+                          of the loan program and confirm that all information provided is accurate.
+                        </p>
+                        {errors.agreeToTerms && (
+                          <p className="text-red-500 text-xs mt-1">{errors.agreeToTerms}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Submit Button */}
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-8 py-2"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  </Button>
+                </div>
+              </form>
+            )}
           </div>
+
+          {/* Right Column - Calculation Summary */}
+          {selectedProgram && currentProgram && (
+            <div className="space-y-6">
+              {/* Loan Calculator */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calculator className="w-5 h-5" />
+                    Loan Calculator
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {calculatedDetails ? (
+                    <div className="space-y-4">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Monthly Payment</span>
+                            <span className="font-semibold text-green-700">
+                              {formatCurrency(calculatedDetails.monthlyPayment)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Interest</span>
+                            <span className="font-medium">
+                              {formatCurrency(calculatedDetails.totalInterest)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Repayment</span>
+                            <span className="font-medium">
+                              {formatCurrency(calculatedDetails.totalRepayment)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        * Calculations are based on average interest rate. Actual rates may vary based on approval.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-gray-500">
+                      <Calculator className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p>Enter loan amount and term to see calculations</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Eligibility Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <InfoIcon className="w-5 h-5" />
+                    Eligibility Criteria
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      <div>
+                        <span className="font-medium">Application Review</span>
+                        <p className="text-gray-600">2-3 business days</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      <div>
+                        <span className="font-medium">Document Verification</span>
+                        <p className="text-gray-600">1-2 business days</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                      <div>
+                        <span className="font-medium">Approval Decision</span>
+                        <p className="text-gray-600">1 business day</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                      <div>
+                        <span className="font-medium">Disbursement</span>
+                        <p className="text-gray-600">2-3 business days</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { 
@@ -29,6 +29,33 @@ import {
 } from '@/components/ui/accordion';
 import { GetServerSideProps } from 'next';
 
+// Form data interface
+interface FormData {
+  // Leave request fields
+  leaveType?: string;
+  startDate?: string;
+  endDate?: string;
+  returnDate?: string;
+  totalDays?: string;
+  reason?: string;
+  handoverNotes?: string;
+  
+  // Equipment request fields
+  equipmentType?: string;
+  urgency?: string;
+  specifications?: string;
+  
+  // Generic fields
+  title?: string;
+  description?: string;
+  dateNeeded?: string;
+  priority?: string;
+  attachments?: FileList | null;
+}
+
+interface FormErrors {
+  [key: string]: string;
+}
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -48,6 +75,11 @@ export default function RequestPanel() {
   const [selectedRequestType, setSelectedRequestType] = useState(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<FormData>({});
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [requests, setRequests] = useState([]);
   
   // Request types grouped by category
   const requestTypes = {
@@ -86,120 +118,69 @@ export default function RequestPanel() {
     ]
   };
 
-  // Mock request data
-  const [requests, setRequests] = useState([
-    {
-      id: 'REQ-2023-001',
-      type: 'leave',
-      category: 'timeAndLeave',
-      title: 'Annual Leave Request',
-      description: 'Requesting annual leave for a family vacation',
-      status: 'approved',
-      submittedDate: '2023-11-15',
-      decisionDate: '2023-11-17',
-      approver: 'Sarah Johnson',
-      details: {
-        startDate: '2023-12-20',
-        endDate: '2023-12-27',
-        returnDate: '2023-12-28',
-        totalDays: 5,
-        leaveType: 'Annual Leave',
-        comments: 'Family vacation planned during the holidays'
+  // Load requests on component mount
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  const loadRequests = async () => {
+    try {
+      setIsLoading(true);
+      // Try production API first, fallback to mock data
+      const response = await fetch('/api/requests');
+      if (response.ok) {
+        const data = await response.json();
+        setRequests(data);
+      } else {
+        // Fallback to mock data
+        setRequests([
+          {
+            id: 'REQ-2023-001',
+            type: 'leave',
+            category: 'timeAndLeave',
+            title: 'Annual Leave Request',
+            description: 'Requesting annual leave for a family vacation',
+            status: 'approved',
+            submittedDate: '2023-11-15',
+            decisionDate: '2023-11-17',
+            approver: 'Sarah Johnson',
+            details: {
+              startDate: '2023-12-20',
+              endDate: '2023-12-27',
+              returnDate: '2023-12-28',
+              totalDays: 5,
+              leaveType: 'Annual Leave',
+              comments: 'Family vacation planned during the holidays'
+            }
+          },
+          {
+            id: 'REQ-2023-002',
+            type: 'equipment',
+            category: 'equipmentAndResources',
+            title: 'Laptop Upgrade Request',
+            description: 'Requesting a laptop upgrade due to performance issues',
+            status: 'pending',
+            submittedDate: '2023-11-28',
+            approver: 'Michael Chen',
+            details: {
+              equipmentType: 'Laptop',
+              reason: 'Current laptop is over 3 years old and experiencing significant performance issues',
+              specifications: 'Prefer 16GB RAM, 512GB SSD, and dedicated graphics card',
+              urgency: 'Medium',
+              additionalInfo: 'Current laptop model is XPS 13, purchased in 2020'
+            }
+          },
+          // ... other mock requests ...
+        ]);
       }
-    },
-    {
-      id: 'REQ-2023-002',
-      type: 'equipment',
-      category: 'equipmentAndResources',
-      title: 'Laptop Upgrade Request',
-      description: 'Requesting a laptop upgrade due to performance issues',
-      status: 'pending',
-      submittedDate: '2023-11-28',
-      approver: 'Michael Chen',
-      details: {
-        equipmentType: 'Laptop',
-        reason: 'Current laptop is over 3 years old and experiencing significant performance issues',
-        specifications: 'Prefer 16GB RAM, 512GB SSD, and dedicated graphics card',
-        urgency: 'Medium',
-        additionalInfo: 'Current laptop model is XPS 13, purchased in 2020'
-      }
-    },
-    {
-      id: 'REQ-2023-003',
-      type: 'expense',
-      category: 'financeAndBenefits',
-      title: 'Client Meeting Expense',
-      description: 'Expense reimbursement for client lunch meeting',
-      status: 'approved',
-      submittedDate: '2023-11-20',
-      decisionDate: '2023-11-22',
-      approver: 'Emma Rodriguez',
-      details: {
-        amount: 82.50,
-        currency: 'USD',
-        date: '2023-11-18',
-        category: 'Client Entertainment',
-        paymentMethod: 'Personal Credit Card',
-        receiptProvided: true
-      }
-    },
-    {
-      id: 'REQ-2023-004',
-      type: 'remote',
-      category: 'timeAndLeave',
-      title: 'Remote Work Arrangement',
-      description: 'Request to work remotely for 2 weeks',
-      status: 'pending',
-      submittedDate: '2023-11-29',
-      approver: 'Sarah Johnson',
-      details: {
-        startDate: '2023-12-11',
-        endDate: '2023-12-22',
-        location: 'Home Office',
-        reason: 'Family member needs care after surgery',
-        connectivity: 'High-speed internet confirmed',
-        availability: 'Will be available during regular business hours'
-      }
-    },
-    {
-      id: 'REQ-2023-005',
-      type: 'training',
-      category: 'careerAndDevelopment',
-      title: 'React Advanced Training',
-      description: 'Request to attend advanced React development course',
-      status: 'rejected',
-      submittedDate: '2023-11-10',
-      decisionDate: '2023-11-15',
-      approver: 'Michael Chen',
-      rejectionReason: 'Budget constraints for current quarter. Please reapply in Q1 2024.',
-      details: {
-        courseName: 'Advanced React Patterns',
-        provider: 'Frontend Masters',
-        cost: 499.00,
-        currency: 'USD',
-        startDate: '2023-12-05',
-        duration: '3 days',
-        justification: 'Will help improve our application architecture and performance'
-      }
-    },
-    {
-      id: 'REQ-2023-006',
-      type: 'access',
-      category: 'equipmentAndResources',
-      title: 'Database Access Request',
-      description: 'Requesting access to production database for troubleshooting',
-      status: 'pending',
-      submittedDate: '2023-11-30',
-      approver: 'James Wilson',
-      details: {
-        system: 'Production PostgreSQL Database',
-        accessLevel: 'Read-only',
-        duration: 'Temporary (2 weeks)',
-        justification: 'Need to investigate data inconsistency issues reported by clients',
-        manager: 'Michael Chen'
-      }
+    } catch (error) {
+      console.error('Error loading requests:', error);
+      // Use mock data as fallback
+      setRequests([]);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
 
   // Filter requests based on active tab, search query, and filters
   const filteredRequests = requests.filter(request => {
@@ -294,12 +275,170 @@ export default function RequestPanel() {
     setSelectedRequestType(requestType);
   };
 
-  // Handle submitting a new request (mock implementation)
-  const handleSubmitRequest = () => {
-    // In a real implementation, this would validate and submit the form data
-    setIsNewRequestOpen(false);
-    setSelectedRequestType(null);
-    // Could add a success notification here
+  // Form validation
+  const validateForm = () => {
+    const errors = {};
+    
+    if (selectedRequestType?.id === 'leave') {
+      if (!formData.leaveType) errors.leaveType = 'Leave type is required';
+      if (!formData.startDate) errors.startDate = 'Start date is required';
+      if (!formData.endDate) errors.endDate = 'End date is required';
+      if (!formData.reason) errors.reason = 'Reason is required';
+      
+      // Validate date logic
+      if (formData.startDate && formData.endDate) {
+        const start = new Date(formData.startDate);
+        const end = new Date(formData.endDate);
+        if (start > end) {
+          errors.endDate = 'End date must be after start date';
+        }
+        if (start < new Date()) {
+          errors.startDate = 'Start date cannot be in the past';
+        }
+      }
+    }
+    
+    if (selectedRequestType?.id === 'equipment') {
+      if (!formData.equipmentType) errors.equipmentType = 'Equipment type is required';
+      if (!formData.reason) errors.reason = 'Reason for request is required';
+      if (!formData.urgency) errors.urgency = 'Urgency level is required';
+    }
+    
+    // Generic validation for other types
+    if (!['leave', 'equipment'].includes(selectedRequestType?.id)) {
+      if (!formData.title) errors.title = 'Request title is required';
+      if (!formData.description) errors.description = 'Description is required';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle form submission with proper validation and API integration
+  const handleSubmitRequest = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      
+      const requestData = {
+        type: selectedRequestType.id,
+        category: getCategoryByType(selectedRequestType.id),
+        title: formData.title || getDefaultTitle(selectedRequestType.id),
+        description: formData.description || formData.reason,
+        details: formData,
+        priority: formData.priority || formData.urgency || 'medium',
+        submittedDate: new Date().toISOString().split('T')[0],
+        status: 'pending',
+        approver: getApproverByType(selectedRequestType.id)
+      };
+      
+      // Try production API first
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      if (response.ok) {
+        const newRequest = await response.json();
+        setRequests(prev => [newRequest, ...prev]);
+        
+        // Send notification to approver
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'new_request_notification',
+            to: getApproverEmail(selectedRequestType.id),
+            requestData: newRequest
+          }),
+        });
+        
+        alert('Request submitted successfully! Your approver has been notified.');
+      } else {
+        // Fallback: Add to local state (mock mode)
+        const mockRequest = {
+          ...requestData,
+          id: `REQ-${new Date().getFullYear()}-${String(requests.length + 1).padStart(3, '0')}`
+        };
+        setRequests(prev => [mockRequest, ...prev]);
+        alert('Request submitted successfully! (Demo mode)');
+      }
+      
+      setIsNewRequestOpen(false);
+      setSelectedRequestType(null);
+      setFormData({});
+      setFormErrors({});
+      
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      alert('Error submitting request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Helper functions for form logic
+  const getCategoryByType = (typeId) => {
+    for (const [category, types] of Object.entries(requestTypes)) {
+      if (types.some(type => type.id === typeId)) {
+        return category;
+      }
+    }
+    return 'administrative';
+  };
+
+  const getDefaultTitle = (typeId) => {
+    const allTypes = Object.values(requestTypes).flat();
+    const type = allTypes.find(t => t.id === typeId);
+    return type?.name || 'New Request';
+  };
+
+  const getApproverByType = (typeId) => {
+    const approverMap = {
+      leave: 'Sarah Johnson',
+      remote: 'Sarah Johnson',
+      overtime: 'Department Head',
+      equipment: 'IT Department',
+      software: 'IT Department',
+      access: 'Security Team',
+      training: 'HR Department',
+      expense: 'Finance Department',
+      document: 'HR Department',
+      travel: 'Manager'
+    };
+    return approverMap[typeId] || 'Department Head';
+  };
+
+  const getApproverEmail = (typeId) => {
+    const emailMap = {
+      leave: 'sarah.johnson@company.com',
+      remote: 'sarah.johnson@company.com',
+      overtime: 'depthead@company.com',
+      equipment: 'it@company.com',
+      software: 'it@company.com',
+      access: 'security@company.com',
+      training: 'hr@company.com',
+      expense: 'finance@company.com',
+      document: 'hr@company.com',
+      travel: 'manager@company.com'
+    };
+    return emailMap[typeId] || 'manager@company.com';
+  };
+
+  const handleFormChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   return (
@@ -547,8 +686,8 @@ export default function RequestPanel() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Leave Type</label>
-                      <Select>
-                        <SelectTrigger>
+                      <Select value={formData.leaveType || ''} onValueChange={(value) => handleFormChange('leaveType', value)}>
+                        <SelectTrigger className={formErrors.leaveType ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select leave type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -559,34 +698,66 @@ export default function RequestPanel() {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {formErrors.leaveType && <p className="text-red-500 text-xs">{formErrors.leaveType}</p>}
                     </div>
                     <div></div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Start Date</label>
-                      <Input type="date" />
+                      <Input 
+                        type="date" 
+                        value={formData.startDate || ''} 
+                        onChange={(e) => handleFormChange('startDate', e.target.value)}
+                        className={formErrors.startDate ? 'border-red-500' : ''}
+                      />
+                      {formErrors.startDate && <p className="text-red-500 text-xs">{formErrors.startDate}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">End Date</label>
-                      <Input type="date" />
+                      <Input 
+                        type="date" 
+                        value={formData.endDate || ''} 
+                        onChange={(e) => handleFormChange('endDate', e.target.value)}
+                        className={formErrors.endDate ? 'border-red-500' : ''}
+                      />
+                      {formErrors.endDate && <p className="text-red-500 text-xs">{formErrors.endDate}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Return Date</label>
-                      <Input type="date" />
+                      <Input 
+                        type="date" 
+                        value={formData.returnDate || ''} 
+                        onChange={(e) => handleFormChange('returnDate', e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Total Days</label>
-                      <Input type="number" disabled />
+                      <Input 
+                        type="number" 
+                        value={formData.totalDays || ''} 
+                        onChange={(e) => handleFormChange('totalDays', e.target.value)}
+                        disabled 
+                      />
                     </div>
                   </div>
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Reason/Comments</label>
-                    <Textarea placeholder="Provide any additional details or reason for your leave request" />
+                    <Textarea 
+                      placeholder="Provide any additional details or reason for your leave request" 
+                      value={formData.reason || ''} 
+                      onChange={(e) => handleFormChange('reason', e.target.value)}
+                      className={formErrors.reason ? 'border-red-500' : ''}
+                    />
+                    {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
                   </div>
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Handover Notes</label>
-                    <Textarea placeholder="Provide handover information for your team during your absence" />
+                    <Textarea 
+                      placeholder="Provide handover information for your team during your absence" 
+                      value={formData.handoverNotes || ''} 
+                      onChange={(e) => handleFormChange('handoverNotes', e.target.value)}
+                    />
                   </div>
                 </div>
               )}
@@ -596,8 +767,8 @@ export default function RequestPanel() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Equipment Type</label>
-                      <Select>
-                        <SelectTrigger>
+                      <Select value={formData.equipmentType || ''} onValueChange={(value) => handleFormChange('equipmentType', value)}>
+                        <SelectTrigger className={formErrors.equipmentType ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select equipment type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -611,12 +782,13 @@ export default function RequestPanel() {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {formErrors.equipmentType && <p className="text-red-500 text-xs">{formErrors.equipmentType}</p>}
                     </div>
                     
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Urgency</label>
-                      <Select>
-                        <SelectTrigger>
+                      <Select value={formData.urgency || ''} onValueChange={(value) => handleFormChange('urgency', value)}>
+                        <SelectTrigger className={formErrors.urgency ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select urgency level" />
                         </SelectTrigger>
                         <SelectContent>
@@ -626,17 +798,28 @@ export default function RequestPanel() {
                           <SelectItem value="critical">Critical</SelectItem>
                         </SelectContent>
                       </Select>
+                      {formErrors.urgency && <p className="text-red-500 text-xs">{formErrors.urgency}</p>}
                     </div>
                   </div>
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Reason for Request</label>
-                    <Textarea placeholder="Explain why you need this equipment" />
+                    <Textarea 
+                      placeholder="Explain why you need this equipment" 
+                      value={formData.reason || ''} 
+                      onChange={(e) => handleFormChange('reason', e.target.value)}
+                      className={formErrors.reason ? 'border-red-500' : ''}
+                    />
+                    {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
                   </div>
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Specifications/Requirements</label>
-                    <Textarea placeholder="Describe any specific requirements or specifications needed" />
+                    <Textarea 
+                      placeholder="Describe any specific requirements or specifications needed" 
+                      value={formData.specifications || ''} 
+                      onChange={(e) => handleFormChange('specifications', e.target.value)}
+                    />
                   </div>
                 </div>
               )}
@@ -646,23 +829,39 @@ export default function RequestPanel() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Request Title</label>
-                    <Input placeholder="Enter a title for your request" />
+                    <Input 
+                      placeholder="Enter a title for your request" 
+                      value={formData.title || ''} 
+                      onChange={(e) => handleFormChange('title', e.target.value)}
+                      className={formErrors.title ? 'border-red-500' : ''}
+                    />
+                    {formErrors.title && <p className="text-red-500 text-xs">{formErrors.title}</p>}
                   </div>
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Description</label>
-                    <Textarea placeholder="Provide details about your request" />
+                    <Textarea 
+                      placeholder="Provide details about your request" 
+                      value={formData.description || ''} 
+                      onChange={(e) => handleFormChange('description', e.target.value)}
+                      className={formErrors.description ? 'border-red-500' : ''}
+                    />
+                    {formErrors.description && <p className="text-red-500 text-xs">{formErrors.description}</p>}
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Date Needed</label>
-                      <Input type="date" />
+                      <Input 
+                        type="date" 
+                        value={formData.dateNeeded || ''} 
+                        onChange={(e) => handleFormChange('dateNeeded', e.target.value)}
+                      />
                     </div>
                     
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Priority</label>
-                      <Select>
+                      <Select value={formData.priority || ''} onValueChange={(value) => handleFormChange('priority', value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select priority level" />
                         </SelectTrigger>
@@ -679,7 +878,10 @@ export default function RequestPanel() {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium">Attachments (Optional)</label>
-                <Input type="file" />
+                <Input 
+                  type="file" 
+                  onChange={(e) => handleFormChange('attachments', e.target.files)}
+                />
               </div>
             </div>
           )}
