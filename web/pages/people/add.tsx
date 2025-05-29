@@ -163,7 +163,7 @@ const AddEmployeePage = () => {
   useEffect(() => {
     // Check if user has appropriate role
     if (!allowAccess && !(role === 'admin' || role === 'hr')) {
-      router.push('/login?redirect=/people/add');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
 

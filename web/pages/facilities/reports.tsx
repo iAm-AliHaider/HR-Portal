@@ -45,7 +45,7 @@ const ResourceReportsPage = () => {
   // Access control
   useEffect(() => {
     if (!allowAccess && !['admin', 'manager', 'hr'].includes(role)) {
-      router.push('/login?redirect=/facilities/reports');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
 

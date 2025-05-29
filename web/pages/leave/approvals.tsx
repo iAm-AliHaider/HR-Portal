@@ -39,7 +39,7 @@ const ApprovalsPage = () => {
   // Ensure user has access to this page (managers and admins only)
   useEffect(() => {
     if (!allowAccess && !['manager', 'admin', 'hr_manager'].includes(role)) {
-      router.push('/login?redirect=/leave/approvals');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
 

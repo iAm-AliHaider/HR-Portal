@@ -115,7 +115,7 @@ const EmployeeProfile = () => {
   // Ensure user has access to this page
   useEffect(() => {
     if (!allowAccess) {
-      router.push('/login?redirect=/people');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, router]);
 

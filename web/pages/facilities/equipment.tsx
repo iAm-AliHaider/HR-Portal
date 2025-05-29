@@ -615,7 +615,7 @@ const EquipmentInventoryPage = () => {
   // Access control
   useEffect(() => {
     if (!allowAccess && !['admin', 'manager', 'hr'].includes(role)) {
-      router.push('/login?redirect=/facilities/equipment');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
 

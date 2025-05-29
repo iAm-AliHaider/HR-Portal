@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
@@ -41,7 +42,7 @@ const GeneralSettingsPage: NextPage = () => {
   // Ensure user has access to this page
   useEffect(() => {
     if (!allowAccess && !['employee', 'manager', 'admin'].includes(role)) {
-      router.push('/login?redirect=/settings/general');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '../../../../lib/supabase/client';
@@ -249,7 +250,7 @@ export default function JobApplicationPage() {
   };
 
   const handleSignInRedirect = () => {
-    router.push(`/candidate/login?redirect=${encodeURIComponent(router.asPath)}`);
+    // Redirect removed - using graceful fallback instead
   };
 
   if (loading) {

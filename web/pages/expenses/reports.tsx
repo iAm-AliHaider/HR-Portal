@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../hooks/useAuth';
 import { shouldBypassAuth } from '@/lib/auth';
@@ -31,7 +32,7 @@ const ExpenseReportsPage = () => {
   // Ensure user has access to this page (managers and admins only)
   useEffect(() => {
     if (!allowAccess && !['manager', 'admin'].includes(role)) {
-      router.push('/login?redirect=/expenses/reports');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
 

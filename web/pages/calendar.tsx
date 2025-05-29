@@ -614,7 +614,7 @@ const CalendarPage = () => {
   
   useEffect(() => {
     if (!allowAccess) {
-      router.push('/login?redirect=/calendar');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, router]);
 

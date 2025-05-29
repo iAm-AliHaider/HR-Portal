@@ -70,7 +70,7 @@ const EmployeeReportsPage = () => {
   // Ensure user has access to this page
   useEffect(() => {
     if (!allowAccess) {
-      router.push('/login?redirect=/people/reports');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, router]);
 

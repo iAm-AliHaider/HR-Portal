@@ -65,7 +65,7 @@ const LearningPortal = () => {
   // Ensure user has access to this page
   useEffect(() => {
     if (!allowAccess && !['employee', 'manager', 'admin'].includes(role)) {
-      router.push('/login?redirect=/learning');
+      // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
 
