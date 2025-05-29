@@ -4,32 +4,60 @@ import { useAuth } from '@/hooks/useAuth';
 import { GetServerSideProps } from 'next';
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
-      // In development mode, redirect to the dev entry page
-      if (process.env.NODE_ENV === 'development') {
-        router.replace('/dev-entry');
-        return;
-      }
-      
       // Check for bypass parameter for direct access to pages
       if (router.query.bypass === 'true') {
         // Allow access without authentication 
         return; // Don't redirect if bypassing auth
       }
       
+      // Check for return URL from login
+      const returnUrl = router.query.returnUrl as string;
+      
       if (user) {
-        // User is logged in, redirect to dashboard
-        router.replace('/dashboard');
+        // User is logged in
+        if (returnUrl && returnUrl.startsWith('/')) {
+          // Redirect to the original requested page
+          router.replace(decodeURIComponent(returnUrl));
+        } else {
+          // Default redirect based on role
+          switch (role) {
+            case 'admin':
+            case 'hr':
+            case 'manager':
+              router.replace('/dashboard');
+              break;
+            case 'employee':
+              router.replace('/employee/dashboard');
+              break;
+            case 'candidate':
+              router.replace('/candidate/dashboard');
+              break;
+            default:
+              router.replace('/dashboard');
+          }
+        }
       } else {
-        // User is not logged in, redirect to public careers page
-        router.replace('/careers');
+        // User is not logged in
+        if (returnUrl && returnUrl.startsWith('/')) {
+          // Redirect to login with return URL
+          router.replace(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+        } else {
+          // In development mode, redirect to the dev entry page
+          if (process.env.NODE_ENV === 'development') {
+            router.replace('/dev-entry');
+          } else {
+            // Default to careers page for non-authenticated users
+            router.replace('/careers');
+          }
+        }
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, role, router]);
 
   // Show loading state while checking authentication
   return (
@@ -41,6 +69,7 @@ export default function HomePage() {
         <div className="mt-4 space-x-4">
           <a href="/careers" className="text-blue-600 hover:underline">Careers</a>
           <a href="/login" className="text-blue-600 hover:underline">HR Login</a>
+          <a href="/dev-entry" className="text-blue-600 hover:underline">Dev Entry</a>
         </div>
       </div>
     </div>

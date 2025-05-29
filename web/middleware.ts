@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.pathname;
+  const searchParams = request.nextUrl.searchParams;
   
   // Public pages that don't require authentication
   const publicPages = [
@@ -14,6 +15,7 @@ export async function middleware(request: NextRequest) {
     '/dev-entry',
     '/careers', 
     '/candidate',
+    '/unauthorized',
     '/'
   ];
   
@@ -35,7 +37,6 @@ export async function middleware(request: NextRequest) {
   }
   
   // Check for bypass parameters
-  const searchParams = request.nextUrl.searchParams;
   if (
     searchParams.get('bypass') === 'true' || 
     searchParams.get('mockBypass') === 'true'
@@ -43,19 +44,50 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // In production, for simplicity, redirect to dev-entry for auth fallback
-  // This prevents Supabase connection issues from breaking the entire app
+  // Production authentication logic
   try {
-    // Simple check - if accessing protected routes without auth, redirect to dev-entry
-    if (url.startsWith('/dashboard') || url.startsWith('/people') || url.startsWith('/jobs')) {
-      return NextResponse.redirect(new URL('/dev-entry', request.url));
+    // Handle specific protected routes
+    const protectedRoutes = [
+      '/dashboard',
+      '/people',
+      '/jobs',
+      '/applications',
+      '/interviews',
+      '/offers',
+      '/admin',
+      '/reports',
+      '/analytics',
+      '/settings',
+      '/employee',
+      '/leave',
+      '/loans',
+      '/training',
+      '/safety',
+      '/facilities',
+      '/expenses',
+      '/compliance',
+      '/recruitment',
+      '/performance',
+      '/payroll'
+    ];
+    
+    // Check if this is a protected route
+    const isProtectedRoute = protectedRoutes.some(route => 
+      url.startsWith(route) || url === route
+    );
+    
+    if (isProtectedRoute) {
+      // In production without proper auth setup, redirect to login with return URL
+      const returnUrl = encodeURIComponent(url + (request.nextUrl.search || ''));
+      return NextResponse.redirect(new URL(`/login?returnUrl=${returnUrl}`, request.url));
     }
     
     return NextResponse.next();
   } catch (error) {
     console.error('Middleware error:', error);
-    // Fallback to dev-entry page
-    return NextResponse.redirect(new URL('/dev-entry', request.url));
+    // Fallback to login page with return URL
+    const returnUrl = encodeURIComponent(url);
+    return NextResponse.redirect(new URL(`/login?returnUrl=${returnUrl}`, request.url));
   }
 }
 

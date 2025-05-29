@@ -16,7 +16,23 @@ export default function LoginPage() {
   
   const router = useRouter();
   const { user, signIn } = useAuth();
-  const redirect = router.query.redirect as string || '/dashboard';
+  
+  // Get redirect URL from query params with fallback
+  const getRedirectUrl = () => {
+    const returnUrl = router.query.returnUrl as string;
+    const redirect = router.query.redirect as string;
+    
+    // Prioritize returnUrl, then redirect, then default
+    if (returnUrl && returnUrl.startsWith('/')) {
+      return decodeURIComponent(returnUrl);
+    }
+    if (redirect && redirect.startsWith('/')) {
+      return redirect;
+    }
+    return '/dashboard';
+  };
+  
+  const redirectUrl = getRedirectUrl();
   const isDevelopment = process.env.NODE_ENV === 'development';
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
   
@@ -38,10 +54,10 @@ export default function LoginPage() {
   // Handle redirection if the user is already logged in
   useEffect(() => {
     if (user) {
-      console.log('User already logged in, redirecting to', redirect);
-      router.push(redirect);
+      console.log('User already logged in, redirecting to', redirectUrl);
+      router.push(redirectUrl);
     }
-  }, [user, router, redirect]);
+  }, [user, router, redirectUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +67,7 @@ export default function LoginPage() {
     try {
       const result = await signIn(email, password);
       if (result.success) {
-        router.push(redirect);
+        router.push(redirectUrl);
       } else {
         setError(result.error || 'Invalid credentials');
       }
