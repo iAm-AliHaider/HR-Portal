@@ -329,8 +329,7 @@ export default function JobsPage() {
         <meta name="description" content="View and manage job listings" />
       </Head>
       
-      <RequireRole allowed={['admin', 'hr', 'recruiter', 'manager', 'employee']}>
-        <SimpleDashboardLayout 
+      <SimpleDashboardLayout 
           title="Job Openings" 
           subtitle="Browse current opportunities"
           actions={
@@ -456,7 +455,6 @@ export default function JobsPage() {
             )}
           </div>
         </SimpleDashboardLayout>
-      </RequireRole>
     </>
   );
 } 
