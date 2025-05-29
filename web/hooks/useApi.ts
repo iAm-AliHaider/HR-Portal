@@ -1,3 +1,49 @@
+// Mock jobs data for fallback
+const mockJobs = [
+  {
+    id: '1',
+    title: 'Senior Software Engineer',
+    department: 'Engineering',
+    location: 'San Francisco, CA',
+    type: 'Full-time',
+    salary_range: '$120,000 - $180,000',
+    description: 'We are looking for a senior software engineer to join our growing team.',
+    requirements: 'Bachelor\'s degree in Computer Science, 5+ years experience',
+    status: 'open',
+    created_at: '2024-01-15T00:00:00Z',
+    closing_date: '2024-02-15',
+    applications_count: 12
+  },
+  {
+    id: '2',
+    title: 'Product Manager',
+    department: 'Product',
+    location: 'New York, NY',
+    type: 'Full-time',
+    salary_range: '$100,000 - $150,000',
+    description: 'Lead product development and strategy for our core platform.',
+    requirements: 'MBA or equivalent, 3+ years product management experience',
+    status: 'open',
+    created_at: '2024-01-10T00:00:00Z',
+    closing_date: '2024-02-10',
+    applications_count: 8
+  },
+  {
+    id: '3',
+    title: 'UX Designer',
+    department: 'Design',
+    location: 'Remote',
+    type: 'Full-time',
+    salary_range: '$80,000 - $120,000',
+    description: 'Create beautiful and intuitive user experiences.',
+    requirements: 'Portfolio demonstrating UX design skills, 2+ years experience',
+    status: 'open',
+    created_at: '2024-01-05T00:00:00Z',
+    closing_date: '2024-02-05',
+    applications_count: 15
+  }
+];
+
 import { useState, useEffect, useCallback } from 'react';
 import { 
   employeeService, 

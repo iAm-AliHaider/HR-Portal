@@ -11,7 +11,7 @@ const isProduction = process.env.NODE_ENV === 'production'
 let supabaseInstance: SupabaseClient | null = null;
 
 // Create Supabase client with improved configuration
-function createSupabaseClient() {
+function createSupabaseClient(): SupabaseClient {
   if (supabaseInstance) {
     return supabaseInstance;
   }
@@ -23,25 +23,41 @@ function createSupabaseClient() {
       detectSessionInUrl: false, // Prevent URL parsing issues
       flowType: 'pkce',
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      // Reduce auth state change frequency
+      storageKey: 'hr-portal-auth',
+      debug: false, // Disable debug logs
     },
     global: {
       headers: {
         'X-Client-Info': 'hr-portal-web@1.0.0',
       },
     },
-    // Reduced realtime pressure to prevent conflicts
+    // Minimal realtime to prevent conflicts
     realtime: {
       params: {
         eventsPerSecond: 1,
       },
-      heartbeatIntervalMs: 30000,
-      reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 5000),
+      heartbeatIntervalMs: 60000, // Increased interval
+      reconnectAfterMs: (tries: number) => Math.min(tries * 2000, 10000),
     },
     // Add database settings for better performance
     db: {
       schema: 'public'
     }
   });
+
+  // Suppress console warnings in production
+  if (process.env.NODE_ENV === 'production') {
+    const originalConsoleWarn = console.warn;
+    console.warn = (...args) => {
+      const message = args.join(' ');
+      if (message.includes('Multiple GoTrueClient instances') || 
+          message.includes('supabase') && message.includes('detected')) {
+        return; // Suppress Supabase warnings
+      }
+      originalConsoleWarn.apply(console, args);
+    };
+  }
 
   return supabaseInstance;
 }

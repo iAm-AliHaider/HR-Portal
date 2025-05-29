@@ -123,6 +123,9 @@ export default function JobsPage() {
 
   // State for filtered jobs
   const [filteredJobs, setFilteredJobs] = useState(jobs || []);
+  
+  // Error recovery state
+  const [hasRecovered, setHasRecovered] = useState(false);
   const [activeFilters, setActiveFilters] = useState<JobFilterValues>({
     search: '',
     departments: [],
@@ -144,9 +147,13 @@ export default function JobsPage() {
     applyFilters(filters);
   };
   
-  // Apply filters to jobs data
+  // Apply filters to jobs data with error handling
   const applyFilters = (filters: JobFilterValues) => {
-    if (!jobs) return;
+    if (!jobs || jobs.length === 0) {
+      // If no jobs but no error, show empty state
+      setFilteredJobs([]);
+      return;
+    }
     
     let results = [...jobs];
     
@@ -310,12 +317,12 @@ export default function JobsPage() {
     }
   };
 
-  // Calculate statistics
+  // Calculate statistics with safe fallbacks
   const stats = {
-    total: jobs.length,
-    open: jobs.filter(job => job.status === 'open').length,
-    closed: jobs.filter(job => job.status === 'closed').length,
-    totalApplications: applications.length
+    total: jobs?.length || 0,
+    open: jobs?.filter(job => job.status === 'open').length || 0,
+    closed: jobs?.filter(job => job.status === 'closed').length || 0,
+    totalApplications: applications?.length || 0
   };
 
   const departments = ['Engineering', 'HR', 'Marketing', 'Finance', 'Sales', 'Design', 'Support'];
@@ -326,7 +333,44 @@ export default function JobsPage() {
     return (
       <ModernDashboardLayout>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading job opportunities...</p>
+          </div>
+        </div>
+      </ModernDashboardLayout>
+    );
+  }
+
+  // Show error state with fallback immediately if there's an error
+  if (error || apiError) {
+    return (
+      <ModernDashboardLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 mb-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-yellow-800 mb-2">Jobs Service Unavailable</h3>
+              <p className="text-yellow-700 mb-4">We're having trouble connecting to our job database. This might be a temporary issue.</p>
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition-colors"
+                >
+                  Refresh Page
+                </button>
+                <Link href="/dashboard">
+                  <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition-colors">
+                    Return to Dashboard
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </ModernDashboardLayout>
     );
