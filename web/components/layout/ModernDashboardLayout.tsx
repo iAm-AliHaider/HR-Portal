@@ -19,7 +19,22 @@ import {
   User,
   LogOut,
   ChevronDown,
-  Search
+  Search,
+  DollarSign,
+  CreditCard,
+  Heart,
+  Award,
+  Clock,
+  BookOpen,
+  Target,
+  UserCheck,
+  Zap,
+  TrendingUp,
+  Database,
+  AlertTriangle,
+  MessageSquare,
+  FileCheck,
+  Activity
 } from 'lucide-react';
 
 interface ModernDashboardLayoutProps {
@@ -49,7 +64,11 @@ const navigationItems: NavItem[] = [
     subItems: [
       { name: 'All Employees', href: '/people' },
       { name: 'Add Employee', href: '/people/add' },
+      { name: 'Employee Profile', href: '/employee/profile' },
       { name: 'Organization Chart', href: '/org-chart' },
+      { name: 'Teams', href: '/teams' },
+      { name: 'Onboarding', href: '/onboarding' },
+      { name: 'Offboarding', href: '/offboarding' },
     ]
   },
   {
@@ -60,51 +79,120 @@ const navigationItems: NavItem[] = [
       { name: 'Job Openings', href: '/jobs' },
       { name: 'Applications', href: '/applications' },
       { name: 'Interviews', href: '/interviews' },
+      { name: 'Offers', href: '/offers' },
+      { name: 'Recruitment Analytics', href: '/recruitment/analytics' },
+      { name: 'Careers Page', href: '/careers' },
     ]
   },
   {
-    name: 'Leave Management',
+    name: 'Leave & Time',
     href: '/leave',
     icon: Calendar,
     subItems: [
       { name: 'My Leave', href: '/leave' },
       { name: 'Leave Approvals', href: '/leave/approvals' },
       { name: 'Leave Calendar', href: '/leave/calendar' },
+      { name: 'Time & Attendance', href: '/time-attendance' },
+      { name: 'Calendar', href: '/calendar' },
     ]
   },
   {
-    name: 'Training',
+    name: 'Learning & Development',
     href: '/training',
     icon: GraduationCap,
     subItems: [
-      { name: 'Courses', href: '/training' },
+      { name: 'Training Courses', href: '/training' },
       { name: 'Learning Portal', href: '/learning' },
+      { name: 'Employee Learning', href: '/employee/learning-portal' },
+      { name: 'Skills Management', href: '/skills' },
+      { name: 'Performance', href: '/performance' },
     ]
   },
   {
-    name: 'Reports',
+    name: 'Finance & Payroll',
+    href: '/payroll',
+    icon: DollarSign,
+    subItems: [
+      { name: 'Payroll', href: '/payroll' },
+      { name: 'Payslips', href: '/payslips' },
+      { name: 'Benefits', href: '/benefits' },
+      { name: 'Expenses', href: '/expenses' },
+      { name: 'Loans', href: '/loans' },
+      { name: 'Assets', href: '/assets' },
+    ]
+  },
+  {
+    name: 'Employee Experience',
+    href: '/requests',
+    icon: Heart,
+    subItems: [
+      { name: 'Request Panel', href: '/employee/request-panel' },
+      { name: 'Requests', href: '/requests' },
+      { name: 'Wellness Tracker', href: '/employee/wellness-tracker' },
+      { name: 'Team Collaboration', href: '/employee/team-collaboration' },
+      { name: 'Recognition', href: '/recognition' },
+      { name: 'Employee Surveys', href: '/employee-surveys' },
+    ]
+  },
+  {
+    name: 'Workflows & Tasks',
+    href: '/workflows',
+    icon: Zap,
+    subItems: [
+      { name: 'Workflows', href: '/workflows' },
+      { name: 'Tasks', href: '/tasks' },
+      { name: 'Approvals', href: '/approvals' },
+      { name: 'Role & Workflow Mgmt', href: '/role-workflow-management' },
+      { name: 'Onboarding Tasks', href: '/onboarding-tasks' },
+    ]
+  },
+  {
+    name: 'Reports & Analytics',
     href: '/reports',
     icon: BarChart3,
     subItems: [
       { name: 'HR Analytics', href: '/hr-analytics' },
       { name: 'Financial Reports', href: '/reports/financial' },
       { name: 'Workforce Reports', href: '/reports/workforce' },
+      { name: 'Compliance Reports', href: '/reports/compliance' },
+      { name: 'Recruitment Reports', href: '/recruitment/reports' },
+      { name: 'All Reports', href: '/reports' },
     ]
   },
   {
-    name: 'Facilities',
+    name: 'Facilities & Safety',
     href: '/facilities',
     icon: Building,
+    subItems: [
+      { name: 'Facilities', href: '/facilities' },
+      { name: 'Room Bookings', href: '/bookings' },
+      { name: 'Safety Management', href: '/safety' },
+      { name: 'Equipment', href: '/facilities/equipment' },
+      { name: 'Incidents', href: '/incidents' },
+    ]
   },
   {
-    name: 'Compliance',
+    name: 'Compliance & Documents',
     href: '/compliance',
     icon: Shield,
+    subItems: [
+      { name: 'Compliance', href: '/compliance' },
+      { name: 'Documents', href: '/documents' },
+      { name: 'Exit Management', href: '/exit-management' },
+      { name: 'Grievances', href: '/grievances' },
+    ]
   },
   {
-    name: 'Settings',
-    href: '/settings',
+    name: 'Administration',
+    href: '/admin',
     icon: Settings,
+    subItems: [
+      { name: 'Admin Panel', href: '/admin' },
+      { name: 'User Management', href: '/admin/user-management' },
+      { name: 'Settings', href: '/settings' },
+      { name: 'Logs', href: '/logs' },
+      { name: 'Setup Validation', href: '/setup-validation' },
+    ]
   },
 ];
 
