@@ -86,18 +86,14 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     // For settings pages, always wrap with DashboardLayout
     if (isSettingsPage) {
       return (
-        <ModernDashboardLayout>
-          <Component {...pageProps} />
-        </ModernDashboardLayout>
+        <Component {...pageProps} />
       );
     }
     
     // Only add layout to pages that don't have their own and need it
     if (needsLayout) {
       return (
-        <ModernDashboardLayout>
-          <Component {...pageProps} />
-        </ModernDashboardLayout>
+        <Component {...pageProps} />
       );
     }
     

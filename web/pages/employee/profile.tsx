@@ -167,7 +167,7 @@ const EmployeeProfilePage = () => {
   }
 
   return (
-    <ModernDashboardLayout title="My Profile" subtitle="View and update your personal information">
+    <>
       <Head>
         <title>My Profile - HR Management</title>
         <meta name="description" content="View and edit your employee profile" />
@@ -198,7 +198,7 @@ const EmployeeProfilePage = () => {
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
@@ -206,251 +206,148 @@ const EmployeeProfilePage = () => {
           )}
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Profile Picture & Basic Info */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center space-x-6">
-                <div className="relative">
-                  <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center">
-                    {profile.avatar ? (
-                      <img src={profile.avatar} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
-                    ) : (
-                      <span className="text-3xl text-gray-600">
-                        {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-                  {isEditing && (
-                    <button className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {profile.firstName} {profile.lastName}
-                  </h2>
-                  <p className="text-gray-600">{profile.workInfo.position}</p>
-                  <p className="text-sm text-gray-500">{profile.workInfo.department}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Personal Information */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={profile.firstName}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={profile.lastName}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={profile.email}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={profile.phone}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={profile.dateOfBirth}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={profile.address}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Emergency Contact */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Emergency Contact</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="emergencyContact.name"
-                    value={profile.emergencyContact.name}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Relationship
-                  </label>
-                  <input
-                    type="text"
-                    name="emergencyContact.relationship"
-                    value={profile.emergencyContact.relationship}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="emergencyContact.phone"
-                    value={profile.emergencyContact.phone}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 disabled:bg-gray-50"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Work Information - Read Only */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Work Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Employee ID
-                  </label>
-                  <input
-                    type="text"
-                    value={profile.workInfo.employeeId}
-                    disabled
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Department
-                  </label>
-                  <input
-                    type="text"
-                    value={profile.workInfo.department}
-                    disabled
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Position
-                  </label>
-                  <input
-                    type="text"
-                    value={profile.workInfo.position}
-                    disabled
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Manager
-                  </label>
-                  <input
-                    type="text"
-                    value={profile.workInfo.manager}
-                    disabled
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Date
-                  </label>
-                  <input
-                    type="text"
-                    value={new Date(profile.workInfo.startDate).toLocaleDateString()}
-                    disabled
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    value={profile.workInfo.location}
-                    disabled
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50"
-                  />
-                </div>
-              </div>
-            </div>
+        {hasLimitedAccess && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <h3 className="text-yellow-800 font-medium">Limited Access</h3>
+            <p className="text-yellow-600 text-sm">You're viewing a limited version of this profile.</p>
           </div>
         )}
+
+        {/* Profile Content */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          {/* Profile Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8">
+            <div className="flex items-center">
+              <div className="relative">
+                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
+                </div>
+                {profile.avatar && (
+                  <img 
+                    src={profile.avatar} 
+                    alt="Profile" 
+                    className="absolute inset-0 w-20 h-20 rounded-full object-cover"
+                  />
+                )}
+              </div>
+              <div className="ml-6 text-white">
+                <h2 className="text-2xl font-bold">{profile.firstName} {profile.lastName}</h2>
+                <p className="text-blue-100">{profile.workInfo.position}</p>
+                <p className="text-blue-200 text-sm">{profile.workInfo.department}</p>
+              </div>
             </div>
-    </ModernDashboardLayout>
+          </div>
+
+          {/* Profile Details */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Personal Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={profile.firstName}
+                          onChange={handleInputChange}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-gray-900">{profile.firstName}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={profile.lastName}
+                          onChange={handleInputChange}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-gray-900">{profile.lastName}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        name="email"
+                        value={profile.email}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{profile.email}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    {isEditing ? (
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={profile.phone}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{profile.phone}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Work Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Work Information</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+                    <p className="text-gray-900">{profile.workInfo.employeeId}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                    <p className="text-gray-900">{profile.workInfo.department}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                    <p className="text-gray-900">{profile.workInfo.position}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Manager</label>
+                    <p className="text-gray-900">{profile.workInfo.manager}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <p className="text-gray-900">{new Date(profile.workInfo.startDate).toLocaleDateString()}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <p className="text-gray-900">{profile.workInfo.location}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
