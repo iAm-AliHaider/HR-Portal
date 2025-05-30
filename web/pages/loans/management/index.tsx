@@ -91,20 +91,21 @@ export default function LoanManagementDashboard() {
   // Check if user has access
   if (!isAdmin) {
     return (
-    <ModernDashboardLayout>
-      <div className="flex flex-col items-center justify-center min-h-[70vh]">
-        <AlertTriangle className="h-16 w-16 text-yellow-500 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
-        <p className="text-gray-600 mb-6">You don't have permission to access the loan management dashboard.</p>
-        <Button onClick={() => router.push('/dashboard')}>
-          Return to Dashboard
-        </Button>
-      </div>
+      <ModernDashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[70vh]">
+          <AlertTriangle className="h-16 w-16 text-yellow-500 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+          <p className="text-gray-600 mb-6">You don't have permission to access the loan management dashboard.</p>
+          <Button onClick={() => router.push('/dashboard')}>
+            Return to Dashboard
+          </Button>
+        </div>
+      </ModernDashboardLayout>
     );
   }
   
   return (
-    <>
+    <ModernDashboardLayout>
       <Head>
         <title>Loan Management Dashboard | HR Portal</title>
         <meta name="description" content="Admin dashboard for loan management" />
@@ -118,7 +119,7 @@ export default function LoanManagementDashboard() {
         </div>
         
         {/* Tabs Navigation */}
-        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue="overview" value={activeTab} onChange={setActiveTab} className="w-full">
           <TabsList>
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <ChartPie className="h-4 w-4" />
@@ -447,6 +448,6 @@ export default function LoanManagementDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-        </ModernDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 

@@ -194,7 +194,6 @@ export default function RepaymentScheduleListPage() {
   
   return (
     <ModernDashboardLayout>
-      <>
       <Head>
         <title>Loan Repayment Schedules | HR Portal</title>
         <meta name="description" content="View and manage loan repayment schedules" />
@@ -561,6 +560,6 @@ export default function RepaymentScheduleListPage() {
           </div>
         )}
       </div>
-        </ModernDashboardLayout>
+    </ModernDashboardLayout>
   );
 } 
