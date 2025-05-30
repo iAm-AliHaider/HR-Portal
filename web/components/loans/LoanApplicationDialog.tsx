@@ -152,23 +152,42 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
   // Submit application
   const handleSubmit = async () => {
     try {
+      // Prepare the application data with the correct format expected by the API
+      const submissionData = {
+        employee_id: applicationData.employment_details.employee_id || 'EMP-001', // Default for demo
+        employee_name: 'Demo User', // This should come from authentication context
+        employee_email: 'demo@company.com', // This should come from authentication context
+        loan_type: applicationData.loan_type_id, // API expects the loan type ID
+        amount: parseFloat(applicationData.amount),
+        purpose: applicationData.purpose,
+        term_months: parseInt(applicationData.term_months),
+        documents: applicationData.documents || []
+      };
+
+      console.log('Submitting loan application:', submissionData);
+
       const response = await fetch('/api/loans', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...applicationData,
-          loan_type: selectedLoanType?.name,
-          calculated_emi: calculatedEMI,
-          interest_rate: selectedLoanType ? (selectedLoanType.interest_rate_min + selectedLoanType.interest_rate_max) / 2 : 0
-        }),
+        body: JSON.stringify(submissionData),
       });
 
+      const responseText = await response.text();
+      console.log('API Response:', response.status, responseText);
+
       if (response.ok) {
-        const result = await response.json();
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch (e) {
+          result = { message: 'Application submitted successfully' };
+        }
+        
         onSuccess?.(result);
         onClose();
+        
         // Reset form
         setCurrentStep(1);
         setSelectedLoanType(null);
@@ -186,12 +205,13 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
           documents: [],
           declaration: false
         });
+        setCalculatedEMI(0);
       } else {
-        throw new Error('Failed to submit application');
+        throw new Error(`Failed to submit application: ${response.status} - ${responseText}`);
       }
     } catch (error) {
       console.error('Error submitting loan application:', error);
-      alert('Failed to submit application. Please try again.');
+      alert(`Failed to submit application: ${error.message}. Please try again.`);
     }
   };
 
@@ -200,13 +220,13 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="text-center mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Your Loan Type</h3>
               <p className="text-gray-600">Select the type of loan that best fits your needs</p>
             </div>
             
-            <div className="grid gap-4">
+            <div className="grid gap-4 max-h-96 overflow-y-auto">
               {LOAN_TYPES.map((loanType) => (
                 <Card 
                   key={loanType.id} 
@@ -476,7 +496,7 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl w-full max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
@@ -488,7 +508,7 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
         </DialogHeader>
 
         {/* Progress indicator */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 px-4">
           {[1, 2, 3, 4].map((step) => (
             <div key={step} className="flex items-center">
               <div
@@ -501,7 +521,7 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
               </div>
               {step < 4 && (
                 <div
-                  className={`w-12 h-1 mx-2 ${
+                  className={`w-16 h-1 mx-2 ${
                     currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
                   }`}
                 />
@@ -511,10 +531,12 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
         </div>
 
         {/* Step content */}
-        {renderStepContent()}
+        <div className="px-4 py-2">
+          {renderStepContent()}
+        </div>
 
         {/* Navigation buttons */}
-        <div className="flex justify-between pt-6 border-t">
+        <div className="flex justify-between pt-6 px-4 border-t">
           <Button
             variant="outline"
             onClick={() => {
