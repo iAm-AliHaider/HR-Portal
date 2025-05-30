@@ -16,19 +16,19 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from '@/components/ui/select';
 import { 
-  Dialog, DialogContent, DialogDescription, DialogFooter, 
-  DialogHeader, DialogTitle, DialogTrigger 
-} from '@/components/ui/dialog';
-import { 
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '../../components/ui/dropdown-menu';
-import { Textarea } from '@/components/ui/textarea';
-import { 
   Accordion, AccordionContent, AccordionItem, AccordionTrigger 
 } from '@/components/ui/accordion';
 import { GetServerSideProps } from 'next';
 import { useDisclosure } from '@/components/ui/dialog';
+import {
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
+  useDisclosure as useDrawerDisclosure
+} from '@chakra-ui/react';
 
 // Rename interface FormData to RequestFormData
 interface RequestFormData {
@@ -100,7 +100,7 @@ export default function RequestPanel() {
   const [requests, setRequests] = useState<any[]>([]);
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [step, setStep] = useState<'select' | 'form'>('select');
-  const newRequestDialog = useDisclosure();
+  const newRequestDrawer = useDrawerDisclosure();
   
   // Request types grouped by category
   const requestTypes = {
@@ -415,7 +415,7 @@ export default function RequestPanel() {
         alert('Request submitted successfully! (Demo mode)');
       }
       
-      newRequestDialog.onClose();
+      newRequestDrawer.onClose();
       setSelectedRequestType(null);
       setFormData(initialFormData);
       setFormErrors({});
@@ -499,7 +499,7 @@ export default function RequestPanel() {
             <p className="text-gray-600">Submit and track your approval requests</p>
           </div>
           
-          <Button onClick={() => { newRequestDialog.onOpen(); setStep('select'); setDialogError(null); }}>
+          <Button onClick={() => { newRequestDrawer.onOpen(); setStep('select'); setDialogError(null); }}>
             <Plus className="h-4 w-4 mr-2" />
             New Request
           </Button>
@@ -671,288 +671,291 @@ export default function RequestPanel() {
         </Tabs>
       </div>
       
-      {/* New Request Dialog */}
-      <Dialog isOpen={newRequestDialog.isOpen} onClose={newRequestDialog.onClose}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedRequestType 
-                ? `New ${selectedRequestType.name}`
-                : 'New Request'}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedRequestType 
-                ? 'Fill in the details for your request'
-                : 'Select the type of request you want to submit'}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Stepper/Progress Indicator */}
-          <div className="flex items-center mb-4">
-            <div className={`flex-1 text-center py-2 rounded ${step === 'select' ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-gray-100 text-gray-500'}`}>1. Select Type</div>
-            <div className="w-8 h-1 bg-gray-200 mx-2 rounded" />
-            <div className={`flex-1 text-center py-2 rounded ${step === 'form' ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-gray-100 text-gray-500'}`}>2. Fill Form</div>
-          </div>
-
-          {/* Error Banner */}
-          {dialogError && (
-            <div className="bg-red-100 text-red-800 px-4 py-2 rounded mb-4 text-center">
-              {dialogError}
+      {/* New Request Drawer */}
+      <Drawer isOpen={newRequestDrawer.isOpen} placement="right" onClose={newRequestDrawer.onClose} size="md">
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerHeader>
+            {selectedRequestType ? `New ${selectedRequestType.name}` : 'New Request'}
+          </DrawerHeader>
+          <DrawerBody>
+            {/* Stepper/Progress Indicator */}
+            <div className="flex items-center mb-4">
+              <div className={`flex-1 text-center py-2 rounded ${step === 'select' ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-gray-100 text-gray-500'}`}>1. Select Type</div>
+              <div className="w-8 h-1 bg-gray-200 mx-2 rounded" />
+              <div className={`flex-1 text-center py-2 rounded ${step === 'form' ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-gray-100 text-gray-500'}`}>2. Fill Form</div>
             </div>
-          )}
 
-          {/* Step 1: Select Request Type */}
-          {step === 'select' && !selectedRequestType && (
-            <div className="mt-4">
-              <p className="mb-2 text-gray-700">Choose the type of request you want to submit:</p>
-              <Accordion type="single" collapsible defaultValue="timeAndLeave">
-                {Object.entries(requestTypes).map(([category, types]) => (
-                  <AccordionItem key={category} value={category}>
-                    <AccordionTrigger className="text-lg font-medium">
-                      {getCategoryName(category)}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
-                        {types.map(type => (
-                          <div 
-                            key={type.id}
-                            className={`p-3 border rounded-md hover:bg-blue-50 cursor-pointer transition ${selectedRequestType?.id === type.id ? 'border-blue-500 bg-blue-50' : ''}`}
-                            onClick={() => {
-                              setSelectedRequestType(type);
-                              setStep('form');
-                              setDialogError(null);
-                            }}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-gray-100 rounded">
-                                {type.icon}
-                              </div>
-                              <div>
-                                <h3 className="font-medium">{type.name}</h3>
+            {/* Error Banner */}
+            {dialogError && (
+              <div className="bg-red-100 text-red-800 px-4 py-2 rounded mb-4 text-center">
+                {dialogError}
+              </div>
+            )}
+
+            {/* Step 1: Select Request Type */}
+            {step === 'select' && !selectedRequestType && (
+              <div className="mt-4">
+                <p className="mb-2 text-gray-700">Choose the type of request you want to submit:</p>
+                <Accordion type="single" collapsible defaultValue="timeAndLeave">
+                  {Object.entries(requestTypes).map(([category, types]) => (
+                    <AccordionItem key={category} value={category}>
+                      <AccordionTrigger className="text-lg font-medium">
+                        {getCategoryName(category)}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+                          {types.map(type => (
+                            <div 
+                              key={type.id}
+                              className={`p-3 border rounded-md hover:bg-blue-50 cursor-pointer transition ${selectedRequestType?.id === type.id ? 'border-blue-500 bg-blue-50' : ''}`}
+                              onClick={() => {
+                                setSelectedRequestType(type);
+                                setStep('form');
+                                setDialogError(null);
+                              }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gray-100 rounded">
+                                  {type.icon}
+                                </div>
+                                <div>
+                                  <h3 className="font-medium">{type.name}</h3>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+                <div className="flex justify-end mt-4">
+                  <Button variant="outline" onClick={() => { newRequestDrawer.onClose(); setDialogError(null); }}>Cancel</Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Fill Form */}
+            {step === 'form' && selectedRequestType && (
+              <div className="mt-4 space-y-6">
+                <div className="mb-2 text-gray-700">Fill in the details for <span className="font-semibold">{selectedRequestType.name}</span>:</div>
+                {/* Dynamic form based on request type */}
+                {selectedRequestType.id === 'leave' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Leave Type</label>
+                        <Select value={formData.leaveType ?? ''} onChange={(e) => handleFormChange('leaveType', e.target.value)}>
+                          <SelectTrigger className={formErrors.leaveType ? 'border-red-500' : ''}>
+                            <SelectValue placeholder="Select leave type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="annual">Annual Leave</SelectItem>
+                            <SelectItem value="sick">Sick Leave</SelectItem>
+                            <SelectItem value="personal">Personal Leave</SelectItem>
+                            <SelectItem value="bereavement">Bereavement Leave</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formErrors.leaveType && <p className="text-red-500 text-xs">{formErrors.leaveType}</p>}
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-              <div className="flex justify-end mt-4">
-                <Button variant="outline" onClick={() => { newRequestDialog.onClose(); setDialogError(null); }}>Cancel</Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Fill Form */}
-          {step === 'form' && selectedRequestType && (
-            <div className="mt-4 space-y-6">
-              <div className="mb-2 text-gray-700">Fill in the details for <span className="font-semibold">{selectedRequestType.name}</span>:</div>
-              {/* Dynamic form based on request type */}
-              {selectedRequestType.id === 'leave' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Leave Type</label>
-                      <Select value={formData.leaveType ?? ''} onChange={(e) => handleFormChange('leaveType', e.target.value)}>
-                        <SelectTrigger className={formErrors.leaveType ? 'border-red-500' : ''}>
-                          <SelectValue placeholder="Select leave type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="annual">Annual Leave</SelectItem>
-                          <SelectItem value="sick">Sick Leave</SelectItem>
-                          <SelectItem value="personal">Personal Leave</SelectItem>
-                          <SelectItem value="bereavement">Bereavement Leave</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {formErrors.leaveType && <p className="text-red-500 text-xs">{formErrors.leaveType}</p>}
-                    </div>
-                    <div></div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Start Date</label>
-                      <Input 
-                        type="date" 
-                        value={formData.startDate ?? ''} 
-                        onChange={(e) => handleFormChange('startDate', e.target.value)}
-                        className={formErrors.startDate ? 'border-red-500' : ''}
-                      />
-                      {formErrors.startDate && <p className="text-red-500 text-xs">{formErrors.startDate}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">End Date</label>
-                      <Input 
-                        type="date" 
-                        value={formData.endDate ?? ''} 
-                        onChange={(e) => handleFormChange('endDate', e.target.value)}
-                        className={formErrors.endDate ? 'border-red-500' : ''}
-                      />
-                      {formErrors.endDate && <p className="text-red-500 text-xs">{formErrors.endDate}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Return Date</label>
-                      <Input 
-                        type="date" 
-                        value={formData.returnDate ?? ''} 
-                        onChange={(e) => handleFormChange('returnDate', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Total Days</label>
-                      <Input 
-                        type="number" 
-                        value={formData.totalDays ?? ''} 
-                        onChange={(e) => handleFormChange('totalDays', e.target.value)}
-                        disabled 
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Reason/Comments</label>
-                    <Textarea 
-                      placeholder="Provide any additional details or reason for your leave request" 
-                      value={formData.reason ?? ''} 
-                      onChange={(e) => handleFormChange('reason', e.target.value)}
-                      className={formErrors.reason ? 'border-red-500' : ''}
-                    />
-                    {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Handover Notes</label>
-                    <Textarea 
-                      placeholder="Provide handover information for your team during your absence" 
-                      value={formData.handoverNotes ?? ''} 
-                      onChange={(e) => handleFormChange('handoverNotes', e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {selectedRequestType.id === 'equipment' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Equipment Type</label>
-                      <Select value={formData.equipmentType ?? ''} onChange={(e) => handleFormChange('equipmentType', e.target.value)}>
-                        <SelectTrigger className={formErrors.equipmentType ? 'border-red-500' : ''}>
-                          <SelectValue placeholder="Select equipment type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="laptop">Laptop</SelectItem>
-                          <SelectItem value="desktop">Desktop</SelectItem>
-                          <SelectItem value="monitor">Monitor</SelectItem>
-                          <SelectItem value="keyboard">Keyboard</SelectItem>
-                          <SelectItem value="mouse">Mouse</SelectItem>
-                          <SelectItem value="headset">Headset</SelectItem>
-                          <SelectItem value="phone">Phone</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {formErrors.equipmentType && <p className="text-red-500 text-xs">{formErrors.equipmentType}</p>}
+                      <div></div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Start Date</label>
+                        <Input 
+                          type="date" 
+                          value={formData.startDate ?? ''} 
+                          onChange={(e) => handleFormChange('startDate', e.target.value)}
+                          className={formErrors.startDate ? 'border-red-500' : ''}
+                        />
+                        {formErrors.startDate && <p className="text-red-500 text-xs">{formErrors.startDate}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">End Date</label>
+                        <Input 
+                          type="date" 
+                          value={formData.endDate ?? ''} 
+                          onChange={(e) => handleFormChange('endDate', e.target.value)}
+                          className={formErrors.endDate ? 'border-red-500' : ''}
+                        />
+                        {formErrors.endDate && <p className="text-red-500 text-xs">{formErrors.endDate}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Return Date</label>
+                        <Input 
+                          type="date" 
+                          value={formData.returnDate ?? ''} 
+                          onChange={(e) => handleFormChange('returnDate', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Total Days</label>
+                        <Input 
+                          type="number" 
+                          value={formData.totalDays ?? ''} 
+                          onChange={(e) => handleFormChange('totalDays', e.target.value)}
+                          disabled 
+                        />
+                      </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Urgency</label>
-                      <Select value={formData.urgency ?? ''} onChange={(e) => handleFormChange('urgency', e.target.value)}>
-                        <SelectTrigger className={formErrors.urgency ? 'border-red-500' : ''}>
-                          <SelectValue placeholder="Select urgency level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {formErrors.urgency && <p className="text-red-500 text-xs">{formErrors.urgency}</p>}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Reason for Request</label>
-                    <Textarea 
-                      placeholder="Explain why you need this equipment" 
-                      value={formData.reason ?? ''} 
-                      onChange={(e) => handleFormChange('reason', e.target.value)}
-                      className={formErrors.reason ? 'border-red-500' : ''}
-                    />
-                    {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Specifications/Requirements</label>
-                    <Textarea 
-                      placeholder="Describe any specific requirements or specifications needed" 
-                      value={formData.specifications ?? ''} 
-                      onChange={(e) => handleFormChange('specifications', e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {/* Generic form for other request types */}
-              {!['leave', 'equipment'].includes(selectedRequestType.id) && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Request Title</label>
-                    <Input 
-                      placeholder="Enter a title for your request" 
-                      value={formData.title ?? ''} 
-                      onChange={(e) => handleFormChange('title', e.target.value)}
-                      className={formErrors.title ? 'border-red-500' : ''}
-                    />
-                    {formErrors.title && <p className="text-red-500 text-xs">{formErrors.title}</p>}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Description</label>
-                    <Textarea 
-                      placeholder="Provide details about your request" 
-                      value={formData.description ?? ''} 
-                      onChange={(e) => handleFormChange('description', e.target.value)}
-                      className={formErrors.description ? 'border-red-500' : ''}
-                    />
-                    {formErrors.description && <p className="text-red-500 text-xs">{formErrors.description}</p>}
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Date Needed</label>
-                      <Input 
-                        type="date" 
-                        value={formData.dateNeeded ?? ''} 
-                        onChange={(e) => handleFormChange('dateNeeded', e.target.value)}
+                      <label className="text-sm font-medium">Reason/Comments</label>
+                      <Textarea 
+                        placeholder="Provide any additional details or reason for your leave request" 
+                        value={formData.reason ?? ''} 
+                        onChange={(e) => handleFormChange('reason', e.target.value)}
+                        className={formErrors.reason ? 'border-red-500' : ''}
                       />
+                      {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Priority</label>
-                      <Select value={formData.priority ?? ''} onChange={(e) => handleFormChange('priority', e.target.value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select priority level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <label className="text-sm font-medium">Handover Notes</label>
+                      <Textarea 
+                        placeholder="Provide handover information for your team during your absence" 
+                        value={formData.handoverNotes ?? ''} 
+                        onChange={(e) => handleFormChange('handoverNotes', e.target.value)}
+                      />
                     </div>
                   </div>
+                )}
+                
+                {selectedRequestType.id === 'equipment' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Equipment Type</label>
+                        <Select value={formData.equipmentType ?? ''} onChange={(e) => handleFormChange('equipmentType', e.target.value)}>
+                          <SelectTrigger className={formErrors.equipmentType ? 'border-red-500' : ''}>
+                            <SelectValue placeholder="Select equipment type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="laptop">Laptop</SelectItem>
+                            <SelectItem value="desktop">Desktop</SelectItem>
+                            <SelectItem value="monitor">Monitor</SelectItem>
+                            <SelectItem value="keyboard">Keyboard</SelectItem>
+                            <SelectItem value="mouse">Mouse</SelectItem>
+                            <SelectItem value="headset">Headset</SelectItem>
+                            <SelectItem value="phone">Phone</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formErrors.equipmentType && <p className="text-red-500 text-xs">{formErrors.equipmentType}</p>}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Urgency</label>
+                        <Select value={formData.urgency ?? ''} onChange={(e) => handleFormChange('urgency', e.target.value)}>
+                          <SelectTrigger className={formErrors.urgency ? 'border-red-500' : ''}>
+                            <SelectValue placeholder="Select urgency level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formErrors.urgency && <p className="text-red-500 text-xs">{formErrors.urgency}</p>}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Reason for Request</label>
+                      <Textarea 
+                        placeholder="Explain why you need this equipment" 
+                        value={formData.reason ?? ''} 
+                        onChange={(e) => handleFormChange('reason', e.target.value)}
+                        className={formErrors.reason ? 'border-red-500' : ''}
+                      />
+                      {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Specifications/Requirements</label>
+                      <Textarea 
+                        placeholder="Describe any specific requirements or specifications needed" 
+                        value={formData.specifications ?? ''} 
+                        onChange={(e) => handleFormChange('specifications', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Generic form for other request types */}
+                {!['leave', 'equipment'].includes(selectedRequestType.id) && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Request Title</label>
+                      <Input 
+                        placeholder="Enter a title for your request" 
+                        value={formData.title ?? ''} 
+                        onChange={(e) => handleFormChange('title', e.target.value)}
+                        className={formErrors.title ? 'border-red-500' : ''}
+                      />
+                      {formErrors.title && <p className="text-red-500 text-xs">{formErrors.title}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Description</label>
+                      <Textarea 
+                        placeholder="Provide details about your request" 
+                        value={formData.description ?? ''} 
+                        onChange={(e) => handleFormChange('description', e.target.value)}
+                        className={formErrors.description ? 'border-red-500' : ''}
+                      />
+                      {formErrors.description && <p className="text-red-500 text-xs">{formErrors.description}</p>}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Date Needed</label>
+                        <Input 
+                          type="date" 
+                          value={formData.dateNeeded ?? ''} 
+                          onChange={(e) => handleFormChange('dateNeeded', e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Priority</label>
+                        <Select value={formData.priority ?? ''} onChange={(e) => handleFormChange('priority', e.target.value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select priority level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Attachments (Optional)</label>
+                  <Input 
+                    type="file" 
+                    onChange={(e) => handleFormChange('attachments', e.target.files)}
+                  />
                 </div>
-              )}
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Attachments (Optional)</label>
-                <Input 
-                  type="file" 
-                  onChange={(e) => handleFormChange('attachments', e.target.files)}
-                />
               </div>
-
-              <div className="flex gap-2 mt-6">
+            )}
+          </DrawerBody>
+          <DrawerFooter>
+            <div className="w-full flex justify-between">
+              <div>
+                {selectedRequestType && (
+                  <Button variant="outline" className="text-red-600">
+                    Cancel Request
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
                 <Button variant="outline" onClick={() => { setSelectedRequestType(null); setStep('select'); setDialogError(null); }}>Back</Button>
                 <Button onClick={async () => {
                   try {
@@ -961,12 +964,12 @@ export default function RequestPanel() {
                     setDialogError('Failed to submit request. Please try again.');
                   }
                 }}>Submit Request</Button>
-                <Button variant="ghost" onClick={() => { newRequestDialog.onClose(); setSelectedRequestType(null); setStep('select'); setDialogError(null); setFormData(initialFormData); setFormErrors({}); }}>Reset</Button>
+                <Button variant="ghost" onClick={() => { newRequestDrawer.onClose(); setSelectedRequestType(null); setStep('select'); setDialogError(null); setFormData(initialFormData); setFormErrors({}); }}>Reset</Button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
       
       {/* Request Details Dialog */}
       {selectedRequest && (
