@@ -64,12 +64,12 @@ const mainNavItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: <FileText className="mr-2 h-4 w-4" />, badge: "5" },
 ];
 
-// Categories with their items
+// Categories with their items - Updated to remove duplicates
 const navCategories: NavCategory[] = [
   {
     name: 'Employee Self-Service',
     items: [
-      { name: 'Request Panel', href: '/employee/request-panel', icon: <FileText className="mr-2 h-4 w-4" /> },
+      { name: 'Request Panel', href: '/employee/request-panel', icon: <FileText className="mr-2 h-4 w-4" />, badge: "3" },
       { name: 'View Payslips', href: '/payslips' },
       { name: 'Team Collaboration', href: '/employee/team-collaboration', icon: <Users className="mr-2 h-4 w-4" /> },
       { name: 'Wellness Tracker', href: '/employee/wellness-tracker', icon: <Heart className="mr-2 h-4 w-4" /> },
@@ -82,8 +82,7 @@ const navCategories: NavCategory[] = [
     items: [
       { name: 'Time Tracking', href: '/time-attendance', icon: <Clock className="mr-2 h-4 w-4" /> },
       { name: 'Leave Dashboard', href: '/leave' },
-      { name: 'Leave Calendar', href: '/leave/calendar' },
-      { name: 'Approve Requests', href: '/leave/approvals' },
+      // Leave Calendar and Approve Requests removed - available as tabs in Leave Dashboard
     ]
   },
   {
@@ -98,11 +97,7 @@ const navCategories: NavCategory[] = [
     name: 'Loan Management',
     items: [
       { name: 'Loan Dashboard', href: '/loans', icon: <CreditCard className="mr-2 h-4 w-4" /> },
-      { name: 'Apply for Loan', href: '/loans/apply', icon: <FileText className="mr-2 h-4 w-4" /> },
-      { name: 'My Applications', href: '/loans/applications', icon: <FileText className="mr-2 h-4 w-4" /> },
-      { name: 'Admin Dashboard', href: '/loans/management', icon: <DollarSign className="mr-2 h-4 w-4" />, roleAccess: ['admin', 'hr_manager', 'finance_manager'] },
-      { name: 'Repayment Schedule', href: '/loans/repayment-schedule', icon: <Calendar className="mr-2 h-4 w-4" /> },
-      { name: 'Program Settings', href: '/loans/settings', icon: <Settings className="mr-2 h-4 w-4" />, roleAccess: ['admin', 'hr_director', 'finance_manager'] },
+      // Individual loan pages removed - all available as tabs in Loan Dashboard
     ]
   },
   {
@@ -118,9 +113,7 @@ const navCategories: NavCategory[] = [
     name: 'Talent Management',
     items: [
       { name: 'Recruitment', href: '/jobs', icon: <Briefcase className="mr-2 h-4 w-4" /> },
-      { name: 'Applications', href: '/applications' },
-      { name: 'Interviews', href: '/interviews' },
-      { name: 'Job Offers', href: '/offers' },
+      // Individual recruitment pages removed - available as tabs in Recruitment
       { name: 'Onboarding', href: '/onboarding' },
       { name: 'Offboarding', href: '/offboarding' },
     ],
@@ -138,10 +131,9 @@ const navCategories: NavCategory[] = [
     name: 'Workplace & Safety',
     items: [
       { name: 'Asset Management', href: '/assets' },
-      { name: 'Meeting Rooms', href: '/facilities/rooms' },
-      { name: 'Equipment Booking', href: '/facilities/equipment' },
+      { name: 'Facilities Management', href: '/facilities', icon: <Building className="mr-2 h-4 w-4" /> },
       { name: 'Workplace Safety', href: '/safety', icon: <ShieldAlert className="mr-2 h-4 w-4" /> },
-      { name: 'Facilities Reports', href: '/facilities/reports' },
+      // Individual facilities pages removed - available as tabs
     ]
   },
   {

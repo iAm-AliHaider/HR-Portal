@@ -5,7 +5,7 @@ import {
   FileText, Clock, Check, X, AlertCircle, Filter, Search,
   Plus, Calendar, Laptop, CreditCard, Briefcase, Book,
   HardDrive, FileCheck, ChevronRight, ChevronDown, 
-  MoreHorizontal, Download, MessageSquare, Users, Car
+  MoreHorizontal, Download, MessageSquare, Users, Car, DollarSign, Heart
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -72,14 +72,14 @@ export default function RequestPanel() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [isNewRequestOpen, setIsNewRequestOpen] = useState(false);
-  const [selectedRequestType, setSelectedRequestType] = useState(null);
+  const [selectedRequestType, setSelectedRequestType] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({});
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState<any[]>([]);
   
   // Request types grouped by category
   const requestTypes = {
@@ -88,33 +88,55 @@ export default function RequestPanel() {
       { id: 'remote', name: 'Remote Work Request', icon: <Laptop className="h-4 w-4" /> },
       { id: 'overtime', name: 'Overtime Approval', icon: <Clock className="h-4 w-4" /> },
       { id: 'shift', name: 'Shift Change Request', icon: <Clock className="h-4 w-4" /> },
-      { id: 'time-adjustment', name: 'Time Adjustment Request', icon: <Clock className="h-4 w-4" /> }
+      { id: 'time-adjustment', name: 'Time Adjustment Request', icon: <Clock className="h-4 w-4" /> },
+      { id: 'wfh', name: 'Work From Home Request', icon: <Laptop className="h-4 w-4" /> },
+      { id: 'comp-off', name: 'Compensatory Off Request', icon: <Calendar className="h-4 w-4" /> }
     ],
     financeAndBenefits: [
       { id: 'expense', name: 'Expense Reimbursement', icon: <CreditCard className="h-4 w-4" /> },
       { id: 'loan', name: 'Salary Advance/Loan Request', icon: <CreditCard className="h-4 w-4" /> },
       { id: 'benefits', name: 'Benefits Change Request', icon: <Users className="h-4 w-4" /> },
       { id: 'compensation', name: 'Compensation Review Request', icon: <CreditCard className="h-4 w-4" /> },
-      { id: 'tax', name: 'Tax Document Request', icon: <FileText className="h-4 w-4" /> }
+      { id: 'tax', name: 'Tax Document Request', icon: <FileText className="h-4 w-4" /> },
+      { id: 'payslip', name: 'Payslip Request', icon: <FileText className="h-4 w-4" /> },
+      { id: 'salary-revision', name: 'Salary Revision Request', icon: <DollarSign className="h-4 w-4" /> },
+      { id: 'bonus', name: 'Bonus/Incentive Request', icon: <DollarSign className="h-4 w-4" /> }
     ],
     equipmentAndResources: [
       { id: 'equipment', name: 'Office Equipment Request', icon: <HardDrive className="h-4 w-4" /> },
       { id: 'software', name: 'Software/License Request', icon: <HardDrive className="h-4 w-4" /> },
       { id: 'access', name: 'Access Permission Request', icon: <FileCheck className="h-4 w-4" /> },
-      { id: 'workspace', name: 'Workspace Modification Request', icon: <Briefcase className="h-4 w-4" /> }
+      { id: 'workspace', name: 'Workspace Modification Request', icon: <Briefcase className="h-4 w-4" /> },
+      { id: 'parking', name: 'Parking Spot Request', icon: <Car className="h-4 w-4" /> },
+      { id: 'id-card', name: 'ID Card Request', icon: <FileText className="h-4 w-4" /> },
+      { id: 'stationary', name: 'Stationary Request', icon: <FileText className="h-4 w-4" /> }
     ],
     careerAndDevelopment: [
       { id: 'training', name: 'Training Program Enrollment', icon: <Book className="h-4 w-4" /> },
       { id: 'conference', name: 'Conference/Event Attendance', icon: <Users className="h-4 w-4" /> },
       { id: 'mentorship', name: 'Mentorship Program Request', icon: <Users className="h-4 w-4" /> },
       { id: 'job', name: 'Internal Job Application', icon: <Briefcase className="h-4 w-4" /> },
-      { id: 'education', name: 'Education Assistance Request', icon: <Book className="h-4 w-4" /> }
+      { id: 'education', name: 'Education Assistance Request', icon: <Book className="h-4 w-4" /> },
+      { id: 'certification', name: 'Certification Request', icon: <Book className="h-4 w-4" /> },
+      { id: 'promotion', name: 'Promotion Request', icon: <Briefcase className="h-4 w-4" /> },
+      { id: 'transfer', name: 'Department Transfer Request', icon: <Briefcase className="h-4 w-4" /> }
     ],
     administrative: [
       { id: 'document', name: 'Document/Certificate Request', icon: <FileText className="h-4 w-4" /> },
       { id: 'travel', name: 'Travel Authorization', icon: <Car className="h-4 w-4" /> },
       { id: 'namechange', name: 'Business Card/Name Change', icon: <FileText className="h-4 w-4" /> },
-      { id: 'exception', name: 'Policy Exception Request', icon: <AlertCircle className="h-4 w-4" /> }
+      { id: 'exception', name: 'Policy Exception Request', icon: <AlertCircle className="h-4 w-4" /> },
+      { id: 'grievance', name: 'Grievance/Complaint', icon: <AlertCircle className="h-4 w-4" /> },
+      { id: 'reference', name: 'Reference Letter Request', icon: <FileText className="h-4 w-4" /> },
+      { id: 'employment-verification', name: 'Employment Verification Request', icon: <FileText className="h-4 w-4" /> },
+      { id: 'resignation', name: 'Resignation Request', icon: <FileText className="h-4 w-4" /> }
+    ],
+    healthAndWellness: [
+      { id: 'medical-leave', name: 'Medical Leave Request', icon: <Heart className="h-4 w-4" /> },
+      { id: 'medical-reimbursement', name: 'Medical Reimbursement', icon: <Heart className="h-4 w-4" /> },
+      { id: 'insurance-claim', name: 'Insurance Claim', icon: <Heart className="h-4 w-4" /> },
+      { id: 'wellness-program', name: 'Wellness Program Enrollment', icon: <Heart className="h-4 w-4" /> },
+      { id: 'gym-membership', name: 'Gym Membership Request', icon: <Heart className="h-4 w-4" /> }
     ]
   };
 
