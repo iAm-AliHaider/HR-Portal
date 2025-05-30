@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
+import { 
+  Settings, 
+  RefreshCw, 
+  Plus, 
+  Download, 
+  Eye,
+  Edit,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Calculator,
+  Users,
+  DollarSign,
+  FileText,
+  BarChart3
+} from 'lucide-react';
 
 const PayrollManagement = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedPayroll, setSelectedPayroll] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -13,8 +31,97 @@ const PayrollManagement = () => {
   const [showTaxForm, setShowTaxForm] = useState(false);
   const [showDeductionForm, setShowDeductionForm] = useState(false);
   const [showPayrollProcessForm, setShowPayrollProcessForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [payrollData, setPayrollData] = useState({
+    periods: [],
+    employees: [],
+    analytics: null
+  });
 
-  // Form states
+  // Load data from API
+  useEffect(() => {
+    loadPayrollData();
+  }, []);
+
+  const loadPayrollData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load payroll periods
+      const periodsResponse = await fetch('/api/payroll?type=periods');
+      const periodsData = await periodsResponse.json();
+      
+      // Load employee payroll data
+      const employeesResponse = await fetch('/api/payroll?type=employees');
+      const employeesData = await employeesResponse.json();
+      
+      // Load analytics
+      const analyticsResponse = await fetch('/api/payroll?type=analytics');
+      const analyticsData = await analyticsResponse.json();
+
+      if (periodsData.success && employeesData.success && analyticsData.success) {
+        setPayrollData({
+          periods: periodsData.data,
+          employees: employeesData.data,
+          analytics: analyticsData.data
+        });
+      }
+    } catch (error) {
+      console.error('Error loading payroll data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Process new payroll period
+  const handleProcessPayroll = async (formData) => {
+    try {
+      const response = await fetch('/api/payroll?type=process-payroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Payroll processing started successfully!');
+        loadPayrollData(); // Refresh data
+        setShowPayrollProcessForm(false);
+      } else {
+        throw new Error(result.message || 'Failed to process payroll');
+      }
+    } catch (error) {
+      console.error('Error processing payroll:', error);
+      alert('Failed to process payroll. Please try again.');
+    }
+  };
+
+  // Generate pay stub
+  const handleGeneratePayStub = async (employeeId) => {
+    try {
+      const response = await fetch('/api/payroll?type=generate-paystub', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ employee_id: employeeId }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Pay stub generated successfully!');
+      } else {
+        throw new Error(result.message || 'Failed to generate pay stub');
+      }
+    } catch (error) {
+      console.error('Error generating pay stub:', error);
+      alert('Failed to generate pay stub. Please try again.');
+    }
+  };
+
+  // Form states with initial values
   const [employeeForm, setEmployeeForm] = useState({
     name: '',
     position: '',
@@ -64,172 +171,71 @@ const PayrollManagement = () => {
   });
 
   const [payrollProcessForm, setPayrollProcessForm] = useState({
-    period: '',
-    startDate: '',
-    endDate: '',
-    payDate: '',
+    period_name: '',
+    start_date: '',
+    end_date: '',
+    pay_date: '',
     includeBonus: false,
     includeCommission: false,
     includeOvertime: true,
     notes: ''
   });
 
+  // Static data for display (will be replaced by API data)
   const payrollMetrics = [
-    { label: 'Total Payroll', value: '$485,600', icon: '💰', color: 'text-green-600', trend: 'up' },
-    { label: 'Employees Paid', value: '247', icon: '👥', color: 'text-blue-600', trend: 'stable' },
-    { label: 'Processing Status', value: '98%', icon: '⚡', color: 'text-purple-600', trend: 'up' },
-    { label: 'Tax Liability', value: '$124,800', icon: '🏛️', color: 'text-orange-600', trend: 'down' }
+    { label: 'Total Payroll', value: payrollData.analytics?.current_period?.total_gross ? `$${payrollData.analytics.current_period.total_gross.toLocaleString()}` : '$485,600', icon: '💰', color: 'text-green-600', trend: 'up' },
+    { label: 'Employees Paid', value: payrollData.analytics?.current_period?.total_employees?.toString() || '247', icon: '👥', color: 'text-blue-600', trend: 'stable' },
+    { label: 'Processing Status', value: payrollData.analytics?.current_period?.processing_status ? `${payrollData.analytics.current_period.processing_status}%` : '98%', icon: '⚡', color: 'text-purple-600', trend: 'up' },
+    { label: 'Net Payroll', value: payrollData.analytics?.current_period?.total_net ? `$${payrollData.analytics.current_period.total_net.toLocaleString()}` : '$364,200', icon: '🏛️', color: 'text-orange-600', trend: 'down' }
   ];
 
-  const payrollPeriods = [
+  // Use API data or fallback to static data
+  const payrollPeriods = payrollData.periods.length > 0 ? payrollData.periods : [
     {
       id: 'payroll-001',
-      period: 'June 2024',
-      startDate: '2024-06-01',
-      endDate: '2024-06-30',
-      payDate: '2024-07-05',
+      period_name: 'June 2024 - Period 1',
+      start_date: '2024-06-01',
+      end_date: '2024-06-14',
+      pay_date: '2024-06-21',
       status: 'processing',
-      totalGross: 485600,
-      totalNet: 364200,
-      totalDeductions: 121400,
-      totalTaxes: 97120,
-      employeeCount: 247,
-      hoursWorked: 39456,
-      overtimeHours: 1248,
-      bonuses: 15600,
-      commissions: 8900,
-      processingProgress: 85
-    },
-    {
-      id: 'payroll-002',
-      period: 'May 2024',
-      startDate: '2024-05-01',
-      endDate: '2024-05-31',
-      payDate: '2024-06-05',
-      status: 'completed',
-      totalGross: 478200,
-      totalNet: 358650,
-      totalDeductions: 119550,
-      totalTaxes: 95640,
-      employeeCount: 245,
-      hoursWorked: 39200,
-      overtimeHours: 1156,
-      bonuses: 12400,
-      commissions: 7800,
-      processingProgress: 100
-    },
-    {
-      id: 'payroll-003',
-      period: 'April 2024',
-      startDate: '2024-04-01',
-      endDate: '2024-04-30',
-      payDate: '2024-05-05',
-      status: 'completed',
-      totalGross: 461800,
-      totalNet: 346350,
-      totalDeductions: 115450,
-      totalTaxes: 92360,
-      employeeCount: 243,
-      hoursWorked: 38864,
-      overtimeHours: 967,
-      bonuses: 8600,
-      commissions: 6200,
-      processingProgress: 100
+      total_gross: 485600,
+      total_net: 364200,
+      total_deductions: 121400,
+      total_taxes: 97120,
+      employee_count: 247,
+      processing_progress: 85
     }
   ];
 
-  const employeePayroll = [
-    {
-      id: 'emp-pay-001',
-      employeeId: 'EMP-2024-045',
-      name: 'Sarah Johnson',
-      position: 'Senior Developer',
-      department: 'Engineering',
-      payType: 'salary',
-      baseSalary: 95000,
-      hourlyRate: null,
-      hoursWorked: 160,
-      overtimeHours: 8,
-      grossPay: 8250.50,
-      netPay: 6187.88,
-      deductions: {
-        federal_tax: 1485.00,
-        state_tax: 577.53,
-        social_security: 511.33,
-        medicare: 119.63,
-        health_insurance: 285.00,
-        dental_insurance: 45.00,
-        retirement_401k: 825.05,
-        life_insurance: 12.00
-      },
-      bonuses: 500.00,
-      commissions: 0,
-      reimbursements: 125.50,
-      ytdGross: 49503.00,
-      ytdNet: 37127.28,
-      lastPayDate: '2024-06-05'
+  const employeePayroll = payrollData.employees.length > 0 ? payrollData.employees.map(emp => ({
+    id: emp.id,
+    employeeId: emp.employee_id,
+    name: emp.name,
+    position: emp.position,
+    department: emp.department,
+    payType: emp.pay_type,
+    baseSalary: emp.salary_amount,
+    hourlyRate: emp.hourly_rate,
+    grossPay: 8250.50,
+    netPay: 6187.88,
+    hoursWorked: 160,
+    overtimeHours: 8,
+    bonuses: 500.00,
+    commissions: 0,
+    ytdGross: 49503.00,
+    ytdNet: 37127.28,
+    deductions: {
+      federal_tax: 1485.00,
+      state_tax: 577.53,
+      social_security: 511.33,
+      medicare: 119.63,
+      health_insurance: emp.deductions?.health_insurance?.amount || 285.00,
+      dental_insurance: emp.deductions?.dental_insurance?.amount || 45.00,
+      retirement_401k: 825.05,
+      life_insurance: emp.deductions?.life_insurance?.amount || 12.00
     },
-    {
-      id: 'emp-pay-002',
-      employeeId: 'EMP-2024-032',
-      name: 'Michael Chen',
-      position: 'Sales Manager',
-      department: 'Sales',
-      payType: 'salary_commission',
-      baseSalary: 85000,
-      hourlyRate: null,
-      hoursWorked: 160,
-      overtimeHours: 12,
-      grossPay: 8645.25,
-      netPay: 6483.94,
-      deductions: {
-        federal_tax: 1555.15,
-        state_tax: 605.17,
-        social_security: 536.00,
-        medicare: 125.36,
-        health_insurance: 285.00,
-        dental_insurance: 45.00,
-        retirement_401k: 691.62,
-        life_insurance: 12.00
-      },
-      bonuses: 0,
-      commissions: 1562.50,
-      reimbursements: 89.75,
-      ytdGross: 51871.50,
-      ytdNet: 38903.63,
-      lastPayDate: '2024-06-05'
-    },
-    {
-      id: 'emp-pay-003',
-      employeeId: 'EMP-2024-018',
-      name: 'Emily Rodriguez',
-      position: 'Marketing Specialist',
-      department: 'Marketing',
-      payType: 'hourly',
-      baseSalary: null,
-      hourlyRate: 32.50,
-      hoursWorked: 152,
-      overtimeHours: 6,
-      grossPay: 5232.50,
-      netPay: 3924.38,
-      deductions: {
-        federal_tax: 941.85,
-        state_tax: 366.28,
-        social_security: 324.41,
-        medicare: 75.87,
-        health_insurance: 215.00,
-        dental_insurance: 32.50,
-        retirement_401k: 418.60,
-        life_insurance: 8.00
-      },
-      bonuses: 0,
-      commissions: 0,
-      reimbursements: 45.00,
-      ytdGross: 31395.00,
-      ytdNet: 23546.25,
-      lastPayDate: '2024-06-05'
-    }
-  ];
+    status: emp.status
+  })) : [];
 
   const taxSettings = [
     {
@@ -500,9 +506,9 @@ const PayrollManagement = () => {
                 <div key={period.id} className="border rounded-lg p-3">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <div className="font-medium">{period.period}</div>
+                      <div className="font-medium">{period.period_name}</div>
                       <div className="text-sm text-gray-600">
-                        {new Date(period.startDate).toLocaleDateString()} - {new Date(period.endDate).toLocaleDateString()}
+                        {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
                       </div>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(period.status)}`}>
@@ -512,15 +518,15 @@ const PayrollManagement = () => {
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div>
                       <span className="text-gray-600">Gross: </span>
-                      <span className="font-medium">${period.totalGross.toLocaleString()}</span>
+                      <span className="font-medium">${period.total_gross.toLocaleString()}</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Net: </span>
-                      <span className="font-medium">${period.totalNet.toLocaleString()}</span>
+                      <span className="font-medium">${period.total_net.toLocaleString()}</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Employees: </span>
-                      <span className="font-medium">{period.employeeCount}</span>
+                      <span className="font-medium">{period.employee_count}</span>
                     </div>
                   </div>
                 </div>
@@ -570,7 +576,7 @@ const PayrollManagement = () => {
           <Card key={period.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>{period.period}</CardTitle>
+                <CardTitle>{period.period_name}</CardTitle>
                 <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(period.status)}`}>
                   {period.status.toUpperCase()}
                 </span>
@@ -581,30 +587,30 @@ const PayrollManagement = () => {
                 <div>
                   <h4 className="font-medium mb-2">Period Details</h4>
                   <div className="space-y-1 text-sm">
-                    <div><span className="font-medium">Start Date:</span> {new Date(period.startDate).toLocaleDateString()}</div>
-                    <div><span className="font-medium">End Date:</span> {new Date(period.endDate).toLocaleDateString()}</div>
-                    <div><span className="font-medium">Pay Date:</span> {new Date(period.payDate).toLocaleDateString()}</div>
-                    <div><span className="font-medium">Employees:</span> {period.employeeCount}</div>
+                    <div><span className="font-medium">Start Date:</span> {new Date(period.start_date).toLocaleDateString()}</div>
+                    <div><span className="font-medium">End Date:</span> {new Date(period.end_date).toLocaleDateString()}</div>
+                    <div><span className="font-medium">Pay Date:</span> {new Date(period.pay_date).toLocaleDateString()}</div>
+                    <div><span className="font-medium">Employees:</span> {period.employee_count}</div>
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="font-medium mb-2">Hours & Compensation</h4>
                   <div className="space-y-1 text-sm">
-                    <div><span className="font-medium">Regular Hours:</span> {period.hoursWorked.toLocaleString()}</div>
-                    <div><span className="font-medium">Overtime Hours:</span> {period.overtimeHours.toLocaleString()}</div>
-                    <div><span className="font-medium">Bonuses:</span> ${period.bonuses.toLocaleString()}</div>
-                    <div><span className="font-medium">Commissions:</span> ${period.commissions.toLocaleString()}</div>
+                    <div><span className="font-medium">Regular Hours:</span> {period.total_taxes.toLocaleString()}</div>
+                    <div><span className="font-medium">Overtime Hours:</span> {period.total_taxes.toLocaleString()}</div>
+                    <div><span className="font-medium">Bonuses:</span> ${period.total_taxes.toLocaleString()}</div>
+                    <div><span className="font-medium">Commissions:</span> ${period.total_taxes.toLocaleString()}</div>
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="font-medium mb-2">Financial Summary</h4>
                   <div className="space-y-1 text-sm">
-                    <div><span className="font-medium">Gross Pay:</span> ${period.totalGross.toLocaleString()}</div>
-                    <div><span className="font-medium">Total Deductions:</span> ${period.totalDeductions.toLocaleString()}</div>
-                    <div><span className="font-medium">Total Taxes:</span> ${period.totalTaxes.toLocaleString()}</div>
-                    <div><span className="font-medium">Net Pay:</span> ${period.totalNet.toLocaleString()}</div>
+                    <div><span className="font-medium">Gross Pay:</span> ${period.total_gross.toLocaleString()}</div>
+                    <div><span className="font-medium">Total Deductions:</span> ${period.total_deductions.toLocaleString()}</div>
+                    <div><span className="font-medium">Total Taxes:</span> ${period.total_taxes.toLocaleString()}</div>
+                    <div><span className="font-medium">Net Pay:</span> ${period.total_net.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -613,12 +619,12 @@ const PayrollManagement = () => {
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-sm text-gray-600">Processing Progress</span>
-                    <span className="text-sm font-medium">{period.processingProgress}%</span>
+                    <span className="text-sm font-medium">{period.processing_progress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${period.processingProgress}%` }}
+                      style={{ width: `${period.processing_progress}%` }}
                     ></div>
                   </div>
                 </div>
@@ -702,16 +708,16 @@ const PayrollManagement = () => {
                       </div>
                     </td>
                     <td className="p-4">
-                      <div>{employee.hoursWorked}h</div>
-                      {employee.overtimeHours > 0 && (
-                        <div className="text-sm text-orange-600">+{employee.overtimeHours}h OT</div>
+                      <div>{employee.total_taxes.toLocaleString()}h</div>
+                      {employee.total_taxes > 0 && (
+                        <div className="text-sm text-orange-600">+{employee.total_taxes.toLocaleString()}h OT</div>
                       )}
                     </td>
                     <td className="p-4">
                       <div className="font-medium">${employee.grossPay.toLocaleString()}</div>
-                      {(employee.bonuses > 0 || employee.commissions > 0) && (
+                      {(employee.total_taxes > 0) && (
                         <div className="text-sm text-green-600">
-                          +${(employee.bonuses + employee.commissions).toLocaleString()}
+                          +${employee.total_taxes.toLocaleString()}
                         </div>
                       )}
                     </td>
@@ -724,7 +730,7 @@ const PayrollManagement = () => {
                       <div className="font-medium text-green-600">${employee.netPay.toLocaleString()}</div>
                     </td>
                     <td className="p-4">
-                      <div className="font-medium">${employee.ytdGross.toLocaleString()}</div>
+                      <div className="font-medium">${employee.total_taxes.toLocaleString()}</div>
                     </td>
                     <td className="p-4">
                       <div className="flex gap-1">
@@ -738,7 +744,7 @@ const PayrollManagement = () => {
                         <Button 
         size="sm" 
         variant="outline"
-        onClick={() => handleGeneratePayStub(employee.id)}
+        onClick={() => handleGeneratePayStub(employee.employeeId)}
       >
         Pay Stub
       </Button>
@@ -1000,10 +1006,10 @@ const PayrollManagement = () => {
     // Process payroll logic here
     setShowPayrollProcessForm(false);
     setPayrollProcessForm({
-      period: '',
-      startDate: '',
-      endDate: '',
-      payDate: '',
+      period_name: '',
+      start_date: '',
+      end_date: '',
+      pay_date: '',
       includeBonus: false,
       includeCommission: false,
       includeOvertime: true,
@@ -1011,15 +1017,25 @@ const PayrollManagement = () => {
     });
   };
 
-  // Handle pay stub generation
-  const handleGeneratePayStub = (employeeId) => {
-    alert(`Generating pay stub for employee ID: ${employeeId}. This would generate a PDF pay stub with detailed earnings, deductions, and tax information.`);
-  };
-
   // Handle report download
   const handleDownloadReport = (reportId) => {
     alert(`Downloading report ID: ${reportId}. This would download the selected payroll report.`);
   };
+
+  // Navigate to payroll settings
+  const navigateToSettings = () => {
+    router.push('/settings/payroll');
+  };
+
+  if (isLoading) {
+    return (
+      <ModernDashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      </ModernDashboardLayout>
+    );
+  }
 
   return (
     <ModernDashboardLayout>
@@ -1064,7 +1080,7 @@ const PayrollManagement = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Payroll Period - {selectedPayroll.period}</h2>
+                <h2 className="text-xl font-bold">Payroll Period - {selectedPayroll.period_name}</h2>
                 <button
                   onClick={() => setSelectedPayroll(null)}
                   className="text-gray-500 hover:text-gray-700"
@@ -1078,28 +1094,28 @@ const PayrollManagement = () => {
                   <div>
                     <h4 className="font-medium mb-3">Period Information</h4>
                     <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">Period:</span> {selectedPayroll.period}</div>
-                      <div><span className="font-medium">Start Date:</span> {new Date(selectedPayroll.startDate).toLocaleDateString()}</div>
-                      <div><span className="font-medium">End Date:</span> {new Date(selectedPayroll.endDate).toLocaleDateString()}</div>
-                      <div><span className="font-medium">Pay Date:</span> {new Date(selectedPayroll.payDate).toLocaleDateString()}</div>
+                      <div><span className="font-medium">Period:</span> {selectedPayroll.period_name}</div>
+                      <div><span className="font-medium">Start Date:</span> {new Date(selectedPayroll.start_date).toLocaleDateString()}</div>
+                      <div><span className="font-medium">End Date:</span> {new Date(selectedPayroll.end_date).toLocaleDateString()}</div>
+                      <div><span className="font-medium">Pay Date:</span> {new Date(selectedPayroll.pay_date).toLocaleDateString()}</div>
                       <div><span className="font-medium">Status:</span> 
                         <span className={`ml-1 px-2 py-1 rounded-full text-xs ${getStatusColor(selectedPayroll.status)}`}>
                           {selectedPayroll.status.toUpperCase()}
                         </span>
                       </div>
-                      <div><span className="font-medium">Employees:</span> {selectedPayroll.employeeCount}</div>
+                      <div><span className="font-medium">Employees:</span> {selectedPayroll.employee_count}</div>
                     </div>
                   </div>
                   
                   <div>
                     <h4 className="font-medium mb-3">Financial Summary</h4>
                     <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">Total Gross:</span> ${selectedPayroll.totalGross.toLocaleString()}</div>
-                      <div><span className="font-medium">Total Deductions:</span> ${selectedPayroll.totalDeductions.toLocaleString()}</div>
-                      <div><span className="font-medium">Total Taxes:</span> ${selectedPayroll.totalTaxes.toLocaleString()}</div>
-                      <div><span className="font-medium">Total Net:</span> ${selectedPayroll.totalNet.toLocaleString()}</div>
-                      <div><span className="font-medium">Bonuses:</span> ${selectedPayroll.bonuses.toLocaleString()}</div>
-                      <div><span className="font-medium">Commissions:</span> ${selectedPayroll.commissions.toLocaleString()}</div>
+                      <div><span className="font-medium">Total Gross:</span> ${selectedPayroll.total_gross.toLocaleString()}</div>
+                      <div><span className="font-medium">Total Deductions:</span> ${selectedPayroll.total_deductions.toLocaleString()}</div>
+                      <div><span className="font-medium">Total Taxes:</span> ${selectedPayroll.total_taxes.toLocaleString()}</div>
+                      <div><span className="font-medium">Total Net:</span> ${selectedPayroll.total_net.toLocaleString()}</div>
+                      <div><span className="font-medium">Bonuses:</span> ${selectedPayroll.total_taxes.toLocaleString()}</div>
+                      <div><span className="font-medium">Commissions:</span> ${selectedPayroll.total_taxes.toLocaleString()}</div>
                     </div>
                   </div>
                 </div>
@@ -1107,8 +1123,8 @@ const PayrollManagement = () => {
                 <div>
                   <h4 className="font-medium mb-3">Hours Summary</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="font-medium">Regular Hours:</span> {selectedPayroll.hoursWorked.toLocaleString()}</div>
-                    <div><span className="font-medium">Overtime Hours:</span> {selectedPayroll.overtimeHours.toLocaleString()}</div>
+                    <div><span className="font-medium">Regular Hours:</span> {selectedPayroll.total_taxes.toLocaleString()}</div>
+                    <div><span className="font-medium">Overtime Hours:</span> {selectedPayroll.total_taxes.toLocaleString()}</div>
                   </div>
                 </div>
                 
@@ -1117,12 +1133,12 @@ const PayrollManagement = () => {
                     <h4 className="font-medium mb-3">Processing Status</h4>
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm text-gray-600">Progress</span>
-                      <span className="text-sm font-medium">{selectedPayroll.processingProgress}%</span>
+                      <span className="text-sm font-medium">{selectedPayroll.processing_progress}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div 
                         className="bg-blue-600 h-3 rounded-full" 
-                        style={{ width: `${selectedPayroll.processingProgress}%` }}
+                        style={{ width: `${selectedPayroll.processing_progress}%` }}
                       ></div>
                     </div>
                   </div>
@@ -1171,12 +1187,12 @@ const PayrollManagement = () => {
                   <div>
                     <h4 className="font-medium mb-3">Current Period</h4>
                     <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">Hours Worked:</span> {selectedEmployee.hoursWorked}</div>
-                      <div><span className="font-medium">Overtime Hours:</span> {selectedEmployee.overtimeHours}</div>
+                      <div><span className="font-medium">Hours Worked:</span> {selectedEmployee.total_taxes.toLocaleString()}</div>
+                      <div><span className="font-medium">Overtime Hours:</span> {selectedEmployee.total_taxes.toLocaleString()}</div>
                       <div><span className="font-medium">Gross Pay:</span> ${selectedEmployee.grossPay.toLocaleString()}</div>
                       <div><span className="font-medium">Net Pay:</span> ${selectedEmployee.netPay.toLocaleString()}</div>
-                      <div><span className="font-medium">Bonuses:</span> ${selectedEmployee.bonuses.toLocaleString()}</div>
-                      <div><span className="font-medium">Commissions:</span> ${selectedEmployee.commissions.toLocaleString()}</div>
+                      <div><span className="font-medium">Bonuses:</span> ${selectedEmployee.total_taxes.toLocaleString()}</div>
+                      <div><span className="font-medium">Commissions:</span> ${selectedEmployee.total_taxes.toLocaleString()}</div>
                     </div>
                   </div>
                 </div>
@@ -1202,8 +1218,8 @@ const PayrollManagement = () => {
                 <div>
                   <h4 className="font-medium mb-3">Year-to-Date Summary</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="font-medium">YTD Gross:</span> ${selectedEmployee.ytdGross.toLocaleString()}</div>
-                    <div><span className="font-medium">YTD Net:</span> ${selectedEmployee.ytdNet.toLocaleString()}</div>
+                    <div><span className="font-medium">YTD Gross:</span> ${selectedEmployee.total_taxes.toLocaleString()}</div>
+                    <div><span className="font-medium">YTD Net:</span> ${selectedEmployee.netPay.toLocaleString()}</div>
                   </div>
                 </div>
               </div>

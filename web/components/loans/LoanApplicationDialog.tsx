@@ -730,7 +730,7 @@ export default function LoanApplicationDialog({ isOpen, onClose, onSuccess }: Lo
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose}>
-      <DialogContent className="max-w-5xl w-full max-h-[90vh] overflow-hidden bg-white rounded-xl shadow-2xl">
+      <DialogContent className="w-[95vw] max-w-[1600px] max-h-[90vh] overflow-hidden bg-white rounded-xl shadow-2xl">
         {/* Header with better spacing */}
         <div className="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <DialogHeader className="space-y-2">
