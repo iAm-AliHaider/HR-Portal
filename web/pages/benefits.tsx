@@ -3,11 +3,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 
 const BenefitsAdministration = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const router = useRouter();
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
+  const [showManagePlans, setShowManagePlans] = useState(false);
+  const [showReports, setShowReports] = useState(false);
+  const [showOpenEnrollment, setShowOpenEnrollment] = useState(false);
 
   const benefitsMetrics = [
     { label: 'Total Plans', value: '24', icon: '📋', color: 'text-blue-600', trend: 'up' },
@@ -367,19 +373,19 @@ const BenefitsAdministration = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="h-20 flex flex-col items-center justify-center">
+            <Button className="h-20 flex flex-col items-center justify-center" onClick={() => setShowEnrollModal(true)}>
               <span className="text-2xl mb-1">📝</span>
               <span className="text-sm">Enroll Employee</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowManagePlans(true)}>
               <span className="text-2xl mb-1">📋</span>
               <span className="text-sm">Manage Plans</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowReports(true)}>
               <span className="text-2xl mb-1">📊</span>
               <span className="text-sm">View Reports</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowOpenEnrollment(true)}>
               <span className="text-2xl mb-1">📅</span>
               <span className="text-sm">Open Enrollment</span>
             </Button>
@@ -1040,6 +1046,12 @@ const BenefitsAdministration = () => {
             </div>
           </div>
         )}
+
+        {/* Add placeholder modals for each action */}
+        {showEnrollModal && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Enroll Employee Modal <button onClick={()=>setShowEnrollModal(false)}>Close</button></div></div>}
+        {showManagePlans && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Manage Plans Modal <button onClick={()=>setShowManagePlans(false)}>Close</button></div></div>}
+        {showReports && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">View Reports Modal <button onClick={()=>setShowReports(false)}>Close</button></div></div>}
+        {showOpenEnrollment && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Open Enrollment Modal <button onClick={()=>setShowOpenEnrollment(false)}>Close</button></div></div>}
       </div>
     </ModernDashboardLayout>
   );

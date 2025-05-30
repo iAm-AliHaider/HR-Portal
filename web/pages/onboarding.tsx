@@ -3,11 +3,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 
 const OnboardingManagement = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+  const router = useRouter();
+  const [showAddHire, setShowAddHire] = useState(false);
+  const [showWorkflow, setShowWorkflow] = useState(false);
+  const [showBuddy, setShowBuddy] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   const onboardingMetrics = [
     { label: 'Active Onboardings', value: '24', icon: '👋', color: 'text-blue-600', trend: 'up' },
@@ -322,22 +328,22 @@ const OnboardingManagement = () => {
             </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="h-20 flex flex-col items-center justify-center">
+            <Button className="h-20 flex flex-col items-center justify-center" onClick={() => setShowAddHire(true)}>
               <span className="text-2xl mb-1">👤</span>
               <span className="text-sm">Add New Hire</span>
-                </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            </Button>
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowWorkflow(true)}>
               <span className="text-2xl mb-1">📋</span>
               <span className="text-sm">Create Workflow</span>
-                </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            </Button>
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowBuddy(true)}>
               <span className="text-2xl mb-1">👥</span>
               <span className="text-sm">Assign Buddy</span>
-                </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            </Button>
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowReports(true)}>
               <span className="text-2xl mb-1">📊</span>
               <span className="text-sm">View Reports</span>
-                </Button>
+            </Button>
           </div>
         </CardContent>
           </Card>
@@ -960,6 +966,12 @@ const OnboardingManagement = () => {
             </div>
           </div>
         )}
+
+        {/* Add placeholder modals for each action */}
+        {showAddHire && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Add New Hire Modal <button onClick={()=>setShowAddHire(false)}>Close</button></div></div>}
+        {showWorkflow && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Create Workflow Modal <button onClick={()=>setShowWorkflow(false)}>Close</button></div></div>}
+        {showBuddy && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Assign Buddy Modal <button onClick={()=>setShowBuddy(false)}>Close</button></div></div>}
+        {showReports && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">View Reports Modal <button onClick={()=>setShowReports(false)}>Close</button></div></div>}
       </div>
       </ModernDashboardLayout>
   );

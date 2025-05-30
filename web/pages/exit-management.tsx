@@ -3,11 +3,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 
 const ExitManagement = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+  const router = useRouter();
+  const [showExitRequest, setShowExitRequest] = useState(false);
+  const [showInterview, setShowInterview] = useState(false);
+  const [showAssets, setShowAssets] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   const exitMetrics = [
     { label: 'Active Exits', value: '12', icon: '🚪', color: 'text-blue-600', trend: 'up' },
@@ -437,19 +443,19 @@ const ExitManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="h-20 flex flex-col items-center justify-center">
+            <Button className="h-20 flex flex-col items-center justify-center" onClick={() => setShowExitRequest(true)}>
               <span className="text-2xl mb-1">👤</span>
               <span className="text-sm">Add Exit Request</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowInterview(true)}>
               <span className="text-2xl mb-1">📋</span>
               <span className="text-sm">Schedule Interview</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowAssets(true)}>
               <span className="text-2xl mb-1">💼</span>
               <span className="text-sm">Track Assets</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowReports(true)}>
               <span className="text-2xl mb-1">📊</span>
               <span className="text-sm">Exit Reports</span>
             </Button>
@@ -1245,6 +1251,12 @@ const ExitManagement = () => {
             </div>
           </div>
         )}
+
+        {/* Add placeholder modals for each action */}
+        {showExitRequest && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Add Exit Request Modal <button onClick={()=>setShowExitRequest(false)}>Close</button></div></div>}
+        {showInterview && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Schedule Interview Modal <button onClick={()=>setShowInterview(false)}>Close</button></div></div>}
+        {showAssets && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Track Assets Modal <button onClick={()=>setShowAssets(false)}>Close</button></div></div>}
+        {showReports && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Exit Reports Modal <button onClick={()=>setShowReports(false)}>Close</button></div></div>}
       </div>
     </ModernDashboardLayout>
   );

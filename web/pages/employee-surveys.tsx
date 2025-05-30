@@ -3,11 +3,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 
 const EmployeeSurveysFeedback = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [selectedResponse, setSelectedResponse] = useState(null);
+  const router = useRouter();
+  const [showCreateSurvey, setShowCreateSurvey] = useState(false);
+  const [showPulseSurvey, setShowPulseSurvey] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showReminders, setShowReminders] = useState(false);
 
   const surveyMetrics = [
     { label: 'Active Surveys', value: '8', icon: '📋', color: 'text-blue-600', trend: 'up' },
@@ -274,19 +280,19 @@ const EmployeeSurveysFeedback = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="h-20 flex flex-col items-center justify-center">
+            <Button className="h-20 flex flex-col items-center justify-center" onClick={() => setShowCreateSurvey(true)}>
               <span className="text-2xl mb-1">📝</span>
               <span className="text-sm">Create Survey</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowPulseSurvey(true)}>
               <span className="text-2xl mb-1">💓</span>
               <span className="text-sm">Pulse Survey</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowAnalytics(true)}>
               <span className="text-2xl mb-1">📊</span>
               <span className="text-sm">View Analytics</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowReminders(true)}>
               <span className="text-2xl mb-1">📤</span>
               <span className="text-sm">Send Reminders</span>
             </Button>
@@ -1033,6 +1039,12 @@ const EmployeeSurveysFeedback = () => {
             </div>
           </div>
         )}
+
+        {/* Add placeholder modals for each action */}
+        {showCreateSurvey && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Create Survey Modal <button onClick={()=>setShowCreateSurvey(false)}>Close</button></div></div>}
+        {showPulseSurvey && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Pulse Survey Modal <button onClick={()=>setShowPulseSurvey(false)}>Close</button></div></div>}
+        {showAnalytics && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">View Analytics Modal <button onClick={()=>setShowAnalytics(false)}>Close</button></div></div>}
+        {showReminders && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Send Reminders Modal <button onClick={()=>setShowReminders(false)}>Close</button></div></div>}
       </div>
     </ModernDashboardLayout>
   );

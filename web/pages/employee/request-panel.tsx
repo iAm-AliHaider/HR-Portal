@@ -29,8 +29,8 @@ import {
 } from '@/components/ui/accordion';
 import { GetServerSideProps } from 'next';
 
-// Form data interface
-interface FormData {
+// Rename interface FormData to RequestFormData
+interface RequestFormData {
   // Leave request fields
   leaveType?: string;
   startDate?: string;
@@ -76,10 +76,29 @@ export default function RequestPanel() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<FormData>({});
+  const initialFormData: RequestFormData = {
+    leaveType: '',
+    startDate: '',
+    endDate: '',
+    returnDate: '',
+    totalDays: '',
+    reason: '',
+    handoverNotes: '',
+    equipmentType: '',
+    urgency: '',
+    specifications: '',
+    title: '',
+    description: '',
+    dateNeeded: '',
+    priority: '',
+    attachments: undefined,
+  };
+  const [formData, setFormData] = useState<RequestFormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(true);
   const [requests, setRequests] = useState<any[]>([]);
+  const [dialogError, setDialogError] = useState<string | null>(null);
+  const [step, setStep] = useState<'select' | 'form'>('select');
   
   // Request types grouped by category
   const requestTypes = {
@@ -348,10 +367,10 @@ export default function RequestPanel() {
       const requestData = {
         type: selectedRequestType.id,
         category: getCategoryByType(selectedRequestType.id),
-        title: formData.title || getDefaultTitle(selectedRequestType.id),
-        description: formData.description || formData.reason,
+        title: formData.title ?? getDefaultTitle(selectedRequestType.id),
+        description: formData.description ?? formData.reason,
         details: formData,
-        priority: formData.priority || formData.urgency || 'medium',
+        priority: formData.priority ?? formData.urgency || 'medium',
         submittedDate: new Date().toISOString().split('T')[0],
         status: 'pending',
         approver: getApproverByType(selectedRequestType.id)
@@ -396,7 +415,7 @@ export default function RequestPanel() {
       
       setIsNewRequestOpen(false);
       setSelectedRequestType(null);
-      setFormData({});
+      setFormData(initialFormData);
       setFormErrors({});
       
     } catch (error) {
@@ -455,9 +474,8 @@ export default function RequestPanel() {
     return emailMap[typeId] || 'manager@company.com';
   };
 
-  const handleFormChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+  const handleFormChange = (field: keyof RequestFormData, value: any) => {
+    setFormData((prev: RequestFormData) => ({ ...prev, [field]: value }));
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -479,10 +497,12 @@ export default function RequestPanel() {
             <p className="text-gray-600">Submit and track your approval requests</p>
           </div>
           
-          <Button onClick={() => setIsNewRequestOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Request
-          </Button>
+          <DialogTrigger asChild>
+            <Button onClick={() => { setIsNewRequestOpen(true); setStep('select'); setDialogError(null); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Request
+            </Button>
+          </DialogTrigger>
         </div>
         
         {/* Filters */}
@@ -651,25 +671,48 @@ export default function RequestPanel() {
       </div>
       
       {/* New Request Dialog */}
-      <Dialog open={isNewRequestOpen} onOpenChange={setIsNewRequestOpen}>
+      <Dialog open={isNewRequestOpen} onOpenChange={(open) => {
+        setIsNewRequestOpen(open);
+        if (!open) {
+          setSelectedRequestType(null);
+          setStep('select');
+          setDialogError(null);
+          setFormData(initialFormData);
+          setFormErrors({});
+        }
+      }}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>
               {selectedRequestType 
                 ? `New ${selectedRequestType.name}`
-                : 'New Request'
-              }
+                : 'New Request'}
             </DialogTitle>
             <DialogDescription>
               {selectedRequestType 
                 ? 'Fill in the details for your request'
-                : 'Select the type of request you want to submit'
-              }
+                : 'Select the type of request you want to submit'}
             </DialogDescription>
           </DialogHeader>
-          
-          {!selectedRequestType ? (
+
+          {/* Stepper/Progress Indicator */}
+          <div className="flex items-center mb-4">
+            <div className={`flex-1 text-center py-2 rounded ${step === 'select' ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-gray-100 text-gray-500'}`}>1. Select Type</div>
+            <div className="w-8 h-1 bg-gray-200 mx-2 rounded" />
+            <div className={`flex-1 text-center py-2 rounded ${step === 'form' ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-gray-100 text-gray-500'}`}>2. Fill Form</div>
+          </div>
+
+          {/* Error Banner */}
+          {dialogError && (
+            <div className="bg-red-100 text-red-800 px-4 py-2 rounded mb-4 text-center">
+              {dialogError}
+            </div>
+          )}
+
+          {/* Step 1: Select Request Type */}
+          {step === 'select' && !selectedRequestType && (
             <div className="mt-4">
+              <p className="mb-2 text-gray-700">Choose the type of request you want to submit:</p>
               <Accordion type="single" collapsible defaultValue="timeAndLeave">
                 {Object.entries(requestTypes).map(([category, types]) => (
                   <AccordionItem key={category} value={category}>
@@ -681,8 +724,12 @@ export default function RequestPanel() {
                         {types.map(type => (
                           <div 
                             key={type.id}
-                            className="p-3 border rounded-md hover:bg-gray-50 cursor-pointer"
-                            onClick={() => handleInitiateRequest(type.id)}
+                            className={`p-3 border rounded-md hover:bg-blue-50 cursor-pointer transition ${selectedRequestType?.id === type.id ? 'border-blue-500 bg-blue-50' : ''}`}
+                            onClick={() => {
+                              setSelectedRequestType(type);
+                              setStep('form');
+                              setDialogError(null);
+                            }}
                           >
                             <div className="flex items-center gap-3">
                               <div className="p-2 bg-gray-100 rounded">
@@ -699,16 +746,23 @@ export default function RequestPanel() {
                   </AccordionItem>
                 ))}
               </Accordion>
+              <div className="flex justify-end mt-4">
+                <Button variant="outline" onClick={() => { setIsNewRequestOpen(false); setDialogError(null); }}>Cancel</Button>
+              </div>
             </div>
-          ) : (
+          )}
+
+          {/* Step 2: Fill Form */}
+          {step === 'form' && selectedRequestType && (
             <div className="mt-4 space-y-6">
+              <div className="mb-2 text-gray-700">Fill in the details for <span className="font-semibold">{selectedRequestType.name}</span>:</div>
               {/* Dynamic form based on request type */}
               {selectedRequestType.id === 'leave' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Leave Type</label>
-                      <Select value={formData.leaveType || ''} onValueChange={(value) => handleFormChange('leaveType', value)}>
+                      <Select value={(formData as RequestFormData).leaveType ?? ''} onValueChange={(value) => handleFormChange('leaveType', value)}>
                         <SelectTrigger className={formErrors.leaveType ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select leave type" />
                         </SelectTrigger>
@@ -727,7 +781,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Start Date</label>
                       <Input 
                         type="date" 
-                        value={formData.startDate || ''} 
+                        value={(formData as RequestFormData).startDate ?? ''} 
                         onChange={(e) => handleFormChange('startDate', e.target.value)}
                         className={formErrors.startDate ? 'border-red-500' : ''}
                       />
@@ -737,7 +791,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">End Date</label>
                       <Input 
                         type="date" 
-                        value={formData.endDate || ''} 
+                        value={(formData as RequestFormData).endDate ?? ''} 
                         onChange={(e) => handleFormChange('endDate', e.target.value)}
                         className={formErrors.endDate ? 'border-red-500' : ''}
                       />
@@ -747,7 +801,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Return Date</label>
                       <Input 
                         type="date" 
-                        value={formData.returnDate || ''} 
+                        value={(formData as RequestFormData).returnDate ?? ''} 
                         onChange={(e) => handleFormChange('returnDate', e.target.value)}
                       />
                     </div>
@@ -755,7 +809,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Total Days</label>
                       <Input 
                         type="number" 
-                        value={formData.totalDays || ''} 
+                        value={(formData as RequestFormData).totalDays ?? ''} 
                         onChange={(e) => handleFormChange('totalDays', e.target.value)}
                         disabled 
                       />
@@ -766,7 +820,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Reason/Comments</label>
                     <Textarea 
                       placeholder="Provide any additional details or reason for your leave request" 
-                      value={formData.reason || ''} 
+                      value={(formData as RequestFormData).reason ?? ''} 
                       onChange={(e) => handleFormChange('reason', e.target.value)}
                       className={formErrors.reason ? 'border-red-500' : ''}
                     />
@@ -777,7 +831,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Handover Notes</label>
                     <Textarea 
                       placeholder="Provide handover information for your team during your absence" 
-                      value={formData.handoverNotes || ''} 
+                      value={(formData as RequestFormData).handoverNotes ?? ''} 
                       onChange={(e) => handleFormChange('handoverNotes', e.target.value)}
                     />
                   </div>
@@ -789,7 +843,7 @@ export default function RequestPanel() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Equipment Type</label>
-                      <Select value={formData.equipmentType || ''} onValueChange={(value) => handleFormChange('equipmentType', value)}>
+                      <Select value={(formData as RequestFormData).equipmentType ?? ''} onValueChange={(value) => handleFormChange('equipmentType', value)}>
                         <SelectTrigger className={formErrors.equipmentType ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select equipment type" />
                         </SelectTrigger>
@@ -809,7 +863,7 @@ export default function RequestPanel() {
                     
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Urgency</label>
-                      <Select value={formData.urgency || ''} onValueChange={(value) => handleFormChange('urgency', value)}>
+                      <Select value={(formData as RequestFormData).urgency ?? ''} onValueChange={(value) => handleFormChange('urgency', value)}>
                         <SelectTrigger className={formErrors.urgency ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select urgency level" />
                         </SelectTrigger>
@@ -828,7 +882,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Reason for Request</label>
                     <Textarea 
                       placeholder="Explain why you need this equipment" 
-                      value={formData.reason || ''} 
+                      value={(formData as RequestFormData).reason ?? ''} 
                       onChange={(e) => handleFormChange('reason', e.target.value)}
                       className={formErrors.reason ? 'border-red-500' : ''}
                     />
@@ -839,7 +893,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Specifications/Requirements</label>
                     <Textarea 
                       placeholder="Describe any specific requirements or specifications needed" 
-                      value={formData.specifications || ''} 
+                      value={(formData as RequestFormData).specifications ?? ''} 
                       onChange={(e) => handleFormChange('specifications', e.target.value)}
                     />
                   </div>
@@ -853,7 +907,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Request Title</label>
                     <Input 
                       placeholder="Enter a title for your request" 
-                      value={formData.title || ''} 
+                      value={(formData as RequestFormData).title ?? ''} 
                       onChange={(e) => handleFormChange('title', e.target.value)}
                       className={formErrors.title ? 'border-red-500' : ''}
                     />
@@ -864,7 +918,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Description</label>
                     <Textarea 
                       placeholder="Provide details about your request" 
-                      value={formData.description || ''} 
+                      value={(formData as RequestFormData).description ?? ''} 
                       onChange={(e) => handleFormChange('description', e.target.value)}
                       className={formErrors.description ? 'border-red-500' : ''}
                     />
@@ -876,14 +930,14 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Date Needed</label>
                       <Input 
                         type="date" 
-                        value={formData.dateNeeded || ''} 
+                        value={(formData as RequestFormData).dateNeeded ?? ''} 
                         onChange={(e) => handleFormChange('dateNeeded', e.target.value)}
                       />
                     </div>
                     
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Priority</label>
-                      <Select value={formData.priority || ''} onValueChange={(value) => handleFormChange('priority', value)}>
+                      <Select value={(formData as RequestFormData).priority ?? ''} onValueChange={(value) => handleFormChange('priority', value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select priority level" />
                         </SelectTrigger>
@@ -905,25 +959,20 @@ export default function RequestPanel() {
                   onChange={(e) => handleFormChange('attachments', e.target.files)}
                 />
               </div>
+
+              <div className="flex gap-2 mt-6">
+                <Button variant="outline" onClick={() => { setSelectedRequestType(null); setStep('select'); setDialogError(null); }}>Back</Button>
+                <Button onClick={async () => {
+                  try {
+                    await handleSubmitRequest();
+                  } catch (e) {
+                    setDialogError('Failed to submit request. Please try again.');
+                  }
+                }}>Submit Request</Button>
+                <Button variant="ghost" onClick={() => { setIsNewRequestOpen(false); setSelectedRequestType(null); setStep('select'); setDialogError(null); setFormData(initialFormData); setFormErrors({}); }}>Reset</Button>
+              </div>
             </div>
           )}
-          
-          <DialogFooter className="mt-4">
-            {selectedRequestType ? (
-              <>
-                <Button variant="outline" onClick={() => setSelectedRequestType(null)}>
-                  Back
-                </Button>
-                <Button onClick={handleSubmitRequest}>
-                  Submit Request
-                </Button>
-              </>
-            ) : (
-              <Button variant="outline" onClick={() => setIsNewRequestOpen(false)}>
-                Cancel
-              </Button>
-            )}
-          </DialogFooter>
         </DialogContent>
       </Dialog>
       

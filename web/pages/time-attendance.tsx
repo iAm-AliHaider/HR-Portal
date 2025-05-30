@@ -3,11 +3,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 
 const TimeAndAttendance = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedTimeEntry, setSelectedTimeEntry] = useState(null);
+  const router = useRouter();
+  const [showClockIn, setShowClockIn] = useState(false);
+  const [showPTO, setShowPTO] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   const attendanceMetrics = [
     { label: 'Present Today', value: '234/247', icon: '✅', color: 'text-green-600', trend: 'up' },
@@ -324,19 +330,19 @@ const TimeAndAttendance = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="h-20 flex flex-col items-center justify-center">
+            <Button className="h-20 flex flex-col items-center justify-center" onClick={() => setShowClockIn(true)}>
               <span className="text-2xl mb-1">⏰</span>
               <span className="text-sm">Clock In/Out</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowPTO(true)}>
               <span className="text-2xl mb-1">🏖️</span>
               <span className="text-sm">Request PTO</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowSchedule(true)}>
               <span className="text-2xl mb-1">📅</span>
               <span className="text-sm">View Schedule</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <Button variant="outline" className="h-20 flex flex-col items-center justify-center" onClick={() => setShowReports(true)}>
               <span className="text-2xl mb-1">📊</span>
               <span className="text-sm">Time Reports</span>
             </Button>
@@ -997,6 +1003,12 @@ const TimeAndAttendance = () => {
             </div>
           </div>
         )}
+
+        {/* Add placeholder modals for each action */}
+        {showClockIn && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Clock In/Out Modal <button onClick={()=>setShowClockIn(false)}>Close</button></div></div>}
+        {showPTO && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Request PTO Modal <button onClick={()=>setShowPTO(false)}>Close</button></div></div>}
+        {showSchedule && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">View Schedule Modal <button onClick={()=>setShowSchedule(false)}>Close</button></div></div>}
+        {showReports && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"><div className="bg-white p-8 rounded shadow">Time Reports Modal <button onClick={()=>setShowReports(false)}>Close</button></div></div>}
       </div>
     </ModernDashboardLayout>
   );
