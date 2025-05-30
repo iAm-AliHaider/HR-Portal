@@ -27,14 +27,60 @@ const ExpensesPage = () => {
   const toast = useToast();
   
   // API hooks
-  const { 
-    expenses, 
-    loading, 
-    error, 
-    submitExpense, 
-    approveExpense, 
-    rejectExpense 
-  } = useExpenses();
+  // Mock expenses data and functions
+  const [expenses, setExpenses] = useState([
+    {
+      id: 'EXP-001',
+      description: 'Business lunch with client',
+      amount: 85.50,
+      category: 'Meals',
+      date: '2024-01-20',
+      status: 'pending',
+      employee_name: 'John Doe',
+      receipt_url: null
+    },
+    {
+      id: 'EXP-002', 
+      description: 'Software license renewal',
+      amount: 299.99,
+      category: 'Software',
+      date: '2024-01-18',
+      status: 'approved',
+      employee_name: 'Jane Smith',
+      receipt_url: 'receipt-002.pdf'
+    }
+  ]);
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const submitExpense = async (expenseData) => {
+    setLoading(true);
+    try {
+      const newExpense = {
+        id: 'EXP-' + Date.now(),
+        ...expenseData,
+        status: 'pending',
+        employee_name: 'Current User'
+      };
+      setExpenses(prev => [...prev, newExpense]);
+      return newExpense;
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const approveExpense = async (id) => {
+    setExpenses(prev => prev.map(exp => 
+      exp.id === id ? {...exp, status: 'approved'} : exp
+    ));
+  };
+  
+  const rejectExpense = async (id, reason) => {
+    setExpenses(prev => prev.map(exp => 
+      exp.id === id ? {...exp, status: 'rejected', rejection_reason: reason} : exp
+    ));
+  };
 
   // UI state
   const [selectedExpense, setSelectedExpense] = useState<any>(null);

@@ -408,22 +408,33 @@ const PayrollManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="h-20 flex flex-col items-center justify-center">
-              <span className="text-2xl mb-1">▶️</span>
-              <span className="text-sm">Run Payroll</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-              <span className="text-2xl mb-1">📊</span>
-              <span className="text-sm">Generate Reports</span>
-            </Button>
+            <Button 
+        className="h-20 flex flex-col items-center justify-center"
+        onClick={() => setShowPayrollProcessForm(true)}
+      >
+        <span className="text-2xl mb-1">▶️</span>
+        <span className="text-sm">Run Payroll</span>
+      </Button>
+            <Button 
+        variant="outline" 
+        className="h-20 flex flex-col items-center justify-center"
+        onClick={() => setActiveTab('reports')}
+      >
+        <span className="text-2xl mb-1">📊</span>
+        <span className="text-sm">Generate Reports</span>
+      </Button>
             <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
               <span className="text-2xl mb-1">🧾</span>
               <span className="text-sm">View Pay Stubs</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-              <span className="text-2xl mb-1">⚙️</span>
-              <span className="text-sm">Tax Settings</span>
-            </Button>
+            <Button 
+        variant="outline" 
+        className="h-20 flex flex-col items-center justify-center"
+        onClick={() => setActiveTab('taxes')}
+      >
+        <span className="text-2xl mb-1">⚙️</span>
+        <span className="text-sm">Tax Settings</span>
+      </Button>
           </div>
         </CardContent>
       </Card>
@@ -724,7 +735,13 @@ const PayrollManagement = () => {
                         >
                           View
                         </Button>
-                        <Button size="sm" variant="outline">Pay Stub</Button>
+                        <Button 
+        size="sm" 
+        variant="outline"
+        onClick={() => handleGeneratePayStub(employee.id)}
+      >
+        Pay Stub
+      </Button>
                       </div>
                     </td>
                   </tr>
@@ -992,6 +1009,16 @@ const PayrollManagement = () => {
       includeOvertime: true,
       notes: ''
     });
+  };
+
+  // Handle pay stub generation
+  const handleGeneratePayStub = (employeeId) => {
+    alert(`Generating pay stub for employee ID: ${employeeId}. This would generate a PDF pay stub with detailed earnings, deductions, and tax information.`);
+  };
+
+  // Handle report download
+  const handleDownloadReport = (reportId) => {
+    alert(`Downloading report ID: ${reportId}. This would download the selected payroll report.`);
   };
 
   return (

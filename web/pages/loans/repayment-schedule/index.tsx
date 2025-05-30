@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useRouter } from 'next/router';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -192,7 +193,8 @@ export default function RepaymentScheduleListPage() {
   };
   
   return (
-    <>
+    <ModernDashboardLayout>
+      <>
       <Head>
         <title>Loan Repayment Schedules | HR Portal</title>
         <meta name="description" content="View and manage loan repayment schedules" />
@@ -559,6 +561,6 @@ export default function RepaymentScheduleListPage() {
           </div>
         )}
       </div>
-    </>
+        </ModernDashboardLayout>
   );
 } 

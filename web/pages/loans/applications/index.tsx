@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useRouter } from 'next/router';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -276,7 +277,7 @@ export default function LoanApplicationsPage() {
   };
   
   return (
-    <>
+    <ModernDashboardLayout>
       <Head>
         <title>Loan Applications | HR Portal</title>
         <meta name="description" content="View and manage loan applications" />
@@ -622,6 +623,6 @@ export default function LoanApplicationsPage() {
           </CardContent>
         </Card>
       </div>
-    </>
+    </ModernDashboardLayout>
   );
 } 

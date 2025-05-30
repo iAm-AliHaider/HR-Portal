@@ -128,6 +128,34 @@ export default function FinancialReportPage() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
+  // Handle export functionality
+  const handleExportReport = () => {
+    const csvData = [
+      ['Department', 'Allocated', 'Spent', 'Remaining', 'Utilization %'],
+      ...filteredDepartmentBudgets.map(dept => [
+        dept.department,
+        dept.allocated,
+        dept.spent,
+        dept.remaining,
+        ((dept.spent / dept.allocated) * 100).toFixed(1)
+      ])
+    ];
+    
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `financial-report-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
+  
+  // Handle forecast generation
+  const handleGenerateForecast = () => {
+    alert('Detailed forecast generation feature would integrate with financial planning systems. This would generate comprehensive budget projections based on current spending trends and historical data.');
+  };
+  
   return (
     <ModernDashboardLayout>
       <Head>
@@ -167,9 +195,12 @@ export default function FinancialReportPage() {
               <option value="custom">Custom Range</option>
             </select>
             
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-              Export Report
-            </button>
+            <button 
+        onClick={() => handleExportReport()}
+        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+      >
+        Export Report
+      </button>
           </div>
         </div>
         
@@ -403,9 +434,12 @@ export default function FinancialReportPage() {
           </div>
           
           <div className="mt-6 flex justify-end">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              Generate Detailed Forecast
-            </button>
+            <button 
+        onClick={() => handleGenerateForecast()}
+        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+      >
+        Generate Detailed Forecast
+      </button>
           </div>
         </div>
       </div>

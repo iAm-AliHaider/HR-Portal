@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { useRouter } from 'next/router';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -90,6 +91,7 @@ export default function LoanManagementDashboard() {
   // Check if user has access
   if (!isAdmin) {
     return (
+    <ModernDashboardLayout>
       <div className="flex flex-col items-center justify-center min-h-[70vh]">
         <AlertTriangle className="h-16 w-16 text-yellow-500 mb-4" />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
@@ -445,6 +447,6 @@ export default function LoanManagementDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </>
+        </ModernDashboardLayout>
   );
 } 
