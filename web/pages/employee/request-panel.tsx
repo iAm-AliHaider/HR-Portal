@@ -370,7 +370,7 @@ export default function RequestPanel() {
         title: formData.title ?? getDefaultTitle(selectedRequestType.id),
         description: formData.description ?? formData.reason,
         details: formData,
-        priority: formData.priority ?? formData.urgency || 'medium',
+        priority: (formData.priority ?? formData.urgency) || 'medium',
         submittedDate: new Date().toISOString().split('T')[0],
         status: 'pending',
         approver: getApproverByType(selectedRequestType.id)
