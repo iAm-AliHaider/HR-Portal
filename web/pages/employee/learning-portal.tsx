@@ -44,12 +44,27 @@ export default function LearningPortal() {
   ];
   
   // Mock recommended courses
+  // Image fallback handler
+  const getImageFallback = (courseName: string) => {
+    const fallbacks = {
+      'react-advanced': '⚛️',
+      'leadership': '👨‍💼',
+      'data-science': '📊',
+      'communication': '💬',
+      'project-management': '📋',
+      'business-analytics': '📈',
+      'javascript': '📟',
+      'time-management': '⏰'
+    };
+    return fallbacks[courseName] || '📚';
+  };
+
   const recommendedCourses = [
     { 
       id: 1, 
       title: 'Advanced React Patterns', 
       description: 'Learn advanced patterns and best practices for React development.',
-      image: '/course-images/react-advanced.jpg',
+      thumbnail: '📚',
       instructor: 'Michael Johnson',
       duration: '4 hours',
       level: 'Advanced',
@@ -63,7 +78,7 @@ export default function LearningPortal() {
       id: 2, 
       title: 'Effective Leadership Skills', 
       description: 'Develop the essential skills needed to lead teams effectively.',
-      image: '/course-images/leadership.jpg',
+      thumbnail: '📚',
       instructor: 'Sarah Williams',
       duration: '6 hours',
       level: 'Intermediate',
@@ -77,7 +92,7 @@ export default function LearningPortal() {
       id: 3, 
       title: 'Data Science Fundamentals', 
       description: 'Understand the basics of data science and analytics.',
-      image: '/course-images/data-science.jpg',
+      thumbnail: '📚',
       instructor: 'David Chen',
       duration: '8 hours',
       level: 'Beginner',
@@ -91,7 +106,7 @@ export default function LearningPortal() {
       id: 4, 
       title: 'Effective Communication', 
       description: 'Improve your communication skills in professional settings.',
-      image: '/course-images/communication.jpg',
+      thumbnail: '📚',
       instructor: 'Emily Rodriguez',
       duration: '3 hours',
       level: 'Beginner',
@@ -109,7 +124,7 @@ export default function LearningPortal() {
       id: 5, 
       title: 'Project Management Essentials', 
       description: 'Learn the fundamentals of project management and deliver successful projects.',
-      image: '/course-images/project-management.jpg',
+      thumbnail: '📚',
       instructor: 'Robert Taylor',
       duration: '5 hours',
       level: 'Intermediate',
@@ -124,7 +139,7 @@ export default function LearningPortal() {
       id: 6, 
       title: 'Business Analytics', 
       description: 'Discover how to use data to drive business decisions.',
-      image: '/course-images/business-analytics.jpg',
+      thumbnail: '📚',
       instructor: 'Lisa Wang',
       duration: '7 hours',
       level: 'Intermediate',
@@ -143,7 +158,7 @@ export default function LearningPortal() {
       id: 7, 
       title: 'Introduction to JavaScript', 
       description: 'Learn the basics of JavaScript programming language.',
-      image: '/course-images/javascript.jpg',
+      thumbnail: '📚',
       instructor: 'James Wilson',
       duration: '6 hours',
       level: 'Beginner',
@@ -157,7 +172,7 @@ export default function LearningPortal() {
       id: 8, 
       title: 'Time Management', 
       description: 'Master techniques to manage your time efficiently.',
-      image: '/course-images/time-management.jpg',
+      thumbnail: '📚',
       instructor: 'Patricia Lewis',
       duration: '2 hours',
       level: 'Beginner',

@@ -69,187 +69,232 @@ const LearningPortal = () => {
     }
   }, [allowAccess, role, router]);
 
-  // Mock data - replace with actual API calls
+  // Enhanced API call with fallback to mock data
   useEffect(() => {
-    const mockCourses: Course[] = [
-      {
-        id: '1',
-        title: 'Company Values & Culture',
-        description: 'Learn about our mission, values, and company culture.',
-        category: 'Onboarding',
-        duration: 2,
-        level: 'Beginner',
-        instructor: 'HR Team',
-        enrolled: true,
-        completed: true,
-        progress: 100,
-        certificate: 'company-values-cert.pdf',
-        rating: 4.8,
-        enrolledCount: 250,
-        mandatory: true,
-        modules: 8,
-        assignments: 5,
-        price: 'free',
-        skills: ['Company Values', 'Culture'],
-        prerequisites: [],
-        thumbnail: '💻',
-        status: 'completed'
-      },
-      {
-        id: '2',
-        title: 'Workplace Safety Training',
-        description: 'Mandatory safety training for all employees.',
-        category: 'Safety',
-        duration: 3,
-        level: 'Beginner',
-        instructor: 'Safety Team',
-        enrolled: true,
-        completed: true,
-        progress: 100,
-        certificate: 'safety-cert.pdf',
-        rating: 4.6,
-        enrolledCount: 300,
-        mandatory: true,
-        modules: 6,
-        assignments: 3,
-        price: 'free',
-        skills: ['Safety', 'Risk Management'],
-        prerequisites: [],
-        thumbnail: '💪',
-        status: 'completed'
-      },
-      {
-        id: '3',
-        title: 'Diversity & Inclusion',
-        description: 'Fostering an inclusive workplace for everyone.',
-        category: 'HR',
-        duration: 1.5,
-        level: 'Beginner',
-        instructor: 'D&I Team',
-        enrolled: true,
-        completed: false,
-        progress: 60,
-        rating: 4.7,
-        enrolledCount: 180,
-        mandatory: true,
-        modules: 4,
-        assignments: 2,
-        price: 'free',
-        skills: ['Diversity', 'Inclusion'],
-        prerequisites: [],
-        thumbnail: '👥',
-        status: 'in_progress'
-      },
-      {
-        id: '4',
-        title: 'Time Management Mastery',
-        description: 'Boost your productivity with effective time management.',
-        category: 'Professional Development',
-        duration: 4,
-        level: 'Intermediate',
-        instructor: 'John Smith',
-        enrolled: false,
-        completed: false,
-        progress: 0,
-        rating: 4.9,
-        enrolledCount: 120,
-        mandatory: false,
-        modules: 10,
-        assignments: 7,
-        price: 'premium',
-        skills: ['Time Management', 'Productivity'],
-        prerequisites: ['Basic Time Management'],
-        thumbnail: '⏰',
-        status: 'not_started'
-      },
-      {
-        id: '5',
-        title: 'Leadership Fundamentals',
-        description: 'Essential leadership skills for emerging leaders.',
-        category: 'Leadership',
-        duration: 8,
-        level: 'Intermediate',
-        instructor: 'Sarah Johnson',
-        enrolled: false,
-        completed: false,
-        progress: 0,
-        rating: 4.8,
-        enrolledCount: 90,
-        mandatory: false,
-        modules: 6,
-        assignments: 3,
-        price: 'premium',
-        skills: ['Leadership', 'Team Management'],
-        prerequisites: ['Basic Leadership'],
-        thumbnail: '👑',
-        status: 'not_started'
-      },
-      {
-        id: '6',
-        title: 'Data Analysis with Excel',
-        description: 'Master data analysis techniques using Excel.',
-        category: 'Technical',
-        duration: 6,
-        level: 'Intermediate',
-        instructor: 'Mike Wilson',
-        enrolled: true,
-        completed: false,
-        progress: 25,
-        rating: 4.5,
-        enrolledCount: 150,
-        mandatory: false,
-        modules: 10,
-        assignments: 7,
-        price: 'free',
-        skills: ['Excel', 'Data Analysis'],
-        prerequisites: ['Basic Excel'],
-        thumbnail: '📊',
-        status: 'in_progress'
+    const loadLearningData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // In development, always use mock data
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Learning Portal: Using mock data in development mode');
+          loadMockData();
+          return;
+        }
+        
+        // Production: Try API first, fallback to mock data
+        try {
+          // Add timeout protection
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('API timeout')), 5000)
+          );
+          
+          const apiPromise = fetch('/api/learning/courses')
+            .then(res => res.json());
+          
+          const data = await Promise.race([apiPromise, timeoutPromise]);
+          
+          if (data.courses && data.learningPaths) {
+            setCourses(data.courses);
+            setLearningPaths(data.learningPaths);
+          } else {
+            throw new Error('Invalid API response');
+          }
+        } catch (apiError) {
+          console.warn('Learning Portal: API failed, using fallback data:', apiError.message);
+          loadMockData();
+        }
+      } catch (error) {
+        console.error('Learning Portal: Error loading data:', error);
+        loadMockData();
+      } finally {
+        setIsLoading(false);
       }
-    ];
+    };
 
-    const mockLearningPaths: LearningPath[] = [
-      {
-        id: '1',
-        title: 'Full Stack Developer',
-        description: 'Complete learning path to become a full stack web developer',
-        courses: ['1', '2', '3'],
-        completed: 2,
-        total: 3,
-        difficulty: 'intermediate',
-        skills: ['JavaScript', 'React', 'Node.js', 'Database Design'],
-        courseIds: ['1', '2'],
-        thumbnail: '💻'
-      },
-      {
-        id: '2',
-        title: 'Management Excellence',
-        description: 'Develop comprehensive management and leadership capabilities',
-        courses: ['4', '5'],
-        completed: 0,
-        total: 2,
-        difficulty: 'advanced',
-        skills: ['Leadership', 'Project Management', 'Team Building'],
-        courseIds: ['4', '5'],
-        thumbnail: '👔'
-      },
-      {
-        id: '3',
-        title: 'Data Analyst Professional',
-        description: 'Master data analysis tools and techniques for business insights',
-        courses: ['6'],
-        completed: 1,
-        total: 1,
-        difficulty: 'intermediate',
-        skills: ['Excel', 'SQL', 'Python', 'Data Visualization'],
-        courseIds: ['6'],
-        thumbnail: '📈'
-      }
-    ];
+    const loadMockData = () => {
+      const mockCourses: Course[] = [
+        {
+          id: '1',
+          title: 'Company Values & Culture',
+          description: 'Learn about our mission, values, and company culture.',
+          category: 'Onboarding',
+          duration: 2,
+          level: 'Beginner',
+          instructor: 'HR Team',
+          enrolled: true,
+          completed: true,
+          progress: 100,
+          certificate: 'company-values-cert.pdf',
+          rating: 4.8,
+          enrolledCount: 250,
+          mandatory: true,
+          modules: 8,
+          assignments: 5,
+          price: 'free',
+          skills: ['Company Values', 'Culture'],
+          prerequisites: [],
+          thumbnail: '💻',
+          status: 'completed'
+        },
+        {
+          id: '2',
+          title: 'Workplace Safety Training',
+          description: 'Mandatory safety training for all employees.',
+          category: 'Safety',
+          duration: 3,
+          level: 'Beginner',
+          instructor: 'Safety Team',
+          enrolled: true,
+          completed: true,
+          progress: 100,
+          certificate: 'safety-cert.pdf',
+          rating: 4.6,
+          enrolledCount: 300,
+          mandatory: true,
+          modules: 6,
+          assignments: 3,
+          price: 'free',
+          skills: ['Safety', 'Risk Management'],
+          prerequisites: [],
+          thumbnail: '🛡️',
+          status: 'completed'
+        },
+        {
+          id: '3',
+          title: 'Diversity & Inclusion',
+          description: 'Fostering an inclusive workplace for everyone.',
+          category: 'HR',
+          duration: 1.5,
+          level: 'Beginner',
+          instructor: 'D&I Team',
+          enrolled: true,
+          completed: false,
+          progress: 60,
+          rating: 4.7,
+          enrolledCount: 180,
+          mandatory: true,
+          modules: 4,
+          assignments: 2,
+          price: 'free',
+          skills: ['Diversity', 'Inclusion'],
+          prerequisites: [],
+          thumbnail: '🤝',
+          status: 'in_progress'
+        },
+        {
+          id: '4',
+          title: 'Time Management Mastery',
+          description: 'Boost your productivity with effective time management.',
+          category: 'Professional Development',
+          duration: 4,
+          level: 'Intermediate',
+          instructor: 'John Smith',
+          enrolled: false,
+          completed: false,
+          progress: 0,
+          rating: 4.9,
+          enrolledCount: 120,
+          mandatory: false,
+          modules: 10,
+          assignments: 7,
+          price: 'premium',
+          skills: ['Time Management', 'Productivity'],
+          prerequisites: ['Basic Time Management'],
+          thumbnail: '⏰',
+          status: 'not_started'
+        },
+        {
+          id: '5',
+          title: 'Leadership Fundamentals',
+          description: 'Essential leadership skills for emerging leaders.',
+          category: 'Leadership',
+          duration: 8,
+          level: 'Intermediate',
+          instructor: 'Sarah Johnson',
+          enrolled: false,
+          completed: false,
+          progress: 0,
+          rating: 4.8,
+          enrolledCount: 90,
+          mandatory: false,
+          modules: 6,
+          assignments: 3,
+          price: 'premium',
+          skills: ['Leadership', 'Team Management'],
+          prerequisites: ['Basic Leadership'],
+          thumbnail: '👨‍💼',
+          status: 'not_started'
+        },
+        {
+          id: '6',
+          title: 'Data Analysis with Excel',
+          description: 'Master data analysis techniques using Excel.',
+          category: 'Technical',
+          duration: 6,
+          level: 'Intermediate',
+          instructor: 'Mike Wilson',
+          enrolled: true,
+          completed: false,
+          progress: 25,
+          rating: 4.5,
+          enrolledCount: 150,
+          mandatory: false,
+          modules: 10,
+          assignments: 7,
+          price: 'free',
+          skills: ['Excel', 'Data Analysis'],
+          prerequisites: ['Basic Excel'],
+          thumbnail: '📊',
+          status: 'in_progress'
+        }
+      ];
 
-    setCourses(mockCourses);
-    setLearningPaths(mockLearningPaths);
-    setIsLoading(false);
+      const mockLearningPaths: LearningPath[] = [
+        {
+          id: '1',
+          title: 'Full Stack Developer',
+          description: 'Complete learning path to become a full stack web developer',
+          courses: ['1', '2', '3'],
+          completed: 2,
+          total: 3,
+          difficulty: 'intermediate',
+          skills: ['JavaScript', 'React', 'Node.js', 'Database Design'],
+          courseIds: ['1', '2'],
+          thumbnail: '💻'
+        },
+        {
+          id: '2',
+          title: 'Management Excellence',
+          description: 'Develop comprehensive management and leadership capabilities',
+          courses: ['4', '5'],
+          completed: 0,
+          total: 2,
+          difficulty: 'advanced',
+          skills: ['Leadership', 'Project Management', 'Team Building'],
+          courseIds: ['4', '5'],
+          thumbnail: '👔'
+        },
+        {
+          id: '3',
+          title: 'Data Analyst Professional',
+          description: 'Master data analysis tools and techniques for business insights',
+          courses: ['6'],
+          completed: 1,
+          total: 1,
+          difficulty: 'intermediate',
+          skills: ['Excel', 'SQL', 'Python', 'Data Visualization'],
+          courseIds: ['6'],
+          thumbnail: '📈'
+        }
+      ];
+
+      setCourses(mockCourses);
+      setLearningPaths(mockLearningPaths);
+      setIsLoading(false);
+    };
+
+    loadLearningData();
   }, []);
 
   const handleEnroll = (courseId: string) => {
