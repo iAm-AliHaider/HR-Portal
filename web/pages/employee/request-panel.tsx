@@ -33,8 +33,16 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
-// Rename interface FormData to RequestFormData
+// Expand RequestFormData
 interface RequestFormData {
+  // Employee info
+  employeeName?: string;
+  employeeEmail?: string;
+  department?: string;
+  manager?: string;
+  phone?: string;
+  location?: string;
+
   // Leave request fields
   leaveType?: string;
   startDate?: string;
@@ -43,18 +51,24 @@ interface RequestFormData {
   totalDays?: string;
   reason?: string;
   handoverNotes?: string;
-  
+
   // Equipment request fields
   equipmentType?: string;
   urgency?: string;
   specifications?: string;
-  
+  costCenter?: string;
+  project?: string;
+
   // Generic fields
   title?: string;
   description?: string;
   dateNeeded?: string;
   priority?: string;
   attachments?: FileList | null;
+  justification?: string;
+  additionalApprovers?: string;
+  customFields?: Record<string, string>;
+  comments?: string;
 }
 
 interface FormErrors {
@@ -81,6 +95,12 @@ export default function RequestPanel() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const initialFormData: RequestFormData = {
+    employeeName: '',
+    employeeEmail: '',
+    department: '',
+    manager: '',
+    phone: '',
+    location: '',
     leaveType: '',
     startDate: '',
     endDate: '',
@@ -91,11 +111,17 @@ export default function RequestPanel() {
     equipmentType: '',
     urgency: '',
     specifications: '',
+    costCenter: '',
+    project: '',
     title: '',
     description: '',
     dateNeeded: '',
     priority: '',
     attachments: undefined,
+    justification: '',
+    additionalApprovers: '',
+    customFields: {},
+    comments: '',
   };
   const [formData, setFormData] = useState<RequestFormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -323,7 +349,7 @@ export default function RequestPanel() {
 
   // Form validation
   const validateForm = () => {
-    const errors = {};
+    const errors: Partial<RequestFormData> & { [key: string]: string } = {};
     
     if (selectedRequestType?.id === 'leave') {
       if (!formData.leaveType) errors.leaveType = 'Leave type is required';
@@ -742,210 +768,46 @@ export default function RequestPanel() {
             {/* Step 2: Fill Form */}
             {step === 'form' && selectedRequestType && (
               <div className="mt-4 space-y-6">
-                <div className="mb-2 text-gray-700">Fill in the details for <span className="font-semibold">{selectedRequestType.name}</span>:</div>
-                {/* Dynamic form based on request type */}
-                {selectedRequestType.id === 'leave' && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Leave Type</label>
-                        <Select value={formData.leaveType ?? ''} onChange={(e) => handleFormChange('leaveType', e.target.value)}>
-                          <SelectTrigger className={formErrors.leaveType ? 'border-red-500' : ''}>
-                            <SelectValue placeholder="Select leave type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="annual">Annual Leave</SelectItem>
-                            <SelectItem value="sick">Sick Leave</SelectItem>
-                            <SelectItem value="personal">Personal Leave</SelectItem>
-                            <SelectItem value="bereavement">Bereavement Leave</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {formErrors.leaveType && <p className="text-red-500 text-xs">{formErrors.leaveType}</p>}
-                      </div>
-                      <div></div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Start Date</label>
-                        <Input 
-                          type="date" 
-                          value={formData.startDate ?? ''} 
-                          onChange={(e) => handleFormChange('startDate', e.target.value)}
-                          className={formErrors.startDate ? 'border-red-500' : ''}
-                        />
-                        {formErrors.startDate && <p className="text-red-500 text-xs">{formErrors.startDate}</p>}
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">End Date</label>
-                        <Input 
-                          type="date" 
-                          value={formData.endDate ?? ''} 
-                          onChange={(e) => handleFormChange('endDate', e.target.value)}
-                          className={formErrors.endDate ? 'border-red-500' : ''}
-                        />
-                        {formErrors.endDate && <p className="text-red-500 text-xs">{formErrors.endDate}</p>}
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Return Date</label>
-                        <Input 
-                          type="date" 
-                          value={formData.returnDate ?? ''} 
-                          onChange={(e) => handleFormChange('returnDate', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Total Days</label>
-                        <Input 
-                          type="number" 
-                          value={formData.totalDays ?? ''} 
-                          onChange={(e) => handleFormChange('totalDays', e.target.value)}
-                          disabled 
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Reason/Comments</label>
-                      <Textarea 
-                        placeholder="Provide any additional details or reason for your leave request" 
-                        value={formData.reason ?? ''} 
-                        onChange={(e) => handleFormChange('reason', e.target.value)}
-                        className={formErrors.reason ? 'border-red-500' : ''}
-                      />
-                      {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Handover Notes</label>
-                      <Textarea 
-                        placeholder="Provide handover information for your team during your absence" 
-                        value={formData.handoverNotes ?? ''} 
-                        onChange={(e) => handleFormChange('handoverNotes', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                {selectedRequestType.id === 'equipment' && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Equipment Type</label>
-                        <Select value={formData.equipmentType ?? ''} onChange={(e) => handleFormChange('equipmentType', e.target.value)}>
-                          <SelectTrigger className={formErrors.equipmentType ? 'border-red-500' : ''}>
-                            <SelectValue placeholder="Select equipment type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="laptop">Laptop</SelectItem>
-                            <SelectItem value="desktop">Desktop</SelectItem>
-                            <SelectItem value="monitor">Monitor</SelectItem>
-                            <SelectItem value="keyboard">Keyboard</SelectItem>
-                            <SelectItem value="mouse">Mouse</SelectItem>
-                            <SelectItem value="headset">Headset</SelectItem>
-                            <SelectItem value="phone">Phone</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {formErrors.equipmentType && <p className="text-red-500 text-xs">{formErrors.equipmentType}</p>}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Urgency</label>
-                        <Select value={formData.urgency ?? ''} onChange={(e) => handleFormChange('urgency', e.target.value)}>
-                          <SelectTrigger className={formErrors.urgency ? 'border-red-500' : ''}>
-                            <SelectValue placeholder="Select urgency level" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {formErrors.urgency && <p className="text-red-500 text-xs">{formErrors.urgency}</p>}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Reason for Request</label>
-                      <Textarea 
-                        placeholder="Explain why you need this equipment" 
-                        value={formData.reason ?? ''} 
-                        onChange={(e) => handleFormChange('reason', e.target.value)}
-                        className={formErrors.reason ? 'border-red-500' : ''}
-                      />
-                      {formErrors.reason && <p className="text-red-500 text-xs">{formErrors.reason}</p>}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Specifications/Requirements</label>
-                      <Textarea 
-                        placeholder="Describe any specific requirements or specifications needed" 
-                        value={formData.specifications ?? ''} 
-                        onChange={(e) => handleFormChange('specifications', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                {/* Generic form for other request types */}
-                {!['leave', 'equipment'].includes(selectedRequestType.id) && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Request Title</label>
-                      <Input 
-                        placeholder="Enter a title for your request" 
-                        value={formData.title ?? ''} 
-                        onChange={(e) => handleFormChange('title', e.target.value)}
-                        className={formErrors.title ? 'border-red-500' : ''}
-                      />
-                      {formErrors.title && <p className="text-red-500 text-xs">{formErrors.title}</p>}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Description</label>
-                      <Textarea 
-                        placeholder="Provide details about your request" 
-                        value={formData.description ?? ''} 
-                        onChange={(e) => handleFormChange('description', e.target.value)}
-                        className={formErrors.description ? 'border-red-500' : ''}
-                      />
-                      {formErrors.description && <p className="text-red-500 text-xs">{formErrors.description}</p>}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Date Needed</label>
-                        <Input 
-                          type="date" 
-                          value={formData.dateNeeded ?? ''} 
-                          onChange={(e) => handleFormChange('dateNeeded', e.target.value)}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Priority</label>
-                        <Select value={formData.priority ?? ''} onChange={(e) => handleFormChange('priority', e.target.value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select priority level" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Attachments (Optional)</label>
-                  <Input 
-                    type="file" 
-                    onChange={(e) => handleFormChange('attachments', e.target.files)}
-                  />
+                {/* Employee Information */}
+                <div className="mb-4">
+                  <h3 className="font-semibold text-lg mb-2">Employee Information</h3>
+                  <label className="text-sm font-medium">Employee Name</label>
+                  <Input placeholder="Enter your name" value={formData.employeeName ?? ''} onChange={e => handleFormChange('employeeName', e.target.value)} required />
+                  <label className="text-sm font-medium">Employee Email</label>
+                  <Input placeholder="Enter your email" value={formData.employeeEmail ?? ''} onChange={e => handleFormChange('employeeEmail', e.target.value)} required type="email" />
+                  <label className="text-sm font-medium">Department</label>
+                  <Input placeholder="Enter your department" value={formData.department ?? ''} onChange={e => handleFormChange('department', e.target.value)} required />
+                  <label className="text-sm font-medium">Manager</label>
+                  <Input placeholder="Enter your manager's name" value={formData.manager ?? ''} onChange={e => handleFormChange('manager', e.target.value)} />
+                  <label className="text-sm font-medium">Phone</label>
+                  <Input placeholder="Enter your phone number" value={formData.phone ?? ''} onChange={e => handleFormChange('phone', e.target.value)} />
+                  <label className="text-sm font-medium">Location</label>
+                  <Input placeholder="Enter your location" value={formData.location ?? ''} onChange={e => handleFormChange('location', e.target.value)} />
                 </div>
+                {/* Justification / Comments */}
+                <div className="mb-4">
+                  <h3 className="font-semibold text-lg mb-2">Justification / Comments</h3>
+                  <label className="text-sm font-medium">Justification</label>
+                  <Textarea placeholder="Why are you making this request?" value={formData.justification ?? ''} onChange={e => handleFormChange('justification', e.target.value)} isRequired />
+                  <label className="text-sm font-medium">Comments</label>
+                  <Textarea placeholder="Additional comments (optional)" value={formData.comments ?? ''} onChange={e => handleFormChange('comments', e.target.value)} />
+                </div>
+                {/* Cost Center / Project */}
+                <div className="mb-4">
+                  <h3 className="font-semibold text-lg mb-2">Cost Center / Project</h3>
+                  <label className="text-sm font-medium">Cost Center</label>
+                  <Input placeholder="Enter cost center (if applicable)" value={formData.costCenter ?? ''} onChange={e => handleFormChange('costCenter', e.target.value)} />
+                  <label className="text-sm font-medium">Project</label>
+                  <Input placeholder="Enter project (if applicable)" value={formData.project ?? ''} onChange={e => handleFormChange('project', e.target.value)} />
+                </div>
+                {/* Additional Approvers */}
+                <div className="mb-4">
+                  <h3 className="font-semibold text-lg mb-2">Additional Approvers</h3>
+                  <label className="text-sm font-medium">Additional Approvers</label>
+                  <Input placeholder="Enter additional approvers (comma separated)" value={formData.additionalApprovers ?? ''} onChange={e => handleFormChange('additionalApprovers', e.target.value)} />
+                </div>
+                {/* Custom Fields (future extensibility) */}
+                {/* ... type-specific fields follow here ... */}
               </div>
             )}
           </DrawerBody>
