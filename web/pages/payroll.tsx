@@ -708,16 +708,16 @@ const PayrollManagement = () => {
                       </div>
                     </td>
                     <td className="p-4">
-                      <div>{employee.total_taxes.toLocaleString()}h</div>
-                      {employee.total_taxes > 0 && (
-                        <div className="text-sm text-orange-600">+{employee.total_taxes.toLocaleString()}h OT</div>
+                      <div>{employee.hoursWorked.toLocaleString()}h</div>
+                      {employee.overtimeHours > 0 && (
+                        <div className="text-sm text-orange-600">+{employee.overtimeHours.toLocaleString()}h OT</div>
                       )}
                     </td>
                     <td className="p-4">
                       <div className="font-medium">${employee.grossPay.toLocaleString()}</div>
-                      {(employee.total_taxes > 0) && (
+                      {(employee.bonuses > 0) && (
                         <div className="text-sm text-green-600">
-                          +${employee.total_taxes.toLocaleString()}
+                          +${employee.bonuses.toLocaleString()}
                         </div>
                       )}
                     </td>
@@ -730,7 +730,7 @@ const PayrollManagement = () => {
                       <div className="font-medium text-green-600">${employee.netPay.toLocaleString()}</div>
                     </td>
                     <td className="p-4">
-                      <div className="font-medium">${employee.total_taxes.toLocaleString()}</div>
+                      <div className="font-medium">${employee.ytdGross.toLocaleString()}</div>
                     </td>
                     <td className="p-4">
                       <div className="flex gap-1">
@@ -1000,23 +1000,6 @@ const PayrollManagement = () => {
     });
   };
 
-  const handleProcessPayroll = (e) => {
-    e.preventDefault();
-    console.log('Processing payroll:', payrollProcessForm);
-    // Process payroll logic here
-    setShowPayrollProcessForm(false);
-    setPayrollProcessForm({
-      period_name: '',
-      start_date: '',
-      end_date: '',
-      pay_date: '',
-      includeBonus: false,
-      includeCommission: false,
-      includeOvertime: true,
-      notes: ''
-    });
-  };
-
   // Handle report download
   const handleDownloadReport = (reportId) => {
     alert(`Downloading report ID: ${reportId}. This would download the selected payroll report.`);
@@ -1187,12 +1170,12 @@ const PayrollManagement = () => {
                   <div>
                     <h4 className="font-medium mb-3">Current Period</h4>
                     <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">Hours Worked:</span> {selectedEmployee.total_taxes.toLocaleString()}</div>
-                      <div><span className="font-medium">Overtime Hours:</span> {selectedEmployee.total_taxes.toLocaleString()}</div>
+                      <div><span className="font-medium">Hours Worked:</span> {selectedEmployee.hoursWorked.toLocaleString()}h</div>
+                      <div><span className="font-medium">Overtime Hours:</span> {selectedEmployee.overtimeHours.toLocaleString()}h</div>
                       <div><span className="font-medium">Gross Pay:</span> ${selectedEmployee.grossPay.toLocaleString()}</div>
                       <div><span className="font-medium">Net Pay:</span> ${selectedEmployee.netPay.toLocaleString()}</div>
-                      <div><span className="font-medium">Bonuses:</span> ${selectedEmployee.total_taxes.toLocaleString()}</div>
-                      <div><span className="font-medium">Commissions:</span> ${selectedEmployee.total_taxes.toLocaleString()}</div>
+                      <div><span className="font-medium">Bonuses:</span> ${selectedEmployee.bonuses.toLocaleString()}</div>
+                      <div><span className="font-medium">Commissions:</span> ${selectedEmployee.commissions.toLocaleString()}</div>
                     </div>
                   </div>
                 </div>
@@ -1218,8 +1201,8 @@ const PayrollManagement = () => {
                 <div>
                   <h4 className="font-medium mb-3">Year-to-Date Summary</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="font-medium">YTD Gross:</span> ${selectedEmployee.total_taxes.toLocaleString()}</div>
-                    <div><span className="font-medium">YTD Net:</span> ${selectedEmployee.netPay.toLocaleString()}</div>
+                    <div><span className="font-medium">YTD Gross:</span> ${selectedEmployee.ytdGross.toLocaleString()}</div>
+                    <div><span className="font-medium">YTD Net:</span> ${selectedEmployee.ytdNet.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
