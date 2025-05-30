@@ -28,6 +28,7 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger 
 } from '@/components/ui/accordion';
 import { GetServerSideProps } from 'next';
+import { useDisclosure } from '@/components/ui/dialog';
 
 // Rename interface FormData to RequestFormData
 interface RequestFormData {
@@ -66,12 +67,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 
 export default function RequestPanel() {
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const activeTab = ['all', 'pending', 'approved', 'rejected'][activeTabIndex];
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
-  const [isNewRequestOpen, setIsNewRequestOpen] = useState(false);
   const [selectedRequestType, setSelectedRequestType] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -99,6 +100,7 @@ export default function RequestPanel() {
   const [requests, setRequests] = useState<any[]>([]);
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [step, setStep] = useState<'select' | 'form'>('select');
+  const newRequestDialog = useDisclosure();
   
   // Request types grouped by category
   const requestTypes = {
@@ -413,7 +415,7 @@ export default function RequestPanel() {
         alert('Request submitted successfully! (Demo mode)');
       }
       
-      setIsNewRequestOpen(false);
+      newRequestDialog.onClose();
       setSelectedRequestType(null);
       setFormData(initialFormData);
       setFormErrors({});
@@ -497,12 +499,10 @@ export default function RequestPanel() {
             <p className="text-gray-600">Submit and track your approval requests</p>
           </div>
           
-          <DialogTrigger asChild>
-            <Button onClick={() => { setIsNewRequestOpen(true); setStep('select'); setDialogError(null); }}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Request
-            </Button>
-          </DialogTrigger>
+          <Button onClick={() => { newRequestDialog.onOpen(); setStep('select'); setDialogError(null); }}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Request
+          </Button>
         </div>
         
         {/* Filters */}
@@ -519,7 +519,7 @@ export default function RequestPanel() {
                 />
               </div>
               
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
@@ -532,7 +532,7 @@ export default function RequestPanel() {
                 </SelectContent>
               </Select>
               
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
@@ -546,7 +546,7 @@ export default function RequestPanel() {
                 </SelectContent>
               </Select>
               
-              <Select value={dateFilter} onValueChange={setDateFilter}>
+              <Select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by date" />
                 </SelectTrigger>
@@ -562,125 +562,117 @@ export default function RequestPanel() {
         </Card>
         
         {/* Requests Tabs */}
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+        <Tabs index={activeTabIndex} onChange={setActiveTabIndex}>
           <TabsList className="mb-4">
-            <TabsTrigger value="all">All Requests</TabsTrigger>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
-            <TabsTrigger value="approved">Approved</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected</TabsTrigger>
+            {['all', 'pending', 'approved', 'rejected'].map((tab, idx) => (
+              <TabsTrigger key={tab} value={tab}>{tab.charAt(0).toUpperCase() + tab.slice(1)} Requests</TabsTrigger>
+            ))}
           </TabsList>
           
-          <TabsContent value={activeTab}>
-            {filteredRequests.length > 0 ? (
-              <div className="space-y-4">
-                {filteredRequests.map(request => (
-                  <Card key={request.id} className="overflow-hidden">
-                    <div className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 bg-gray-100 rounded">
-                            {getRequestTypeIcon(request.type)}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-medium">{request.title}</h3>
-                              {getStatusBadge(request.status)}
+          {['all', 'pending', 'approved', 'rejected'].map((tab, idx) => (
+            <TabsContent key={tab} value={tab}>
+              {filteredRequests.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredRequests.map(request => (
+                    <Card key={request.id} className="overflow-hidden">
+                      <div className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-gray-100 rounded">
+                              {getRequestTypeIcon(request.type)}
                             </div>
-                            <p className="text-sm text-gray-500">{request.id} • Submitted on {formatDate(request.submittedDate)}</p>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-medium">{request.title}</h3>
+                                {getStatusBadge(request.status)}
+                              </div>
+                              <p className="text-sm text-gray-500">{request.id} • Submitted on {formatDate(request.submittedDate)}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{getCategoryName(request.category)}</Badge>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleOpenRequestDetails(request)}
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3 text-gray-600 text-sm">
-                        {request.description}
-                      </div>
-                      
-                      <div className="mt-3 flex justify-between items-center text-sm">
-                        <div className="text-gray-500">
-                          {request.status === 'pending' ? (
-                            <span>Pending approval from {request.approver}</span>
-                          ) : request.status === 'approved' ? (
-                            <span>Approved by {request.approver} on {formatDate(request.decisionDate)}</span>
-                          ) : request.status === 'rejected' ? (
-                            <span>Rejected by {request.approver} on {formatDate(request.decisionDate)}</span>
-                          ) : null}
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{getCategoryName(request.category)}</Badge>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleOpenRequestDetails(request)}
+                            >
+                              View Details
+                            </Button>
+                          </div>
                         </div>
                         
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleOpenRequestDetails(request)}>
-                              View Details
-                            </DropdownMenuItem>
-                            {request.status === 'pending' && (
-                              <DropdownMenuItem>
-                                Cancel Request
+                        <div className="mt-3 text-gray-600 text-sm">
+                          {request.description}
+                        </div>
+                        
+                        <div className="mt-3 flex justify-between items-center text-sm">
+                          <div className="text-gray-500">
+                            {request.status === 'pending' ? (
+                              <span>Pending approval from {request.approver}</span>
+                            ) : request.status === 'approved' ? (
+                              <span>Approved by {request.approver} on {formatDate(request.decisionDate)}</span>
+                            ) : request.status === 'rejected' ? (
+                              <span>Rejected by {request.approver} on {formatDate(request.decisionDate)}</span>
+                            ) : null}
+                          </div>
+                          
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleOpenRequestDetails(request)}>
+                                View Details
                               </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem>
-                              Download PDF
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              {request.status === 'pending' && (
+                                <DropdownMenuItem>
+                                  Cancel Request
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem>
+                                Download PDF
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Requests Found</h3>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  {searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || dateFilter !== 'all'
-                    ? "No requests match your current filters. Try adjusting your search criteria."
-                    : "You haven't submitted any requests yet. Create a new request to get started."}
-                </p>
-                {(searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || dateFilter !== 'all') && (
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setStatusFilter('all');
-                      setCategoryFilter('all');
-                      setDateFilter('all');
-                    }}
-                  >
-                    Clear Filters
-                  </Button>
-                )}
-              </div>
-            )}
-          </TabsContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Requests Found</h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    {searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || dateFilter !== 'all'
+                      ? "No requests match your current filters. Try adjusting your search criteria."
+                      : "You haven't submitted any requests yet. Create a new request to get started."}
+                  </p>
+                  {(searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || dateFilter !== 'all') && (
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setStatusFilter('all');
+                        setCategoryFilter('all');
+                        setDateFilter('all');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
       
       {/* New Request Dialog */}
-      <Dialog open={isNewRequestOpen} onOpenChange={(open) => {
-        setIsNewRequestOpen(open);
-        if (!open) {
-          setSelectedRequestType(null);
-          setStep('select');
-          setDialogError(null);
-          setFormData(initialFormData);
-          setFormErrors({});
-        }
-      }}>
+      <Dialog isOpen={newRequestDialog.isOpen} onClose={newRequestDialog.onClose}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>
@@ -747,7 +739,7 @@ export default function RequestPanel() {
                 ))}
               </Accordion>
               <div className="flex justify-end mt-4">
-                <Button variant="outline" onClick={() => { setIsNewRequestOpen(false); setDialogError(null); }}>Cancel</Button>
+                <Button variant="outline" onClick={() => { newRequestDialog.onClose(); setDialogError(null); }}>Cancel</Button>
               </div>
             </div>
           )}
@@ -762,7 +754,7 @@ export default function RequestPanel() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Leave Type</label>
-                      <Select value={(formData as RequestFormData).leaveType ?? ''} onValueChange={(value) => handleFormChange('leaveType', value)}>
+                      <Select value={formData.leaveType ?? ''} onChange={(e) => handleFormChange('leaveType', e.target.value)}>
                         <SelectTrigger className={formErrors.leaveType ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select leave type" />
                         </SelectTrigger>
@@ -781,7 +773,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Start Date</label>
                       <Input 
                         type="date" 
-                        value={(formData as RequestFormData).startDate ?? ''} 
+                        value={formData.startDate ?? ''} 
                         onChange={(e) => handleFormChange('startDate', e.target.value)}
                         className={formErrors.startDate ? 'border-red-500' : ''}
                       />
@@ -791,7 +783,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">End Date</label>
                       <Input 
                         type="date" 
-                        value={(formData as RequestFormData).endDate ?? ''} 
+                        value={formData.endDate ?? ''} 
                         onChange={(e) => handleFormChange('endDate', e.target.value)}
                         className={formErrors.endDate ? 'border-red-500' : ''}
                       />
@@ -801,7 +793,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Return Date</label>
                       <Input 
                         type="date" 
-                        value={(formData as RequestFormData).returnDate ?? ''} 
+                        value={formData.returnDate ?? ''} 
                         onChange={(e) => handleFormChange('returnDate', e.target.value)}
                       />
                     </div>
@@ -809,7 +801,7 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Total Days</label>
                       <Input 
                         type="number" 
-                        value={(formData as RequestFormData).totalDays ?? ''} 
+                        value={formData.totalDays ?? ''} 
                         onChange={(e) => handleFormChange('totalDays', e.target.value)}
                         disabled 
                       />
@@ -820,7 +812,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Reason/Comments</label>
                     <Textarea 
                       placeholder="Provide any additional details or reason for your leave request" 
-                      value={(formData as RequestFormData).reason ?? ''} 
+                      value={formData.reason ?? ''} 
                       onChange={(e) => handleFormChange('reason', e.target.value)}
                       className={formErrors.reason ? 'border-red-500' : ''}
                     />
@@ -831,7 +823,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Handover Notes</label>
                     <Textarea 
                       placeholder="Provide handover information for your team during your absence" 
-                      value={(formData as RequestFormData).handoverNotes ?? ''} 
+                      value={formData.handoverNotes ?? ''} 
                       onChange={(e) => handleFormChange('handoverNotes', e.target.value)}
                     />
                   </div>
@@ -843,7 +835,7 @@ export default function RequestPanel() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Equipment Type</label>
-                      <Select value={(formData as RequestFormData).equipmentType ?? ''} onValueChange={(value) => handleFormChange('equipmentType', value)}>
+                      <Select value={formData.equipmentType ?? ''} onChange={(e) => handleFormChange('equipmentType', e.target.value)}>
                         <SelectTrigger className={formErrors.equipmentType ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select equipment type" />
                         </SelectTrigger>
@@ -863,7 +855,7 @@ export default function RequestPanel() {
                     
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Urgency</label>
-                      <Select value={(formData as RequestFormData).urgency ?? ''} onValueChange={(value) => handleFormChange('urgency', value)}>
+                      <Select value={formData.urgency ?? ''} onChange={(e) => handleFormChange('urgency', e.target.value)}>
                         <SelectTrigger className={formErrors.urgency ? 'border-red-500' : ''}>
                           <SelectValue placeholder="Select urgency level" />
                         </SelectTrigger>
@@ -882,7 +874,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Reason for Request</label>
                     <Textarea 
                       placeholder="Explain why you need this equipment" 
-                      value={(formData as RequestFormData).reason ?? ''} 
+                      value={formData.reason ?? ''} 
                       onChange={(e) => handleFormChange('reason', e.target.value)}
                       className={formErrors.reason ? 'border-red-500' : ''}
                     />
@@ -893,7 +885,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Specifications/Requirements</label>
                     <Textarea 
                       placeholder="Describe any specific requirements or specifications needed" 
-                      value={(formData as RequestFormData).specifications ?? ''} 
+                      value={formData.specifications ?? ''} 
                       onChange={(e) => handleFormChange('specifications', e.target.value)}
                     />
                   </div>
@@ -907,7 +899,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Request Title</label>
                     <Input 
                       placeholder="Enter a title for your request" 
-                      value={(formData as RequestFormData).title ?? ''} 
+                      value={formData.title ?? ''} 
                       onChange={(e) => handleFormChange('title', e.target.value)}
                       className={formErrors.title ? 'border-red-500' : ''}
                     />
@@ -918,7 +910,7 @@ export default function RequestPanel() {
                     <label className="text-sm font-medium">Description</label>
                     <Textarea 
                       placeholder="Provide details about your request" 
-                      value={(formData as RequestFormData).description ?? ''} 
+                      value={formData.description ?? ''} 
                       onChange={(e) => handleFormChange('description', e.target.value)}
                       className={formErrors.description ? 'border-red-500' : ''}
                     />
@@ -930,14 +922,14 @@ export default function RequestPanel() {
                       <label className="text-sm font-medium">Date Needed</label>
                       <Input 
                         type="date" 
-                        value={(formData as RequestFormData).dateNeeded ?? ''} 
+                        value={formData.dateNeeded ?? ''} 
                         onChange={(e) => handleFormChange('dateNeeded', e.target.value)}
                       />
                     </div>
                     
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Priority</label>
-                      <Select value={(formData as RequestFormData).priority ?? ''} onValueChange={(value) => handleFormChange('priority', value)}>
+                      <Select value={formData.priority ?? ''} onChange={(e) => handleFormChange('priority', e.target.value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select priority level" />
                         </SelectTrigger>
@@ -969,7 +961,7 @@ export default function RequestPanel() {
                     setDialogError('Failed to submit request. Please try again.');
                   }
                 }}>Submit Request</Button>
-                <Button variant="ghost" onClick={() => { setIsNewRequestOpen(false); setSelectedRequestType(null); setStep('select'); setDialogError(null); setFormData(initialFormData); setFormErrors({}); }}>Reset</Button>
+                <Button variant="ghost" onClick={() => { newRequestDialog.onClose(); setSelectedRequestType(null); setStep('select'); setDialogError(null); setFormData(initialFormData); setFormErrors({}); }}>Reset</Button>
               </div>
             </div>
           )}
@@ -978,7 +970,7 @@ export default function RequestPanel() {
       
       {/* Request Details Dialog */}
       {selectedRequest && (
-        <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <Dialog isOpen={isDetailDialogOpen} onClose={() => setIsDetailDialogOpen(false)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Request Details</DialogTitle>
