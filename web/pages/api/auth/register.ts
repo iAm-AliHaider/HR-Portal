@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Development mode - simulate registration
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_MOCK_AUTH === 'true') {
       // Create a mock user profile
       const mockUser = {
         id: `mock-${Date.now()}`,
@@ -57,6 +57,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Check if user already exists before signup attempt
+    const { data: existingUsers, error: checkError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email)
+      .limit(1);
+    
+    if (checkError) {
+      console.error('Error checking for existing user:', checkError);
+    } else if (existingUsers && existingUsers.length > 0) {
+      return res.status(400).json({ error: 'Email is already registered' });
+    }
+
     // Production mode - use Supabase
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -65,6 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           first_name: firstName || fullName?.split(' ')[0] || email.split('@')[0],
           last_name: lastName || fullName?.split(' ').slice(1).join(' ') || '',
+          full_name: fullName || `${firstName} ${lastName}` || email.split('@')[0],
           role,
           department,
           position,
@@ -75,54 +89,76 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (authError) {
+      console.error('Supabase auth signup error:', authError);
       return res.status(400).json({ error: authError.message });
     }
 
+    if (!authData.user) {
+      console.error('User was not created by Supabase');
+      return res.status(500).json({ error: 'Failed to create user account' });
+    }
+
     // Wait a moment for the trigger to create the profile
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Verify profile was created and update if needed
-    if (authData.user) {
-      const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('Profile fetch error or profile not found:', profileError);
+      
+      // Manually create profile if trigger failed
+      const userProfile = {
+        id: authData.user.id,
+        email,
+        name: fullName || `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0],
+        first_name: firstName || fullName?.split(' ')[0] || email.split('@')[0],
+        last_name: lastName || fullName?.split(' ').slice(1).join(' ') || '',
+        role,
+        department,
+        position,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error: insertError } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('id', authData.user.id)
-        .single();
+        .insert(userProfile);
 
-      if (profileError || !profile) {
-        // Manually create profile if trigger failed
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            first_name: firstName || fullName?.split(' ')[0] || email.split('@')[0],
-            last_name: lastName || fullName?.split(' ').slice(1).join(' ') || '',
-            email,
-            role,
-            department,
-            position,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-        if (insertError) {
-          console.error('Profile creation failed:', insertError);
-        }
+      if (insertError) {
+        console.error('Profile creation failed:', insertError);
+        // If the profile creation fails, we should delete the auth user to avoid orphaned auth users
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        return res.status(500).json({ 
+          error: 'Database error saving new user profile',
+          details: insertError.message
+        });
       }
+    }
 
-      // Create employee record if role is employee
-      if (role === 'employee') {
-        await supabase
-          .from('employees')
-          .insert({
-            profile_id: authData.user.id,
-            employee_id: `EMP${Date.now().toString().slice(-6)}`,
-            status: 'active',
-            employment_type: 'full-time',
-            start_date: new Date().toISOString().split('T')[0],
-            department,
-            position
-          });
+    // Create employee record if role is employee
+    if (role === 'employee') {
+      const employeeRecord = {
+        profile_id: authData.user.id,
+        employee_id: `EMP${Date.now().toString().slice(-6)}`,
+        status: 'active',
+        employment_type: 'full-time',
+        start_date: new Date().toISOString().split('T')[0],
+        department,
+        position
+      };
+      
+      const { error: employeeError } = await supabase
+        .from('employees')
+        .insert(employeeRecord);
+
+      if (employeeError) {
+        console.error('Employee record creation failed:', employeeError);
+        // Continue anyway, this is not critical
       }
     }
 

@@ -16,50 +16,81 @@ function createSupabaseClient(): SupabaseClient {
     return supabaseInstance;
   }
 
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: false, // Prevent URL parsing issues
-      flowType: 'pkce',
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      // Reduce auth state change frequency
-      storageKey: 'hr-portal-auth',
-      debug: false, // Disable debug logs
-    },
-    global: {
-      headers: {
-        'X-Client-Info': 'hr-portal-web@1.0.0',
+  try {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false, // Prevent URL parsing issues
+        flowType: 'pkce',
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        // Reduce auth state change frequency
+        storageKey: 'hr-portal-auth',
+        debug: isDevelopment, // Enable debug logs in development
       },
-    },
-    // Minimal realtime to prevent conflicts
-    realtime: {
-      params: {
-        eventsPerSecond: 1,
+      global: {
+        headers: {
+          'X-Client-Info': 'hr-portal-web@1.0.0',
+        },
       },
-      heartbeatIntervalMs: 60000, // Increased interval
-      reconnectAfterMs: (tries: number) => Math.min(tries * 2000, 10000),
-    },
-    // Add database settings for better performance
-    db: {
-      schema: 'public'
-    }
-  });
-
-  // Suppress console warnings in production
-  if (process.env.NODE_ENV === 'production') {
-    const originalConsoleWarn = console.warn;
-    console.warn = (...args) => {
-      const message = args.join(' ');
-      if (message.includes('Multiple GoTrueClient instances') || 
-          message.includes('supabase') && message.includes('detected')) {
-        return; // Suppress Supabase warnings
+      // Minimal realtime to prevent conflicts
+      realtime: {
+        params: {
+          eventsPerSecond: 1,
+        },
+        heartbeatIntervalMs: 60000, // Increased interval
+        reconnectAfterMs: (tries: number) => Math.min(tries * 2000, 10000),
+      },
+      // Add database settings for better performance
+      db: {
+        schema: 'public'
       }
-      originalConsoleWarn.apply(console, args);
-    };
-  }
+    });
 
-  return supabaseInstance;
+    // Add a custom error handler for auth errors
+    if (typeof window !== 'undefined') {
+      // Capture auth errors in client-side
+      const originalAuthSignUp = supabaseInstance.auth.signUp;
+      supabaseInstance.auth.signUp = async (...args) => {
+        try {
+          const result = await originalAuthSignUp.apply(supabaseInstance.auth, args);
+          if (result.error) {
+            console.error('Supabase Auth Error during signUp:', result.error);
+            // You could send this to a monitoring service if needed
+          }
+          return result;
+        } catch (error) {
+          console.error('Unexpected error during signUp:', error);
+          throw error;
+        }
+      };
+    }
+
+    // Suppress console warnings in production
+    if (process.env.NODE_ENV === 'production') {
+      const originalConsoleWarn = console.warn;
+      console.warn = (...args) => {
+        const message = args.join(' ');
+        if (message.includes('Multiple GoTrueClient instances') || 
+            message.includes('supabase') && message.includes('detected')) {
+          return; // Suppress Supabase warnings
+        }
+        originalConsoleWarn.apply(console, args);
+      };
+    }
+
+    return supabaseInstance;
+  } catch (error) {
+    console.error('Failed to initialize Supabase client:', error);
+    // Create a minimal client that won't crash the app but will show errors
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { 
+        autoRefreshToken: true,
+        persistSession: true,
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined
+      }
+    });
+  }
 }
 
 // Export the singleton instance
@@ -84,6 +115,27 @@ export const isSupabaseConfigured = () => {
   } catch (error) {
     console.error('Supabase configuration check failed:', error);
     return false;
+  }
+};
+
+// Helper function to check database connection
+export const checkDatabaseConnection = async () => {
+  try {
+    const startTime = Date.now();
+    const { data, error } = await supabase.from('profiles').select('count').limit(1);
+    const duration = Date.now() - startTime;
+    
+    return {
+      success: !error,
+      duration,
+      error: error ? error.message : null
+    };
+  } catch (error) {
+    return {
+      success: false,
+      duration: 0,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
   }
 };
 
