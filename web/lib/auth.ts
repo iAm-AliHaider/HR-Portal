@@ -2,22 +2,15 @@ import { createClient } from '@supabase/supabase-js'
 import { supabase } from './supabase/client'
 
 // Get environment variables with fallbacks for development
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co'
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example-key'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tqtwdkobrzzrhrqdxprs.supabase.co'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyOTU0MTgsImV4cCI6MjA2Mzg3MTQxOH0.xM1V6pUAOIrALa8E1o8Ma8j7csavI2kPjIfS6RPu15s'
 
 const supabaseClient = createClient(supabaseUrl, supabaseKey)
 
 // Custom auth hook with tenant context
 export const useAuth = () => {
   const signUp = async (email: string, password: string, tenantSlug: string) => {
-    // In development mode, just return a mock successful response
-    if (process.env.NODE_ENV === 'development') {
-      return {
-        user: { id: 'mock-user-id', email },
-        error: null
-      };
-    }
-
+    // Real implementation using Supabase
     const { data: tenant } = await supabaseClient
       .from('tenants')
       .select('id')
@@ -47,16 +40,6 @@ export const useAuth = () => {
 
   // Fix the direct function references
   const signIn = async (email: string, password: string) => {
-    // In development mode, just return a mock successful response
-    if (process.env.NODE_ENV === 'development') {
-      return {
-        data: {
-          user: { id: 'mock-user-id', email },
-          session: { access_token: 'mock-token' }
-        },
-        error: null
-      };
-    }
     return await supabaseClient.auth.signInWithPassword({ email, password })
   }
 
@@ -68,17 +51,6 @@ export const useAuth = () => {
 }
 
 export const registerUser = async ({ email, password, name }) => {
-  // In development mode, just return a mock successful response
-  if (process.env.NODE_ENV === 'development') {
-    return {
-      data: {
-        user: { id: 'mock-user-id', email },
-        session: { access_token: 'mock-token' }
-      },
-      error: null
-    };
-  }
-  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -92,16 +64,6 @@ export const registerUser = async ({ email, password, name }) => {
 };
 
 export const loginUser = async (email, password) => {
-  // In development mode, just return a mock successful response
-  if (process.env.NODE_ENV === 'development') {
-    return {
-      data: {
-        user: { id: 'mock-user-id', email },
-        session: { access_token: 'mock-token' }
-      },
-      error: null
-    };
-  }
   return await supabase.auth.signInWithPassword({ email, password })
 };
 
@@ -109,14 +71,9 @@ export const logoutUser = async () => {
   return await supabase.auth.signOut()
 };
 
-// Development helper utility for bypassing auth
+// Development helper utility for bypassing auth - modified to use query params only
 export const shouldBypassAuth = (query) => {
-  // Always bypass in development
-  if (process.env.NODE_ENV === 'development') {
-    return true;
-  }
-  
-  // Check for explicit bypass parameter
+  // Only bypass with explicit bypass parameter
   if (query && query.bypass === 'true') {
     return true;
   }

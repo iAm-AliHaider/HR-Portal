@@ -36,22 +36,22 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div className={cn(
-      'rounded-xl shadow-sm p-6 flex flex-col gap-4 transition-shadow hover:shadow-md',
+      'rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 transition-shadow hover:shadow-md',
       bgColor,
       className
     )}>
       <div className="flex justify-between items-start">
-        <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+        <h3 className="text-xs sm:text-sm font-medium text-gray-500 break-words pr-2">{title}</h3>
         {icon && (
-          <div className={cn('p-2 rounded-lg', iconBgColor)}>
+          <div className={cn('p-1.5 sm:p-2 rounded-lg flex-shrink-0', iconBgColor)}>
             {icon}
           </div>
         )}
       </div>
-      <div className="flex items-end justify-between">
-        <div className="text-2xl font-bold">{value}</div>
+      <div className="flex flex-wrap items-end justify-between gap-y-2">
+        <div className="text-xl sm:text-2xl font-bold">{value}</div>
         {change && (
-          <div className={cn('text-sm flex items-center', changeColor[changeType])}>
+          <div className={cn('text-xs sm:text-sm flex items-center', changeColor[changeType])}>
             <span className="mr-1">{changeIcon[changeType]}</span>
             {change}
           </div>

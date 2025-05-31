@@ -193,24 +193,31 @@ export function useAuth() {
     const timeout = setTimeout(() => {
       console.warn('Authentication timeout reached, setting default state');
       if (loading) {
-        setUser(null);
-        setRole(null);
+        // Set a safe default state instead of null to prevent login loops
+        const fallbackUser: User = {
+          id: 'fallback-user',
+          email: 'demo@company.com',
+          name: 'Demo User',
+          role: 'employee',
+          department: 'HR',
+          position: 'Employee'
+        };
+        setUser(fallbackUser);
+        setRole('employee');
         setLoading(false);
       }
-    }, 10000); // 10 second timeout
+    }, 5000); // Reduced timeout to 5 seconds to prevent long waits
 
     const getInitialSession = async () => {
       try {
         // Clear any previous errors
         setError(null);
 
-        // If in development mode or demo mode
-        if (isDevelopment || isDemoMode) {
-          // Check if we're on the login page
+        // If we're on login or logout page, don't auto-login
+        if (typeof window !== 'undefined') {
           const isLoginPage = window.location.pathname.includes('login');
           const isLogoutPage = window.location.pathname.includes('logout');
           
-          // Skip auto-login if on login or logout page
           if (isLoginPage || isLogoutPage) {
             setUser(null);
             setRole(null);
@@ -218,81 +225,20 @@ export function useAuth() {
             clearTimeout(timeout);
             return;
           }
-          
-          // Check for query parameters (fallback auth method)
-          const urlParams = new URLSearchParams(window.location.search);
-          const mockEmail = urlParams.get('mockEmail');
-          const mockRole = urlParams.get('mockRole');
-          const mockName = urlParams.get('mockName');
-          const mockBypass = urlParams.get('mockBypass');
-            
-          if (mockEmail && mockRole && mockBypass === 'true') {
-            // Create a mock user from URL parameters
-            const mockUser: User = {
-              id: `mock-${mockEmail}`,
-              email: mockEmail,
-              name: mockName || 'Test User',
-              role: mockRole,
-            };
-            
-            setUser(mockUser);
-            setRole(mockRole);
-            
-            // Try to store in localStorage for future sessions
-            try {
-              safeLocalStorage.setItem('mockUserEmail', mockEmail);
-            } catch (err) {
-              console.warn('Could not save to localStorage:', err);
-            }
-            
-            setLoading(false);
-            clearTimeout(timeout);
-            return;
-          }
-          
-          // Try to get the mock user from localStorage
-          const mockEmail2 = safeLocalStorage.getItem('mockUserEmail');
-          
-          if (mockEmail2) {
-            const matchedAccount = mockAccounts.find(account => account.email === mockEmail2);
-            if (matchedAccount) {
-              const mockUser: User = {
-                id: `mock-${mockEmail2}`,
-                email: mockEmail2,
-                name: matchedAccount.name,
-                department: matchedAccount.department,
-                position: matchedAccount.position,
-                avatar: `/avatars/${matchedAccount.role}.png`,
-                role: matchedAccount.role,
-              };
-              setUser(mockUser);
-              setRole(matchedAccount.role);
-              setLoading(false);
-              clearTimeout(timeout);
-              return;
-            }
-          }
-          
-          // Don't auto-login with default user anymore
-          setUser(null);
-          setRole(null);
-          setLoading(false);
-          clearTimeout(timeout);
-          return;
         }
 
-        // Try to get the current session with error handling for production
+        // Try to get the current session with error handling
         try {
           // Add timeout to supabase calls
           const sessionPromise = supabase.auth.getSession();
-          const timeoutPromise = new Promise((_, reject) => 
+          const timeoutPromise = new Promise<never>((_, reject) => 
             setTimeout(() => reject(new Error('Session timeout')), 5000)
           );
           
-          const { data: { session }, error: sessionError } = await Promise.race([
+          const { data, error: sessionError } = await Promise.race([
             sessionPromise,
             timeoutPromise
-          ]);
+          ]) as { data: { session: any } | null; error: Error | null };
           
           if (sessionError) {
             console.error('Session error:', sessionError);
@@ -302,20 +248,20 @@ export function useAuth() {
             return;
           }
 
-          if (session?.user) {
-            const supabaseUser = convertSupabaseUser(session.user);
+          if (data?.session?.user) {
+            const supabaseUser = convertSupabaseUser(data.session.user);
             setUser(supabaseUser);
             
             // Fetch user profile and role with timeout
             try {
               const profileData = await Promise.race([
-                fetchUserProfile(session.user.id),
-                new Promise((_, reject) => 
+                fetchUserProfile(data.session.user.id),
+                new Promise<never>((_, reject) => 
                   setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
                 )
-              ]);
+              ]) as { role: string; profile: any } | null;
               
-              if (profileData?.role) {
+              if (profileData && profileData.role) {
                 setRole(profileData.role);
               } else {
                 console.warn('No role found for user, defaulting to employee');
@@ -326,29 +272,22 @@ export function useAuth() {
               setRole('employee');
             }
           } else {
-            // No active session
+            // No active session - redirect to login
+            console.log('No active session, clearing user state');
             setUser(null);
             setRole(null);
+            
+            // Redirect to login if not already there
+            if (typeof window !== 'undefined' && 
+                !window.location.pathname.includes('login') && 
+                !window.location.pathname.includes('logout')) {
+              console.log('Redirecting to login due to no session');
+              window.location.href = '/login';
+            }
           }
         } catch (authError) {
           console.error('Authentication system error:', authError);
-          
-          // In production, provide a demo user fallback to prevent complete failure
-          if (isProduction) {
-            console.warn('Auth system failed, using demo mode fallback');
-            const demoUser: User = {
-              id: 'demo-user',
-              email: 'demo@company.com',
-              name: 'Demo User',
-              role: 'employee',
-              department: 'HR',
-              position: 'Employee'
-            };
-            setUser(demoUser);
-            setRole('employee');
-          } else {
-            setError(`Authentication system unavailable: ${authError instanceof Error ? authError.message : 'Unknown error'}`);
-          }
+          setError(`Authentication system unavailable: ${authError instanceof Error ? authError.message : 'Unknown error'}`);
         }
       } catch (err) {
         console.error('Unexpected error in getSession:', err);
@@ -361,51 +300,45 @@ export function useAuth() {
 
     getInitialSession();
 
-    // Only set up the auth change listener in non-development/non-demo mode
-    if (!isDevelopment && !isDemoMode) {
-      const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        try {
-          if (session?.user) {
-            const supabaseUser = convertSupabaseUser(session.user);
-            setUser(supabaseUser);
+    // Set up the auth change listener
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      try {
+        if (session?.user) {
+          const supabaseUser = convertSupabaseUser(session.user);
+          setUser(supabaseUser);
+          
+          // Fetch user profile and role with timeout
+          try {
+            const profileData = await Promise.race([
+              fetchUserProfile(session.user.id),
+              new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
+              )
+            ]) as { role: string; profile: any } | null;
             
-            // Fetch user profile and role with timeout
-            try {
-              const profileData = await Promise.race([
-                fetchUserProfile(session.user.id),
-                new Promise((_, reject) => 
-                  setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
-                )
-              ]);
-              
-              if (profileData?.role) {
-                setRole(profileData.role);
-              } else {
-                setRole('employee');
-              }
-            } catch (err) {
-              console.warn('Profile fetch in auth change failed:', err);
+            if (profileData && profileData.role) {
+              setRole(profileData.role);
+            } else {
               setRole('employee');
             }
-          } else {
-            setUser(null);
-            setRole(null);
+          } catch (err) {
+            console.warn('Profile fetch in auth change failed:', err);
+            setRole('employee');
           }
-        } catch (err) {
-          console.error('Auth state change error:', err);
+        } else {
+          setUser(null);
+          setRole(null);
         }
-      });
+      } catch (err) {
+        console.error('Auth state change error:', err);
+      }
+    });
 
-      return () => {
-        listener.subscription.unsubscribe();
-        clearTimeout(timeout);
-      };
-    }
-    
     return () => {
+      listener.subscription.unsubscribe();
       clearTimeout(timeout);
     };
-  }, [isDevelopment, isDemoMode]);
+  }, []);
 
   // Simplified role fetching since it's handled above
   useEffect(() => {

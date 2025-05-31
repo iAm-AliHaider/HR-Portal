@@ -63,6 +63,7 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
   const { user, loading, error } = useAuth();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Prevent hydration mismatches by only rendering after mount
   useEffect(() => {
@@ -81,6 +82,22 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
       }, delay);
     }
   }, [user, loading, router, isMounted]);
+
+  // Close sidebar when route changes on mobile
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setSidebarOpen(false);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   // Show loading state while checking auth or before mount
   if (loading || !isMounted) {
@@ -134,26 +151,36 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
         </Head>
         
         {/* Layout structure */}
-        <div className="flex h-screen">
+        <div className="flex h-screen overflow-hidden">
+          {/* Mobile sidebar backdrop */}
+          {sidebarOpen && (
+            <div 
+              className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+          
           {/* Sidebar */}
-          <div className="hidden lg:flex lg:flex-shrink-0">
-            <div className="flex flex-col w-64">
-              <Sidebar />
-            </div>
+          <div className={`
+            fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            lg:relative lg:translate-x-0 lg:z-0
+          `}>
+            <Sidebar isMobile={!sidebarOpen} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           </div>
 
           {/* Main content area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Top bar */}
-            <Topbar />
+            <Topbar onMobileMenuToggle={toggleSidebar} />
             
             {/* Main content */}
             <main className="flex-1 overflow-auto">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="responsive-container py-6 sm:py-8">
                 {(title || subtitle) && (
-                  <div className="mb-8">
+                  <div className="mb-6 sm:mb-8">
                     {title && (
-                      <h1 className="text-2xl font-bold text-gray-900">
+                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                         {title}
                       </h1>
                     )}

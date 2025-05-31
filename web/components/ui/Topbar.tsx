@@ -21,16 +21,18 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Bell, HelpCircle, LogOut as LogOutIcon, User as UserIcon, Settings as SettingsIcon, X, ChevronDown } from 'lucide-react';
+import { Search, Bell, HelpCircle, LogOut as LogOutIcon, User as UserIcon, Settings as SettingsIcon, X, ChevronDown, Menu } from 'lucide-react';
 
 interface TopbarProps {
   theme?: 'light' | 'dark' | 'purple'; // Theme prop might be less relevant with shadcn
+  onMobileMenuToggle?: () => void;
 }
 
-export default function Topbar({ theme = 'light' }: TopbarProps) {
+export default function Topbar({ theme = 'light', onMobileMenuToggle }: TopbarProps) {
   const { user, signOut, role } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const isDev = process.env.NODE_ENV === 'development';
 
   // Mock notifications data - consider moving to a hook or service
@@ -49,6 +51,7 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
     if (searchQuery.trim()) {
       // Implement actual search functionality or redirect to a search page
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setShowMobileSearch(false);
     }
   };
 
@@ -131,9 +134,34 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
 
   return (
     <div className={cn("h-16 shadow-sm z-20 sticky top-0", currentTheme.bg, currentTheme.border)}>
-      <div className="flex items-center justify-between h-full px-6">
-        {/* Search bar */}
-        <form onSubmit={handleSearchSubmit} className="relative w-1/3 lg:w-1/4 flex items-center">
+      <div className="flex items-center justify-between h-full px-3 sm:px-6">
+        {/* Mobile Menu Toggle */}
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMobileMenuToggle}
+            className={cn("mr-2 lg:hidden", currentTheme.iconColor, currentTheme.hoverBg)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          
+          {/* Mobile Search Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowMobileSearch(!showMobileSearch)}
+            className={cn("md:hidden", currentTheme.iconColor, currentTheme.hoverBg)}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        {/* Search bar - Desktop */}
+        <form onSubmit={handleSearchSubmit} className={cn(
+          "relative hidden md:flex items-center",
+          "flex-1 max-w-md mx-4"
+        )}>
           <Search className={cn("absolute left-3 h-4 w-4", currentTheme.iconColor)} />
           <Input
             type="text"
@@ -162,8 +190,43 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
           )}
         </form>
         
+        {/* Mobile Search Expanded */}
+        {showMobileSearch && (
+          <div className="fixed inset-0 z-50 bg-background/95 flex items-start justify-center pt-16 px-4">
+            <div className="w-full max-w-md">
+              <form onSubmit={handleSearchSubmit} className="relative w-full">
+                <Search className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4", currentTheme.iconColor)} />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  autoFocus
+                  className={cn(
+                    "w-full h-10 pl-10 pr-10 rounded-md", 
+                    currentTheme.inputBg, 
+                    currentTheme.text,
+                    currentTheme.border,
+                    currentTheme.inputFocusBg,
+                    "focus:ring-1 focus:ring-ring focus:border-ring"
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowMobileSearch(false)}
+                  className={cn("absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8", currentTheme.iconColor, currentTheme.hoverBg)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </div>
+        )}
+        
         {/* Right side items */}
-        <div className="flex items-center space-x-2 md:space-x-4">
+        <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
           {/* Notifications Popover */}
           <Popover>
             <PopoverTrigger asChild>
@@ -176,7 +239,7 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="end">
+            <PopoverContent className="w-[calc(100vw-32px)] sm:w-80 p-0" align="end">
               <div className={cn("p-3 border-b flex justify-between items-center", currentTheme.border)}>
                 <h3 className={cn("font-semibold text-sm", currentTheme.text)}>Notifications</h3>
                 <div className="flex space-x-2">
@@ -185,12 +248,14 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
                       Mark all as read
                     </Button>
                   )}
-                  <Button variant="link" size="sm" asChild className="text-xs h-auto p-0">
-                     <Link href="/notifications">View All</Link>
-                  </Button>
+                  <Link href="/notifications">
+                    <Button variant="link" size="sm" className="text-xs h-auto p-0">
+                      View All
+                    </Button>
+                  </Link>
                 </div>
               </div>
-              <ScrollArea className="h-auto max-h-96">
+              <ScrollArea className="h-auto max-h-[50vh] sm:max-h-96">
                 {notifications.length === 0 ? (
                   <div className="p-4 text-center text-sm text-muted-foreground">
                     No new notifications
@@ -226,33 +291,33 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
             </PopoverContent>
           </Popover>
           
-          {/* Help Button */}
-          <Button asChild variant="ghost" size="icon" className={cn(currentTheme.iconColor, currentTheme.hoverBg)}>
-            <Link href="/help">
-               <HelpCircle className="h-5 w-5" />
-            </Link>
-          </Button>
+          {/* Help Button - Hide on small screens */}
+          <Link href="/help" className="hidden sm:block">
+            <Button variant="ghost" size="icon" className={cn(currentTheme.iconColor, currentTheme.hoverBg)}>
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+          </Link>
           
           {/* User Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className={cn("flex items-center space-x-2 px-2 py-1 h-auto", currentTheme.hoverBg)}>
+              <Button variant="ghost" className={cn("flex items-center space-x-2 px-1 sm:px-2 py-1 h-auto", currentTheme.hoverBg)}>
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.avatar} alt={user?.name || user?.email} />
                   <AvatarFallback className={cn(currentTheme.avatarFallbackBg, currentTheme.avatarFallbackText)}>
                     {user?.email?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span className={cn("text-sm font-medium hidden md:block", currentTheme.text)}>
+                <span className={cn("text-sm font-medium hidden md:block max-w-[100px] truncate", currentTheme.text)}>
                   {user?.name || user?.email?.split('@')[0] || 'User'}
                 </span>
                  <ChevronDown className={cn("h-4 w-4 hidden md:block", currentTheme.iconColor)} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64" align="end">
+            <DropdownMenuContent className="w-[calc(100vw-32px)] sm:w-64" align="end">
               <DropdownMenuLabel>
-                <p className={cn("text-sm font-medium", currentTheme.text)}>{user?.name || user?.email}</p>
-                <p className="text-xs text-muted-foreground">{user?.position || role || 'N/A'}</p>
+                <p className={cn("text-sm font-medium truncate", currentTheme.text)}>{user?.name || user?.email}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.position || role || 'N/A'}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="px-2 py-1.5">
@@ -271,23 +336,23 @@ export default function Topbar({ theme = 'light' }: TopbarProps) {
                   )}
               </div>
                <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/employee/profile">
+              <DropdownMenuItem>
+                <Link href="/employee/profile" className="flex items-center w-full">
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/settings/general">
+              <DropdownMenuItem>
+                <Link href="/settings/general" className="flex items-center w-full">
                   <SettingsIcon className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                 <Link href="/help">
-                    <HelpCircle className="mr-2 h-4 w-4" />
-                    <span>Help Center</span>
-                 </Link>
+              <DropdownMenuItem>
+                <Link href="/help" className="flex items-center w-full">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  <span>Help Center</span>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive">

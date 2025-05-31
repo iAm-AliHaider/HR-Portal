@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -223,19 +223,40 @@ export default function ModernDashboardLayout({
     return router.pathname.startsWith(href);
   };
 
+  // Close sidebar when route changes on mobile
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setSidebarOpen(false);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
+
   return (
     <>
       <Head>
         <title>{title ? `${title} | HR Portal` : 'HR Portal'}</title>
         <meta name="description" content="Modern HR Portal Dashboard" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
         {/* Sidebar */}
         <div className={`
           fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static lg:inset-0
+          lg:relative lg:translate-x-0 lg:z-0
         `}>
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
@@ -340,11 +361,11 @@ export default function ModernDashboardLayout({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 lg:ml-0">
+        <div className="flex-1 flex flex-col overflow-hidden w-full">
           {/* Top Header */}
-          <header className="bg-white shadow-sm border-b border-gray-200">
-            <div className="flex items-center justify-between h-16 px-6">
-              <div className="flex items-center space-x-4">
+          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+            <div className="flex items-center justify-between h-16 px-3 sm:px-6">
+              <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className="lg:hidden p-2 rounded-md hover:bg-gray-100"
@@ -353,26 +374,26 @@ export default function ModernDashboardLayout({
                 </button>
                 
                 {/* Search Bar */}
-                <div className="hidden md:block relative">
+                <div className="hidden md:block relative w-full max-w-xs lg:max-w-md">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                   <input
                     type="text"
                     placeholder="Search..."
-                    className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-4">
                 {/* Notifications */}
                 <button className="p-2 text-gray-400 hover:text-gray-600 relative">
                   <Bell size={20} />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
 
-                {/* Actions */}
+                {/* Actions - Wrap in a scrollable container on small screens */}
                 {actions && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex overflow-x-auto items-center space-x-2 max-w-[180px] sm:max-w-none">
                     {actions}
                   </div>
                 )}
@@ -381,17 +402,17 @@ export default function ModernDashboardLayout({
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 p-6">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden">
             {/* Page Header */}
             {(title || subtitle) && (
-              <div className="mb-8">
+              <div className="px-4 sm:px-6 pt-6 pb-4">
                 {title && (
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
                     {title}
                   </h1>
                 )}
                 {subtitle && (
-                  <p className="text-lg text-gray-600">
+                  <p className="text-base sm:text-lg text-gray-600 break-words">
                     {subtitle}
                   </p>
                 )}
@@ -399,20 +420,14 @@ export default function ModernDashboardLayout({
             )}
 
             {/* Page Content */}
-            <div className="max-w-7xl mx-auto">
-              {children}
+            <div className="px-4 sm:px-6 pb-6 w-full">
+              <div className="max-w-full overflow-x-auto">
+                {children}
+              </div>
             </div>
           </main>
         </div>
       </div>
-
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </>
   );
 } 

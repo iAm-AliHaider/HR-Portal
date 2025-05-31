@@ -9,20 +9,32 @@ import { GetServerSideProps } from 'next';
 
 const SettingsPage = () => {
   const router = useRouter();
-  const { user, role } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
   const allowAccess = shouldBypassAuth(router.query);
   const [isLoading, setIsLoading] = useState(true);
 
   // Ensure user has access to this page
   useEffect(() => {
-    if (!allowAccess && !['employee', 'manager', 'admin'].includes(role)) {
+    if (!allowAccess && !['employee', 'manager', 'admin'].includes(role) && !authLoading) {
       // Redirect removed - using graceful fallback instead
+      router.push('/login');
     }
-  }, [allowAccess, role, router]);
+  }, [allowAccess, role, router, authLoading]);
 
   useEffect(() => {
-    setIsLoading(false);
-  }, []);
+    // Set a timeout to prevent infinite loading state
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
+    // If auth is no longer loading, we can stop our loading state too
+    if (!authLoading) {
+      setIsLoading(false);
+      clearTimeout(loadingTimeout);
+    }
+
+    return () => clearTimeout(loadingTimeout);
+  }, [authLoading]);
 
   const settingsCategories = [
     {

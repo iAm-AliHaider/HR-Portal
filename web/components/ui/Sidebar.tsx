@@ -25,7 +25,8 @@ import {
   ThumbsUp,
   LogOut,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -271,13 +272,22 @@ export default function Sidebar({
         !isOpen && isMobile && "hidden" // Hide if not open on mobile
       )}
     >
-      <div className={cn("p-4 border-b", themeClasses.border)}>
+      <div className={cn("p-4 border-b flex items-center justify-between", themeClasses.border)}>
         <Link href="/dashboard">
           <div className="flex items-center space-x-2 cursor-pointer">
             <Building className={cn("h-8 w-8", themeClasses.accent)} />
             <span className={cn("text-xl font-bold", themeClasses.text)}>HR Portal</span>
           </div>
         </Link>
+        {isMobile && (
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md hover:bg-gray-100"
+            aria-label="Close sidebar"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
@@ -335,8 +345,8 @@ export default function Sidebar({
                           onClick={isMobile ? onClose : undefined}
                         >
                           {item.icon ? item.icon : <div className="mr-2 h-4 w-4" /> /* Placeholder for items without icons */}
-                          {item.name}
-                          {item.badge && <Badge variant="secondary" className="ml-auto">{item.badge}</Badge>}
+                          <span className="truncate">{item.name}</span>
+                          {item.badge && <Badge variant="secondary" className="ml-auto shrink-0">{item.badge}</Badge>}
                         </Button>
                       </Link>
                     ))}
@@ -360,7 +370,7 @@ export default function Sidebar({
                       onClick={isMobile ? onClose : undefined}
                     >
                       <Layers className="mr-2 h-4 w-4" /> {/* Example Icon */}
-                      {project.name}
+                      <span className="truncate">{project.name}</span>
                     </Button>
                 </Link>
               ))}
@@ -373,12 +383,12 @@ export default function Sidebar({
         {user && (
           <div className="flex items-center mb-2">
             {/* Basic Avatar Placeholder */}
-            <div className={cn("w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center mr-2", themeClasses.activeBg)}>
+            <div className={cn("w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center mr-2 shrink-0", themeClasses.activeBg)}>
               <User className={cn("h-4 w-4", themeClasses.text)} />
             </div>
-            <div>
-              <p className={cn("text-sm font-medium", themeClasses.text)}>{user.email}</p>
-              <p className={cn("text-xs", themeClasses.text === 'text-slate-50' || themeClasses.text === 'text-purple-50' ? 'text-gray-400' : 'text-gray-500' )}>{role}</p>
+            <div className="overflow-hidden">
+              <p className={cn("text-sm font-medium truncate", themeClasses.text)}>{user.email}</p>
+              <p className={cn("text-xs truncate", themeClasses.text === 'text-slate-50' || themeClasses.text === 'text-purple-50' ? 'text-gray-400' : 'text-gray-500' )}>{role}</p>
             </div>
           </div>
         )}

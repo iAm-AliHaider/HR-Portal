@@ -144,9 +144,116 @@ a {
     }
   }
 
+  @media (min-width: 768px) {
+    .responsive-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
   @media (min-width: 1024px) {
     .responsive-container {
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
       max-width: 1200px;
+    }
+  }
+  
+  /* Added responsive grid layouts */
+  .responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .responsive-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .responsive-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .responsive-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* Enhanced responsive table */
+  .responsive-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (max-width: 639px) {
+    .responsive-table-card tbody tr {
+      display: block;
+      margin-bottom: 1rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    
+    .responsive-table-card tbody td {
+      display: flex;
+      text-align: right;
+      justify-content: space-between;
+      border-bottom: none;
+      padding: 0.5rem 0;
+    }
+    
+    .responsive-table-card tbody td:before {
+      content: attr(data-label);
+      font-weight: 600;
+      text-align: left;
+      padding-right: 0.5rem;
+    }
+    
+    .responsive-table-card thead {
+      display: none;
+    }
+  }
+
+  /* Responsive flex utilities */
+  .flex-responsive {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  @media (min-width: 768px) {
+    .flex-responsive {
+      flex-direction: row;
+    }
+  }
+  
+  /* Card grid for dashboards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .card-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .card-grid {
+      grid-template-columns: repeat(4, 1fr);
     }
   }
 } 

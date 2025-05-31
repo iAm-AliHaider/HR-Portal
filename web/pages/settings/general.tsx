@@ -22,7 +22,7 @@ interface GeneralSettings {
 
 const GeneralSettingsPage: NextPage = () => {
   const router = useRouter();
-  const { user, role } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
   const allowAccess = shouldBypassAuth(router.query);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,10 +41,11 @@ const GeneralSettingsPage: NextPage = () => {
 
   // Ensure user has access to this page
   useEffect(() => {
-    if (!allowAccess && !['employee', 'manager', 'admin'].includes(role)) {
-      // Redirect removed - using graceful fallback instead
+    if (!allowAccess && !['employee', 'manager', 'admin'].includes(role) && !authLoading) {
+      // Redirect user to login if they don't have access
+      router.push('/login');
     }
-  }, [allowAccess, role, router]);
+  }, [allowAccess, role, router, authLoading]);
 
   // Load settings
   useEffect(() => {
@@ -58,8 +59,18 @@ const GeneralSettingsPage: NextPage = () => {
       }
     };
 
-    loadSettings();
-  }, []);
+    // Set a timeout to prevent infinite loading state
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
+    // If auth is no longer loading, proceed with loading settings
+    if (!authLoading) {
+      loadSettings();
+    }
+
+    return () => clearTimeout(loadingTimeout);
+  }, [authLoading]);
 
   const handleSettingChange = (key: keyof GeneralSettings, value: any) => {
     setSettings(prev => ({
