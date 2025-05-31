@@ -53,7 +53,27 @@ export default function SupabaseAdminPage() {
   const [uploadStatus, setUploadStatus] = useState<{ success: boolean; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const templates = adminManager?.getUploadTemplates() || [];
+  const [allTemplates, setAllTemplates] = useState<UploadTemplate[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+
+  // Load all templates (predefined + dynamic)
+  const loadAllTemplates = async () => {
+    if (!adminManager) return;
+    
+    try {
+      setTemplatesLoading(true);
+      const templates = await adminManager.getAllTemplates();
+      setAllTemplates(templates);
+    } catch (error) {
+      console.error('Failed to load templates:', error);
+      // Fallback to predefined templates only
+      setAllTemplates(adminManager.getUploadTemplates());
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
+
+  const templates = allTemplates;
 
   // Test database connection
   const testConnection = async () => {
@@ -70,6 +90,15 @@ export default function SupabaseAdminPage() {
         setConnected(true);
         await manager.initializeServiceClient();
         await loadTables(manager);
+        // Load templates after successful connection
+        const tempManager = manager;
+        try {
+          const templates = await tempManager.getAllTemplates();
+          setAllTemplates(templates);
+        } catch (error) {
+          console.error('Failed to load templates:', error);
+          setAllTemplates(tempManager.getUploadTemplates());
+        }
       } else {
         setConnected(false);
         setAdminManager(null);
@@ -441,7 +470,7 @@ export default function SupabaseAdminPage() {
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a template" />
+                          <SelectValue placeholder={templatesLoading ? "Loading templates..." : "Select a template"} />
                         </SelectTrigger>
                         <SelectContent>
                           {templates.map((template) => (
