@@ -535,22 +535,27 @@ export default function SupabaseAdminPage() {
                         <Label>Available Templates ({templates.length})</Label>
                         <Select 
                           value={uploadTemplate?.name || ''} 
-                          onValueChange={(value) => {
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '') {
+                              setUploadTemplate(null);
+                              setUploadData('');
+                              return;
+                            }
                             const template = templates.find(t => t.name === value);
                             setUploadTemplate(template || null);
                             setUploadData('');
                           }}
+                          placeholder={templatesLoading ? "Loading templates..." : "Select a template"}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder={templatesLoading ? "Loading templates..." : "Select a template"} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {templates.map((template) => (
-                              <SelectItem key={template.name} value={template.name}>
-                                {template.name} - {template.table}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
+                          <SelectItem value="">
+                            {templatesLoading ? "Loading templates..." : "Select a template"}
+                          </SelectItem>
+                          {templates.map((template) => (
+                            <SelectItem key={template.name} value={template.name}>
+                              {template.name} - {template.table}
+                            </SelectItem>
+                          ))}
                         </Select>
                       </div>
 
