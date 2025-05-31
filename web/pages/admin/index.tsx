@@ -16,9 +16,13 @@ import {
   Download,
   Lock,
   Mail,
+  Activity,
+  Cpu,
+  HardDrive,
+  UserPlus,
 } from "lucide-react";
 
-import { PageLayout, StatsCard, CardGrid, EmptyState } from "@/components/layout/PageLayout";
+import { PageLayout, StatsCard, CardGrid, EmptyState, Card } from "@/components/layout/PageLayout";
 
 // Types for the administration page
 interface AdminSection {
@@ -42,6 +46,7 @@ const AdminPage = () => {
         description="You do not have permission to access the Administration section."
         actionLabel="Return to Dashboard"
         onAction={() => router.push("/dashboard")}
+        icon={<AlertTriangle strokeWidth={1.5} />}
       />
     );
   }
@@ -52,63 +57,63 @@ const AdminPage = () => {
       id: "user-management",
       title: "User Management",
       description: "Manage users, roles, and permissions",
-      icon: <Users className="h-6 w-6" />,
+      icon: <Users strokeWidth={1.5} />,
       path: "/admin/user-management",
     },
     {
       id: "company-settings",
       title: "Company Settings",
       description: "Configure organization details and branding",
-      icon: <Building className="h-6 w-6" />,
+      icon: <Building strokeWidth={1.5} />,
       path: "/settings/company",
     },
     {
       id: "roles-permissions",
       title: "Roles & Permissions",
       description: "Set up role-based access controls",
-      icon: <Shield className="h-6 w-6" />,
+      icon: <Shield strokeWidth={1.5} />,
       path: "/settings/roles",
     },
     {
       id: "workflow-manager",
       title: "Workflow Manager",
       description: "Configure automated workflows and processes",
-      icon: <Layers className="h-6 w-6" />,
+      icon: <Layers strokeWidth={1.5} />,
       path: "/settings/workflow-manager",
     },
     {
       id: "system-logs",
       title: "System Logs",
       description: "Review activity and audit trails",
-      icon: <FileText className="h-6 w-6" />,
+      icon: <FileText strokeWidth={1.5} />,
       path: "/logs",
     },
     {
       id: "integrations",
       title: "Integrations",
       description: "Connect external systems and services",
-      icon: <Server className="h-6 w-6" />,
+      icon: <Server strokeWidth={1.5} />,
       path: "/settings/integrations",
     },
     {
       id: "data-management",
       title: "Data Management",
       description: "Import, export, and manage system data",
-      icon: <Database className="h-6 w-6" />,
+      icon: <Database strokeWidth={1.5} />,
       path: "/settings/data-management",
     },
     {
       id: "security",
       title: "Security Settings",
       description: "Configure security policies and controls",
-      icon: <Lock className="h-6 w-6" />,
+      icon: <Lock strokeWidth={1.5} />,
       path: "/settings/security",
     },
     {
       id: "policy-management",
       title: "Policy Management",
       description: "Manage company policies and compliance",
-      icon: <FileText className="h-6 w-6" />,
+      icon: <FileText strokeWidth={1.5} />,
       path: "/settings/policies",
     }
   ];
@@ -130,21 +135,25 @@ const AdminPage = () => {
             title="Total Users"
             value="124"
             description="Active user accounts"
+            icon={<Users strokeWidth={1.5} className="h-5 w-5" />}
           />
           <StatsCard
             title="Custom Workflows"
             value="18"
             description="Active automated processes"
+            icon={<Layers strokeWidth={1.5} className="h-5 w-5" />}
           />
           <StatsCard
             title="System Health"
             value="99.8%"
             description="Uptime this month"
+            icon={<Activity strokeWidth={1.5} className="h-5 w-5" />}
           />
           <StatsCard
             title="Storage Used"
             value="23.4 GB"
             description="Of 50 GB allocated"
+            icon={<HardDrive strokeWidth={1.5} className="h-5 w-5" />}
           />
         </div>
       </div>
@@ -157,27 +166,27 @@ const AdminPage = () => {
             onClick={() => router.push('/admin/user-management')}
             className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
-            <Users className="w-4 h-4 mr-2" />
+            <UserPlus className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Add User
           </button>
           <button 
             onClick={() => router.push('/settings/roles')}
             className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
-            <Shield className="w-4 h-4 mr-2" />
+            <Shield className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Manage Roles
           </button>
           <button 
             onClick={() => router.push('/settings/security')}
             className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
-            <Lock className="w-4 h-4 mr-2" />
+            <Lock className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Security Settings
           </button>
           <button 
             className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Backup Data
           </button>
         </div>
@@ -188,19 +197,13 @@ const AdminPage = () => {
         <h2 className="text-lg font-medium mb-4 text-zinc-900">Administration Modules</h2>
         <CardGrid>
           {adminSections.map((section) => (
-            <div
+            <Card
               key={section.id}
-              className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              title={section.title}
+              description={section.description}
+              icon={section.icon}
               onClick={() => router.push(section.path)}
-            >
-              <div className="flex items-center mb-3">
-                <div className="w-10 h-10 rounded-md bg-zinc-100 flex items-center justify-center mr-3 text-zinc-900">
-                  {section.icon}
-                </div>
-                <h3 className="text-lg font-medium text-zinc-900">{section.title}</h3>
-              </div>
-              <p className="text-sm text-zinc-500">{section.description}</p>
-            </div>
+            />
           ))}
         </CardGrid>
       </div>

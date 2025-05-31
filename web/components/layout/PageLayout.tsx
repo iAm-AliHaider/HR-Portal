@@ -47,7 +47,7 @@ export function PageLayout({
           <nav className="flex mb-6 text-sm text-zinc-500">
             {breadcrumbs.map((item, index) => (
               <React.Fragment key={item.label}>
-                {index > 0 && <ChevronRight className="h-4 w-4 mx-2" />}
+                {index > 0 && <ChevronRight className="h-4 w-4 mx-2" strokeWidth={1.5} />}
                 {item.href ? (
                   <Link 
                     href={item.href} 
@@ -64,7 +64,7 @@ export function PageLayout({
         )}
 
         {/* Header with title, description and action buttons */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-zinc-900">{title}</h1>
             {description && <p className="text-zinc-500 mt-1">{description}</p>}
@@ -75,7 +75,7 @@ export function PageLayout({
               {secondaryButton && (
                 <button
                   onClick={secondaryButton.onClick}
-                  className="inline-flex items-center justify-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-100 transition-colors"
+                  className="inline-flex items-center justify-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50 transition-colors"
                 >
                   {secondaryButton.icon && (
                     <span className="mr-2">{secondaryButton.icon}</span>
@@ -112,13 +112,15 @@ interface StatsCardProps {
   value: string | number;
   description?: string;
   className?: string;
+  icon?: ReactNode;
 }
 
-export function StatsCard({ title, value, description, className }: StatsCardProps) {
+export function StatsCard({ title, value, description, className, icon }: StatsCardProps) {
   return (
-    <div className={`rounded-md border border-zinc-200 bg-white p-6 shadow-sm ${className}`}>
+    <div className={`rounded-md border border-zinc-200 bg-white p-6 shadow-sm hover:shadow transition-shadow ${className}`}>
+      {icon && <div className="mb-3 text-zinc-700">{icon}</div>}
       <p className="text-sm font-medium text-zinc-500">{title}</p>
-      <p className="text-2xl font-semibold mt-1">{value}</p>
+      <p className="text-2xl font-semibold mt-1 text-zinc-900">{value}</p>
       {description && (
         <p className="text-sm text-zinc-500 mt-1">{description}</p>
       )}
@@ -149,7 +151,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   };
 
   return (
-    <span className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-normal ${getStatusStyles()} ${className}`}>
+    <span className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${getStatusStyles()} ${className}`}>
       {status}
     </span>
   );
@@ -157,7 +159,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 
 export function SearchFilterBar({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm mb-6">
+    <div className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm mb-6">
       <div className="flex flex-col md:flex-row gap-4">
         {children}
       </div>
@@ -176,6 +178,43 @@ export function CardGrid({ children, columns = 3 }: { children: ReactNode, colum
 
   return (
     <div className={`grid ${gridCols[columns as keyof typeof gridCols] || gridCols[3]} gap-6`}>
+      {children}
+    </div>
+  );
+}
+
+// Card component for consistent styling
+export function Card({ 
+  title, 
+  description, 
+  children, 
+  icon, 
+  className,
+  onClick
+}: { 
+  title: string; 
+  description?: string; 
+  children?: ReactNode; 
+  icon?: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <div 
+      className={`rounded-md border border-zinc-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      onClick={onClick}
+    >
+      <div className="flex items-center mb-3">
+        {icon && (
+          <div className="w-10 h-10 rounded-md bg-zinc-100 flex items-center justify-center mr-3 text-zinc-900">
+            {icon}
+          </div>
+        )}
+        <div>
+          <h3 className="text-lg font-medium text-zinc-900">{title}</h3>
+          {description && <p className="text-sm text-zinc-500 mt-1">{description}</p>}
+        </div>
+      </div>
       {children}
     </div>
   );
@@ -251,29 +290,35 @@ export function EmptyState({
   title, 
   description, 
   actionLabel, 
-  onAction 
+  onAction,
+  icon
 }: { 
   title: string, 
   description: string, 
   actionLabel?: string, 
-  onAction?: () => void 
+  onAction?: () => void,
+  icon?: ReactNode
 }) {
   return (
     <div className="text-center py-12 bg-zinc-50 rounded-lg border border-zinc-200">
-      <svg
-        className="mx-auto h-12 w-12 text-zinc-400"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1}
-          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-        />
-      </svg>
+      {icon ? (
+        <div className="mx-auto h-12 w-12 text-zinc-400">{icon}</div>
+      ) : (
+        <svg
+          className="mx-auto h-12 w-12 text-zinc-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+          />
+        </svg>
+      )}
       <h3 className="mt-2 text-sm font-medium text-zinc-900">{title}</h3>
       <p className="mt-1 text-sm text-zinc-500">{description}</p>
       {actionLabel && onAction && (

@@ -2,9 +2,22 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/router';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { supabase } from '../../lib/supabase/client';
-import { PlusIcon, DownloadIcon, SearchIcon, FilterIcon, UserPlusIcon, MailIcon, TrashIcon, LockIcon } from 'lucide-react';
+import { 
+  PlusIcon, 
+  Download, 
+  Search, 
+  Filter, 
+  UserPlus, 
+  Mail, 
+  Trash, 
+  Lock, 
+  Edit, 
+  User, 
+  Users,
+  Briefcase,
+  DownloadCloud
+} from 'lucide-react';
 import { PageLayout, StatsCard, DataTable, TableHeader, TableHeaderCell, TableCell, SearchFilterBar, UserAvatar, StatusBadge } from '@/components/layout/PageLayout';
 
 interface AuthUser {
@@ -211,12 +224,12 @@ export default function UserManagementPage() {
       actionButton={{
         label: "Add User",
         onClick: inviteUser,
-        icon: <UserPlusIcon className="h-4 w-4" />,
+        icon: <UserPlus className="h-4 w-4" strokeWidth={1.5} />,
       }}
       secondaryButton={{
         label: "Export Users",
         onClick: () => alert("Export users functionality would be implemented here"),
-        icon: <DownloadIcon className="h-4 w-4" />,
+        icon: <DownloadCloud className="h-4 w-4" strokeWidth={1.5} />,
       }}
     >
       {/* Stats Overview */}
@@ -225,21 +238,25 @@ export default function UserManagementPage() {
           title="Total Users"
           value={users.length}
           description="User accounts"
+          icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatsCard
           title="Active Users"
           value={users.filter(u => u.status === 'active').length}
           description="Currently active"
+          icon={<User className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatsCard
           title="Pending Users"
           value={users.filter(u => u.status === 'pending').length}
           description="Awaiting activation"
+          icon={<UserPlus className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatsCard
           title="Inactive Users"
           value={users.filter(u => u.status === 'inactive').length}
           description="Deactivated accounts"
+          icon={<User className="h-5 w-5" strokeWidth={1.5} />}
         />
       </div>
 
@@ -247,7 +264,7 @@ export default function UserManagementPage() {
       <SearchFilterBar>
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <SearchIcon className="h-4 w-4 text-zinc-400" />
+            <Search className="h-4 w-4 text-zinc-400" strokeWidth={1.5} />
           </div>
           <input
             type="text"
@@ -325,7 +342,12 @@ export default function UserManagementPage() {
                       {user.role}
                     </span>
                   </TableCell>
-                  <TableCell>{user.department}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Briefcase className="h-4 w-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                      {user.department}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <StatusBadge status={user.status} />
                   </TableCell>
@@ -339,30 +361,28 @@ export default function UserManagementPage() {
                         className="text-zinc-500 hover:text-zinc-900"
                         title="Edit User"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
+                        <Edit className="h-5 w-5" strokeWidth={1.5} />
                       </button>
                       <button
                         onClick={() => handleUserAction(user.id, 'reset-password')}
                         className="text-zinc-500 hover:text-zinc-900"
                         title="Reset Password"
                       >
-                        <LockIcon className="h-5 w-5" />
+                        <Lock className="h-5 w-5" strokeWidth={1.5} />
                       </button>
                       <button
                         onClick={() => handleUserAction(user.id, 'email')}
                         className="text-zinc-500 hover:text-zinc-900"
                         title="Send Email"
                       >
-                        <MailIcon className="h-5 w-5" />
+                        <Mail className="h-5 w-5" strokeWidth={1.5} />
                       </button>
                       <button
                         onClick={() => handleUserAction(user.id, 'delete')}
                         className="text-zinc-500 hover:text-red-600"
                         title="Delete User"
                       >
-                        <TrashIcon className="h-5 w-5" />
+                        <Trash className="h-5 w-5" strokeWidth={1.5} />
                       </button>
                     </div>
                   </TableCell>

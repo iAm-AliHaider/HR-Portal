@@ -7,7 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Shield, Lock, Eye, EyeOff, CheckCircle, XCircle, AlertCircle, Clock, Save } from 'lucide-react';
+import { 
+  AlertTriangle, 
+  Shield, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle, 
+  Clock, 
+  Save,
+  Key,
+  Fingerprint,
+  Users,
+  Globe,
+  Server
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout, StatsCard, CardGrid } from '@/components/layout/PageLayout';
 
@@ -174,16 +190,16 @@ const SecuritySettings = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'secure': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'warning': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />;
-      default: return <AlertTriangle className="w-4 h-4 text-gray-500" />;
+      case 'secure': return <CheckCircle className="h-4 w-4 text-green-500" strokeWidth={1.5} />;
+      case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-500" strokeWidth={1.5} />;
+      case 'error': return <XCircle className="h-4 w-4 text-red-500" strokeWidth={1.5} />;
+      default: return <AlertTriangle className="h-4 w-4 text-gray-500" strokeWidth={1.5} />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'secure': return <Badge variant="solid" className="bg-green-100 text-green-800">Secure</Badge>;
+      case 'secure': return <Badge variant="success" className="bg-green-100 text-green-800">Secure</Badge>;
       case 'warning': return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Warning</Badge>;
       case 'error': return <Badge variant="outline" className="border-red-500 text-red-700">Vulnerable</Badge>;
       default: return <Badge variant="outline">Unknown</Badge>;
@@ -240,7 +256,7 @@ const SecuritySettings = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" strokeWidth={1.5} />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
           <p className="text-gray-600">You need admin privileges to access security settings.</p>
         </div>
@@ -260,25 +276,34 @@ const SecuritySettings = () => {
       actionButton={{
         label: "Save Changes",
         onClick: handleSaveSettings,
-        icon: <Save className="h-4 w-4" />,
+        icon: <Save className="h-4 w-4" strokeWidth={1.5} />,
       }}
     >
       {/* System Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatsCard
           title="Security Score"
           value="92%"
           description="Overall security rating"
+          icon={<Shield className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatsCard
           title="MFA Adoption"
           value="78%"
           description="Users with MFA enabled"
+          icon={<Fingerprint className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatsCard
           title="Security Alerts"
           value="2"
           description="Active security issues"
+          icon={<AlertTriangle className="h-5 w-5" strokeWidth={1.5} />}
+        />
+        <StatsCard
+          title="Last Security Test"
+          value="2 days ago"
+          description="All tests passed"
+          icon={<CheckCircle className="h-5 w-5" strokeWidth={1.5} />}
         />
       </div>
 
@@ -287,7 +312,7 @@ const SecuritySettings = () => {
         {/* Password Policy */}
         <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex items-center mb-4">
-            <Lock className="h-5 w-5 mr-2 text-zinc-700" />
+            <Key className="h-5 w-5 mr-2 text-zinc-700" strokeWidth={1.5} />
             <h2 className="text-lg font-medium text-zinc-900">Password Policy</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -426,7 +451,7 @@ const SecuritySettings = () => {
         {/* Session Settings */}
         <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex items-center mb-4">
-            <Clock className="h-5 w-5 mr-2 text-zinc-700" />
+            <Clock className="h-5 w-5 mr-2 text-zinc-700" strokeWidth={1.5} />
             <h2 className="text-lg font-medium text-zinc-900">Session Settings</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -490,7 +515,7 @@ const SecuritySettings = () => {
         {/* Access Control */}
         <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex items-center mb-4">
-            <Shield className="h-5 w-5 mr-2 text-zinc-700" />
+            <Users className="h-5 w-5 mr-2 text-zinc-700" strokeWidth={1.5} />
             <h2 className="text-lg font-medium text-zinc-900">Access Control</h2>
           </div>
           <div className="space-y-6">
@@ -567,7 +592,10 @@ const SecuritySettings = () => {
                   })}
                   className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
                 />
-                <span className="ml-2 text-sm text-zinc-700">Enable geographic restrictions</span>
+                <span className="ml-2 flex items-center text-sm text-zinc-700">
+                  <Globe className="h-4 w-4 mr-1" strokeWidth={1.5} />
+                  Enable geographic restrictions
+                </span>
               </label>
               
               {settings.access_control.geo_restrictions && (
@@ -613,7 +641,8 @@ const SecuritySettings = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-2">
+              <label className="block text-sm font-medium text-zinc-700 mb-2 flex items-center">
+                <Server className="h-4 w-4 mr-2" strokeWidth={1.5} />
                 Default Role for New Users
               </label>
               <select
