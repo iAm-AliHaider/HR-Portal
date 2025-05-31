@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import Head from "next/head";
 import Link from "next/link";
@@ -53,22 +53,91 @@ export default function RegisterPage() {
     }
 
     try {
-      const result = await signUp(
-        formData.email,
-        formData.password,
-        formData.name,
-      );
+      // Try the registration API first
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.name,
+          role: 'admin', // Default to admin for initial setup
+          department: 'Administration',
+          position: 'Administrator'
+        }),
+      });
 
-      if (result.success) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         setSuccess(true);
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          router.push('/login?message=Registration successful. Please sign in.');
+        }, 2000);
+        return;
       } else {
-        setError(result.error || "Registration failed");
+        throw new Error(data.error || 'Registration failed');
       }
-    } catch (err) {
-      setError("An error occurred during registration");
-      console.error("Registration error:", err);
-    } finally {
-      setLoading(false);
+    } catch (apiError: any) {
+      console.warn('API registration failed:', apiError.message);
+      
+      // Fallback: Try direct Supabase registration
+      try {
+        console.log('Trying direct Supabase registration...');
+        const result = await signUp(
+          formData.email,
+          formData.password,
+          formData.name,
+        );
+
+        if (result.success) {
+          setSuccess(true);
+          // Redirect to login after 2 seconds
+          setTimeout(() => {
+            router.push('/login?message=Registration successful. Please sign in.');
+          }, 2000);
+        } else {
+          setError(result.error || "Registration failed. Please try again.");
+        }
+      } catch (fallbackError) {
+        console.warn('Direct Supabase registration also failed:', fallbackError);
+        
+        // Final fallback: Try emergency registration
+        try {
+          console.log('Trying emergency registration...');
+          const emergencyResponse = await fetch('/api/auth/emergency-register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+              name: formData.name
+            }),
+          });
+
+          const emergencyData = await emergencyResponse.json();
+
+          if (emergencyResponse.ok && emergencyData.success) {
+            setSuccess(true);
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+              router.push('/login?message=Account created successfully. Please sign in.');
+            }, 2000);
+          } else {
+            throw new Error(emergencyData.error || 'Emergency registration failed');
+          }
+        } catch (emergencyError) {
+          setError("All registration methods failed. Please contact support for manual account creation.");
+          console.error("All registration methods failed:", emergencyError);
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -226,6 +295,29 @@ export default function RegisterPage() {
                 <div className="flex">
                   <div className="ml-3">
                     <p className="text-sm text-red-700">{error}</p>
+                    {error.includes("Database error") && (
+                      <div className="mt-2">
+                        <p className="text-xs text-red-600">
+                          Try these alternatives:
+                        </p>
+                        <ul className="list-disc list-inside text-xs text-red-600 mt-1">
+                          <li>Use the <a href="/login" className="underline">login page</a> with test accounts</li>
+                          <li>Contact support at {process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@hrportal.com'}</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-50 border-l-4 border-green-400 p-4">
+                <div className="flex">
+                  <div className="ml-3">
+                    <p className="text-sm text-green-700">
+                      ✅ Account created successfully! Redirecting to login...
+                    </p>
                   </div>
                 </div>
               </div>
