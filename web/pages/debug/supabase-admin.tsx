@@ -79,8 +79,19 @@ export default function SupabaseAdminPage() {
   const testConnection = async () => {
     setLoading(true);
     setConnectionStatus(null);
+    setConnected(false);
+    setAdminManager(null);
+    setTables([]);
+    setAllTemplates([]);
 
     try {
+      console.log('Testing connection with credentials:', {
+        url: credentials.url,
+        hasAnonKey: !!credentials.anonKey,
+        hasServiceKey: !!credentials.serviceKey,
+        hasPassword: !!credentials.password
+      });
+
       const manager = new SupabaseAdminManager(credentials);
       const result = await manager.testConnection();
       setConnectionStatus(result);
@@ -88,22 +99,29 @@ export default function SupabaseAdminPage() {
       if (result.success) {
         setAdminManager(manager);
         setConnected(true);
-        await manager.initializeServiceClient();
+        
+        // Initialize service client for admin operations
+        const serviceInitialized = await manager.initializeServiceClient();
+        console.log('Service client initialized:', serviceInitialized);
+        
+        // Load tables
         await loadTables(manager);
+        
         // Load templates after successful connection
-        const tempManager = manager;
         try {
-          const templates = await tempManager.getAllTemplates();
+          const templates = await manager.getAllTemplates();
+          console.log(`Loaded ${templates.length} templates`);
           setAllTemplates(templates);
         } catch (error) {
           console.error('Failed to load templates:', error);
-          setAllTemplates(tempManager.getUploadTemplates());
+          setAllTemplates(manager.getUploadTemplates());
         }
       } else {
         setConnected(false);
         setAdminManager(null);
       }
     } catch (error: any) {
+      console.error('Connection test error:', error);
       setConnectionStatus({
         success: false,
         message: `Connection failed: ${error.message}`

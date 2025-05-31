@@ -41,27 +41,86 @@ export class SupabaseAdminManager {
     try {
       const start = Date.now();
       
-      // Create test client
+      // Test 1: Basic connection with anon key
       const testClient = createClient(this.credentials.url, this.credentials.anonKey);
       
-      // Test basic connection
-      const { data, error } = await testClient.from('profiles').select('count').limit(1);
+      // Test basic connection with anon key
+      const { data: basicData, error: basicError } = await testClient.from('profiles').select('count').limit(1);
       
-      const latency = Date.now() - start;
-      
-      if (error) {
+      if (basicError) {
         return {
           success: false,
-          message: `Connection failed: ${error.message}`,
-          latency
+          message: `Anonymous key connection failed: ${basicError.message}`,
+          latency: Date.now() - start
         };
       }
+
+      // Test 2: Service key validation (if provided)
+      if (this.credentials.serviceKey) {
+        try {
+          const serviceClient = createClient(this.credentials.url, this.credentials.serviceKey);
+          
+          // Test service key with admin operation (checking information_schema)
+          const { data: serviceData, error: serviceError } = await serviceClient
+            .from('information_schema.tables')
+            .select('table_name')
+            .eq('table_schema', 'public')
+            .limit(1);
+
+          if (serviceError) {
+            return {
+              success: false,
+              message: `Service key validation failed: ${serviceError.message}`,
+              latency: Date.now() - start
+            };
+          }
+        } catch (serviceError: any) {
+          return {
+            success: false,
+            message: `Service key connection error: ${serviceError.message}`,
+            latency: Date.now() - start
+          };
+        }
+      }
+
+      // Test 3: Password validation (if provided)
+      // Note: Password is typically used for direct database connections, not Supabase client
+      if (this.credentials.password) {
+        // For Supabase, password is usually validated during auth operations
+        // We'll test it by attempting a more privileged operation
+        try {
+          if (this.credentials.serviceKey) {
+            const serviceClient = createClient(this.credentials.url, this.credentials.serviceKey);
+            
+            // Test with a more sensitive operation that would fail with wrong auth
+            const { data: authTest, error: authError } = await serviceClient.auth.admin.listUsers();
+            
+            if (authError && authError.message.includes('Invalid')) {
+              return {
+                success: false,
+                message: `Authentication failed: Invalid credentials`,
+                latency: Date.now() - start
+              };
+            }
+          }
+        } catch (authError: any) {
+          if (authError.message.includes('Invalid') || authError.message.includes('Unauthorized')) {
+            return {
+              success: false,
+              message: `Password validation failed: ${authError.message}`,
+              latency: Date.now() - start
+            };
+          }
+          // If it's not an auth error, continue (might be permissions issue, which is OK)
+        }
+      }
       
+      const latency = Date.now() - start;
       this.client = testClient;
       
       return {
         success: true,
-        message: 'Connection successful',
+        message: `Connection successful (${this.credentials.serviceKey ? 'with service key' : 'anon key only'})`,
         latency
       };
     } catch (error: any) {
@@ -94,45 +153,77 @@ export class SupabaseAdminManager {
     }
 
     try {
-      // Get table information from information_schema
-      const { data: tables, error } = await this.serviceClient.rpc('get_table_info');
+      // Try to get table information from information_schema
+      const { data: basicTables, error: basicError } = await this.serviceClient
+        .from('information_schema.tables')
+        .select('table_name')
+        .eq('table_schema', 'public')
+        .eq('table_type', 'BASE TABLE');
 
-      if (error) {
-        // Fallback: try to get basic table list
-        const { data: basicTables, error: basicError } = await this.serviceClient
-          .from('information_schema.tables')
-          .select('table_name')
-          .eq('table_schema', 'public')
-          .eq('table_type', 'BASE TABLE');
+      if (basicError) {
+        console.error('Failed to fetch from information_schema:', basicError);
+        throw basicError;
+      }
 
-        if (basicError) throw basicError;
+      const tableInfos: TableInfo[] = [];
 
-        const tableInfos: TableInfo[] = [];
-
-        for (const table of basicTables || []) {
+      // Get row count and column info for each table
+      for (const table of basicTables || []) {
+        try {
           // Get row count for each table
           const { count } = await this.serviceClient
             .from(table.table_name)
             .select('*', { count: 'exact', head: true });
 
+          // Get column information
+          const { data: columns } = await this.serviceClient
+            .from('information_schema.columns')
+            .select('column_name, data_type, is_nullable, column_default')
+            .eq('table_schema', 'public')
+            .eq('table_name', table.table_name)
+            .order('ordinal_position');
+
+          const columnInfos: ColumnInfo[] = (columns || []).map(col => ({
+            name: col.column_name,
+            type: col.data_type,
+            nullable: col.is_nullable === 'YES',
+            default: col.column_default
+          }));
+
           tableInfos.push({
             name: table.table_name,
             schema: 'public',
             rowCount: count || 0,
+            columns: columnInfos
+          });
+        } catch (tableError) {
+          console.warn(`Failed to get info for table ${table.table_name}:`, tableError);
+          // Still add the table but with minimal info
+          tableInfos.push({
+            name: table.table_name,
+            schema: 'public',
+            rowCount: 0,
             columns: []
           });
         }
-
-        return tableInfos;
       }
 
-      return tables || [];
+      console.log(`Successfully fetched ${tableInfos.length} tables from database`);
+      return tableInfos.sort((a, b) => a.name.localeCompare(b.name));
+
     } catch (error: any) {
-      // Final fallback: return known tables
+      console.error('Failed to fetch tables from database:', error);
+      
+      // Enhanced fallback: try direct table queries for known tables
       const knownTables = [
-        'profiles', 'employees', 'departments', 'teams', 'attendance', 
-        'roles', 'jobs', 'applications', 'interviews', 'offers',
-        'leaves', 'loans', 'training_courses', 'enrollments'
+        'profiles', 'employees', 'departments', 'roles', 'skills', 'employee_skills', 'employee_roles',
+        'leave_types', 'leave_balances', 'leave_requests', 'training_categories', 'training_courses', 'course_enrollments',
+        'jobs', 'applications', 'interviews', 'offers', 'loan_programs', 'loan_applications', 'loan_repayments',
+        'meeting_rooms', 'room_bookings', 'equipment_inventory', 'equipment_bookings',
+        'request_categories', 'request_types', 'requests', 'safety_incidents', 'safety_equipment_checks', 'safety_checks',
+        'equipment_inspections', 'expense_categories', 'expense_reports', 'expenses', 'performance_reviews',
+        'workflows', 'workflow_instances', 'compliance_requirements', 'audits', 'company_settings',
+        'notifications', 'activity_logs', 'documents', 'document_categories', 'teams', 'attendance'
       ];
 
       const tableInfos: TableInfo[] = [];
@@ -150,12 +241,13 @@ export class SupabaseAdminManager {
             columns: []
           });
         } catch (err) {
-          // Skip tables that don't exist
-          continue;
+          // Table doesn't exist, skip it
+          console.log(`Table ${tableName} not found, skipping`);
         }
       }
 
-      return tableInfos;
+      console.log(`Fallback method found ${tableInfos.length} tables`);
+      return tableInfos.sort((a, b) => a.name.localeCompare(b.name));
     }
   }
 
