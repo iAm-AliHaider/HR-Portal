@@ -1,6 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from "next";
-
-import { supabase } from "../../../lib/supabase/client";
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,6 +24,14 @@ export default async function handler(
     const nameParts = fullName.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
+
+    // Use service role key for admin operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    console.log('🔧 Registering user with admin privileges:', email);
 
     // Development mode - simulate registration
     if (
