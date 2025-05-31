@@ -1,16 +1,32 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-// Initialize Supabase client with public environment variables
-// or use provided values as fallback
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tqtwdkobrzzrhrqdxprs.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyOTU0MTgsImV4cCI6MjA2Mzg3MTQxOH0.xM1V6pUAOIrALa8E1o8Ma8j7csavI2kPjIfS6RPu15s'
+// Production environment validation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const isDevelopment = process.env.NODE_ENV === 'development'
 const isProduction = process.env.NODE_ENV === 'production'
+
+// Validate required environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  const missingVars = []
+  if (!supabaseUrl) missingVars.push('NEXT_PUBLIC_SUPABASE_URL')
+  if (!supabaseAnonKey) missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  
+  throw new Error(
+    `Missing required environment variables: ${missingVars.join(', ')}. ` +
+    'Please check your environment configuration.'
+  )
+}
+
+// URL validation
+if (!supabaseUrl.includes('supabase.co') && !supabaseUrl.includes('localhost')) {
+  throw new Error('Invalid Supabase URL format. Must be a valid Supabase project URL.')
+}
 
 // Singleton pattern to prevent multiple client instances
 let supabaseInstance: SupabaseClient | null = null;
 
-// Create Supabase client with improved configuration
+// Create Supabase client with production configuration
 function createSupabaseClient(): SupabaseClient {
   if (supabaseInstance) {
     return supabaseInstance;
@@ -21,42 +37,40 @@ function createSupabaseClient(): SupabaseClient {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: false, // Prevent URL parsing issues
+        detectSessionInUrl: true,
         flowType: 'pkce',
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        // Reduce auth state change frequency
         storageKey: 'hr-portal-auth',
-        debug: isDevelopment, // Enable debug logs in development
+        debug: isDevelopment,
       },
       global: {
         headers: {
           'X-Client-Info': 'hr-portal-web@1.0.0',
+          'X-Environment': process.env.NODE_ENV || 'development'
         },
       },
-      // Minimal realtime to prevent conflicts
       realtime: {
         params: {
-          eventsPerSecond: 1,
+          eventsPerSecond: 10,
         },
-        heartbeatIntervalMs: 60000, // Increased interval
-        reconnectAfterMs: (tries: number) => Math.min(tries * 2000, 10000),
+        heartbeatIntervalMs: 30000,
+        reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 5000),
       },
-      // Add database settings for better performance
       db: {
         schema: 'public'
       }
     });
 
-    // Add a custom error handler for auth errors
-    if (typeof window !== 'undefined') {
-      // Capture auth errors in client-side
+    // Production error handling
+    if (typeof window !== 'undefined' && isProduction) {
+      // Capture critical auth errors in production
       const originalAuthSignUp = supabaseInstance.auth.signUp;
       supabaseInstance.auth.signUp = async (...args) => {
         try {
           const result = await originalAuthSignUp.apply(supabaseInstance.auth, args);
           if (result.error) {
-            console.error('Supabase Auth Error during signUp:', result.error);
-            // You could send this to a monitoring service if needed
+            console.error('Auth Error during signUp:', result.error.message);
+            // In production, you might want to send this to a monitoring service
           }
           return result;
         } catch (error) {
@@ -66,46 +80,25 @@ function createSupabaseClient(): SupabaseClient {
       };
     }
 
-    // Suppress console warnings in production
-    if (process.env.NODE_ENV === 'production') {
-      const originalConsoleWarn = console.warn;
-      console.warn = (...args) => {
-        const message = args.join(' ');
-        if (message.includes('Multiple GoTrueClient instances') || 
-            message.includes('supabase') && message.includes('detected')) {
-          return; // Suppress Supabase warnings
-        }
-        originalConsoleWarn.apply(console, args);
-      };
-    }
-
     return supabaseInstance;
   } catch (error) {
     console.error('Failed to initialize Supabase client:', error);
-    // Create a minimal client that won't crash the app but will show errors
-    return createClient(supabaseUrl, supabaseAnonKey, {
-      auth: { 
-        autoRefreshToken: true,
-        persistSession: true,
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined
-      }
-    });
+    throw new Error('Database connection failed. Please check your configuration.');
   }
 }
 
 // Export the singleton instance
 export const supabase = createSupabaseClient();
 
-// Development logging for debugging
+// Development logging
 if (isDevelopment) {
   console.log('Supabase client initialized with URL:', supabaseUrl)
   console.log('Environment:', process.env.NODE_ENV)
-  console.log('Client instance created:', !!supabaseInstance)
 }
 
-// Production-safe error handling
-if (isProduction && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  console.warn('Production deployment detected but NEXT_PUBLIC_SUPABASE_URL not set')
+// Production validation
+if (isProduction) {
+  console.log('HR Portal connected to production database')
 }
 
 // Helper function to check if Supabase is properly configured
@@ -157,7 +150,21 @@ export const tenantClient = (tenantId: string) => {
   }
 }
 
-// Cleanup function for testing/development
+// Production helper to validate user session
+export const validateUserSession = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return { session, error: null };
+  } catch (error) {
+    return { 
+      session: null, 
+      error: error instanceof Error ? error.message : 'Session validation failed' 
+    };
+  }
+};
+
+// Cleanup function for development only
 export const resetSupabaseClient = () => {
   if (isDevelopment) {
     supabaseInstance = null;

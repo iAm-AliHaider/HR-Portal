@@ -13,7 +13,7 @@ export interface User {
   role?: string;
 }
 
-// Improved auth hook with better error handling and timeout management
+// Production-ready auth hook
 export function useAuthFixed() {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
@@ -31,14 +31,9 @@ export function useAuthFixed() {
     };
   };
 
-  // Fetch user profile with safer error handling
+  // Fetch user profile with error handling
   const fetchUserProfile = async (userId: string): Promise<any> => {
     try {
-      // If running on server, skip profile fetch
-      if (typeof window === 'undefined') {
-        return { role: 'employee', profile: null };
-      }
-
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -68,50 +63,22 @@ export function useAuthFixed() {
     
     const initAuth = async () => {
       try {
-        // Set a maximum time for initialization with a more descriptive warning
+        // Set timeout for auth initialization
         timeoutId = setTimeout(() => {
           setLoading(false);
           setInitialized(true);
-          
-          // Create fallback user for debug sessions to prevent complete failure
-          const fallbackUser: User = {
-            id: 'debug-user',
-            email: 'debug@example.com',
-            name: 'Debug User',
-            role: 'admin', // Give admin role for debug pages
-          };
-          
-          setUser(fallbackUser);
-          setRole('admin');
-          
-          console.warn('Authentication timeout reached, setting default state', {
-            reason: 'Auth request took too long to complete',
-            fallback: 'Using debug user to prevent UI breakage',
-            fix: 'Check network connectivity and Supabase connection'
-          });
-        }, 10000); // Increase timeout to 10 seconds to give more time
+          setError('Authentication timeout. Please refresh the page.');
+          console.error('Authentication initialization timeout');
+        }, 5000);
 
         // Get current session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.warn('Session error:', error.message);
-          
-          // Create fallback user on error for debug pages
-          if (window.location.pathname.includes('/debug')) {
-            const fallbackUser: User = {
-              id: 'debug-user',
-              email: 'debug@example.com',
-              name: 'Debug User',
-              role: 'admin',
-            };
-            setUser(fallbackUser);
-            setRole('admin');
-          } else {
-            setUser(null);
-            setRole(null);
-          }
-          
+          console.error('Session error:', error.message);
+          setError(error.message);
+          setUser(null);
+          setRole(null);
           setLoading(false);
           setInitialized(true);
           clearTimeout(timeoutId);
@@ -123,13 +90,13 @@ export function useAuthFixed() {
           const supabaseUser = convertSupabaseUser(data.session.user);
           setUser(supabaseUser);
           
-          // Try to get profile data
+          // Get profile data
           try {
             const { role: userRole } = await fetchUserProfile(data.session.user.id);
             setRole(userRole || 'employee');
           } catch (profileError) {
             console.warn('Error fetching initial profile:', profileError);
-            setRole('employee'); // Default fallback
+            setRole('employee');
           }
         } else {
           // No session, clear user state
@@ -138,6 +105,7 @@ export function useAuthFixed() {
         }
       } catch (e) {
         console.error('Auth initialization error:', e);
+        setError('Authentication initialization failed');
       } finally {
         setLoading(false);
         setInitialized(true);
@@ -147,13 +115,10 @@ export function useAuthFixed() {
 
     initAuth();
 
-    // Set up auth change listener with safety
+    // Set up auth change listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Use a separate function to handle auth changes to prevent React errors
-        setTimeout(() => {
-          handleAuthChange(event, session);
-        }, 0);
+        handleAuthChange(event, session);
       }
     );
 
@@ -163,33 +128,33 @@ export function useAuthFixed() {
     };
   }, [initialized]);
 
-  // Handle auth changes safely
+  // Handle auth changes
   const handleAuthChange = async (event: string, session: any) => {
     try {
       if (session?.user) {
         const supabaseUser = convertSupabaseUser(session.user);
         setUser(supabaseUser);
         
-        // Get profile safely with timeout
-        setTimeout(async () => {
-          try {
-            const { role: userRole } = await fetchUserProfile(session.user.id);
-            setRole(userRole || 'employee');
-          } catch (err) {
-            console.warn('Error in auth change profile fetch:', err);
-            setRole('employee');
-          }
-        }, 0);
+        // Get profile
+        try {
+          const { role: userRole } = await fetchUserProfile(session.user.id);
+          setRole(userRole || 'employee');
+        } catch (err) {
+          console.warn('Error in auth change profile fetch:', err);
+          setRole('employee');
+        }
       } else {
         setUser(null);
         setRole(null);
       }
+      setError(null);
     } catch (error) {
       console.error('Error handling auth state change:', error);
+      setError('Authentication state change failed');
     }
   };
 
-  // Sign in with improved error handling
+  // Sign in with error handling
   const signIn = async (email: string, password: string) => {
     try {
       setError(null);
@@ -205,9 +170,9 @@ export function useAuthFixed() {
         return { success: false, error: error.message };
       }
 
-      return { success: true };
-    } catch (err: any) {
-      const errorMessage = err.message || 'Login failed';
+      return { success: true, user: data.user };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sign in failed';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -215,31 +180,77 @@ export function useAuthFixed() {
     }
   };
 
-  // Sign out with improved reliability
+  // Sign up with error handling
+  const signUp = async (email: string, password: string, metadata?: any) => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata || {}
+        }
+      });
+
+      if (error) {
+        setError(error.message);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, user: data.user };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sign up failed';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sign out with error handling
   const signOut = async () => {
     try {
-      // Clear local state first
+      setError(null);
+      setLoading(true);
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        setError(error.message);
+        return { success: false, error: error.message };
+      }
+
       setUser(null);
       setRole(null);
-      
-      // Then attempt Supabase signout
-      await supabase.auth.signOut();
-      
-      // Redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      
       return { success: true };
-    } catch (err) {
-      console.error('Sign out error:', err);
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sign out failed';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset password
+  const resetPassword = async (email: string) => {
+    try {
+      setError(null);
       
-      // Force redirect even on error
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      
+      if (error) {
+        setError(error.message);
+        return { success: false, error: error.message };
       }
-      
-      return { success: false, error: 'Sign out failed' };
+
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Password reset failed';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -249,7 +260,11 @@ export function useAuthFixed() {
     loading,
     error,
     signIn,
+    signUp,
     signOut,
-    logout: signOut // Alias for compatibility
+    resetPassword,
+    isAuthenticated: !!user,
+    isAdmin: role === 'admin',
+    isManager: role === 'manager' || role === 'admin',
   };
 } 
