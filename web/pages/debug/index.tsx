@@ -2,6 +2,8 @@ import { useRouter } from "next/router";
 
 import {
     Activity,
+    AlertTriangle,
+    CheckCircle2,
     Database,
     FileText,
     Server,
@@ -68,6 +70,20 @@ export default function DebugPage() {
             description="View and test application configuration"
             icon={<Settings className="h-8 w-8" strokeWidth={1.5} />}
             onClick={() => router.push("/debug/config")}
+          />
+
+          <Card
+            title="Production Wizard"
+            description="Step-by-step production configuration wizard"
+            icon={<CheckCircle2 className="h-8 w-8" strokeWidth={1.5} />}
+            onClick={() => router.push("/debug/production-wizard")}
+          />
+
+          <Card
+            title="Production Check"
+            description="Validate production readiness and configuration"
+            icon={<AlertTriangle className="h-8 w-8" strokeWidth={1.5} />}
+            onClick={() => router.push("/debug/production-check")}
           />
 
           <Card
