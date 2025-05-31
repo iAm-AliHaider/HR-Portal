@@ -1,24 +1,16 @@
-import React from "react";
-
 import { useRouter } from "next/router";
 
 import {
-  Database,
-  Shield,
-  Users,
-  Settings,
-  FileText,
-  Activity,
-  CheckCircle2,
-  AlertTriangle,
-  Bug,
-  Layers,
-  Lock,
-  Upload,
-  Server,
+    Activity,
+    Database,
+    FileText,
+    Server,
+    Settings,
+    Shield,
+    Users
 } from "lucide-react";
 
-import { PageLayout, CardGrid, Card } from "@/components/layout/PageLayout";
+import { Card, CardGrid, PageLayout } from "@/components/layout/PageLayout";
 
 import DebugLayout from "./_layout";
 
