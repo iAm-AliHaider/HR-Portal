@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../hooks/useAuth';
-import MockAccountInfo, { MockAccount } from '../components/ui/MockAccountInfo';
+import RealUserInfo, { RealUser } from '../components/auth/RealUserInfo';
 import Link from 'next/link';
 import { GetServerSideProps } from 'next';
 
@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showTestAccounts, setShowTestAccounts] = useState(false);
+  const [showTestAccounts, setShowTestAccounts] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   
   const router = useRouter();
@@ -33,23 +33,14 @@ export default function LoginPage() {
   };
   
   const redirectUrl = getRedirectUrl();
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
   
   const roleFilters = {
     all: 'All Accounts',
     admin: 'Administrators',
     hr: 'HR Team',
     manager: 'Managers',
-    employee: 'Employees',
-    specialized: 'Specialized Roles'
+    employee: 'Employees'
   };
-
-  // Show test accounts in development mode or demo mode
-  useEffect(() => {
-    // Check if we're in development mode or demo mode
-    setShowTestAccounts(isDevelopment || isDemoMode);
-  }, [isDevelopment, isDemoMode]);
   
   // Handle redirection if the user is already logged in
   useEffect(() => {
@@ -79,9 +70,10 @@ export default function LoginPage() {
     }
   };
   
-  const handleAccountSelect = (account: MockAccount) => {
-    setEmail(account.email);
-    setPassword(account.password);
+  const handleAccountSelect = (user: RealUser) => {
+    setEmail(user.email);
+    // Note: Real users don't expose passwords, this is just for display
+    // Users should use the test passwords: admin123, hr123, employee123
   };
   
   const getFilteredRoles = (filter: string): string[] => {
@@ -94,8 +86,6 @@ export default function LoginPage() {
         return ['manager', 'team_lead'];
       case 'employee':
         return ['employee'];
-      case 'specialized':
-        return ['recruiter', 'recruiting_manager', 'payroll_admin', 'compliance_officer', 'facilities_manager', 'safety_officer'];
       default:
         return [];
     }
@@ -192,7 +182,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-gray-500">
-                    Test Accounts for UAT
+                    Available System Users
                   </span>
                 </div>
               </div>
@@ -215,7 +205,7 @@ export default function LoginPage() {
                   ))}
                 </div>
                 
-                <MockAccountInfo 
+                <RealUserInfo 
                   onSelect={handleAccountSelect} 
                   filterRoles={selectedFilter !== 'all' ? getFilteredRoles(selectedFilter) : undefined}
                 />
