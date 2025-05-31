@@ -1,45 +1,34 @@
-import React from 'react';
-import { Badge as ChakraBadge, BadgeProps as ChakraBadgeProps } from '@chakra-ui/react';
+import * as React from "react"
 
-export interface BadgeProps extends ChakraBadgeProps {
-  variant?: 'solid' | 'subtle' | 'outline' | 'default' | 'secondary' | 'destructive';
+import { cn } from "@/lib/utils"
+
+const badgeVariants = {
+  default: "bg-zinc-900 text-white hover:bg-zinc-800",
+  secondary: "bg-zinc-100 text-zinc-900 hover:bg-zinc-200",
+  outline: "border border-zinc-200 text-zinc-900 hover:bg-zinc-100",
+  destructive: "bg-red-500 text-white hover:bg-red-600",
+  success: "bg-green-500 text-white hover:bg-green-600"
 }
 
-const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ variant = 'subtle', colorScheme = 'gray', ...props }, ref) => {
-    // Map custom variants to Chakra UI variants
-    let mappedVariant = variant;
-    let mappedColorScheme = colorScheme;
+export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: keyof typeof badgeVariants
+}
 
-    switch (variant) {
-      case 'default':
-        mappedVariant = 'subtle';
-        mappedColorScheme = 'blue';
-        break;
-      case 'secondary':
-        mappedVariant = 'outline';
-        mappedColorScheme = 'gray';
-        break;
-      case 'destructive':
-        mappedVariant = 'solid';
-        mappedColorScheme = 'red';
-        break;
-      default:
-        mappedVariant = variant;
-        break;
-    }
+function Badge({
+  className,
+  variant = "default",
+  ...props
+}: BadgeProps) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-normal transition-colors",
+        badgeVariants[variant],
+        className
+      )}
+      {...props}
+    />
+  )
+}
 
-    return (
-      <ChakraBadge
-        ref={ref}
-        variant={mappedVariant}
-        colorScheme={mappedColorScheme}
-        {...props}
-      />
-    );
-  }
-);
-
-Badge.displayName = "Badge";
-
-export { Badge }; 
+export { Badge, badgeVariants } 

@@ -1,124 +1,79 @@
-import React from 'react';
-import { 
-  Card as ChakraCard,
-  CardBody,
-  CardHeader as ChakraCardHeader,
-  CardFooter as ChakraCardFooter,
-  Heading,
-  Text,
-  Box,
-  CardProps as ChakraCardProps,
-  HeadingProps,
-  TextProps,
-  BoxProps
-} from '@chakra-ui/react';
+import * as React from "react"
 
-// Card Container
-export interface CardProps extends ChakraCardProps {}
+import { cn } from "@/lib/utils"
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  (props, ref) => {
-    return (
-      <ChakraCard
-        ref={ref}
-        variant="outline"
-        shadow="sm"
-        {...props}
-      />
-    );
-  }
-);
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-md border border-zinc-200 bg-white text-zinc-950 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50",
+      className
+    )}
+    {...props}
+  />
+))
+Card.displayName = "Card"
 
-Card.displayName = "Card";
+const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+CardHeader.displayName = "CardHeader"
 
-// Card Header
-export interface CardHeaderProps extends BoxProps {}
+const CardTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      "text-lg font-medium leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+))
+CardTitle.displayName = "CardTitle"
 
-const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
-  (props, ref) => {
-    return (
-      <ChakraCardHeader
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
+const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-zinc-500 dark:text-zinc-400", className)}
+    {...props}
+  />
+))
+CardDescription.displayName = "CardDescription"
 
-CardHeader.displayName = "CardHeader";
+const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
 
-// Card Title
-export interface CardTitleProps extends HeadingProps {}
+const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+))
+CardFooter.displayName = "CardFooter"
 
-const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
-  ({ size = 'md', ...props }, ref) => {
-    return (
-      <Heading
-        ref={ref}
-        size={size}
-        {...props}
-      />
-    );
-  }
-);
-
-CardTitle.displayName = "CardTitle";
-
-// Card Description
-export interface CardDescriptionProps extends TextProps {}
-
-const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescriptionProps>(
-  ({ color = 'gray.600', fontSize = 'sm', ...props }, ref) => {
-    return (
-      <Text
-        ref={ref}
-        color={color}
-        fontSize={fontSize}
-        {...props}
-      />
-    );
-  }
-);
-
-CardDescription.displayName = "CardDescription";
-
-// Card Content
-export interface CardContentProps extends BoxProps {}
-
-const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
-  (props, ref) => {
-    return (
-      <CardBody
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-
-CardContent.displayName = "CardContent";
-
-// Card Footer
-export interface CardFooterProps extends BoxProps {}
-
-const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
-  (props, ref) => {
-    return (
-      <ChakraCardFooter
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-
-CardFooter.displayName = "CardFooter";
-
-export { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
-  CardContent, 
-  CardFooter 
-}; 
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } 
