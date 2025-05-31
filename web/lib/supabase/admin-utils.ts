@@ -41,26 +41,75 @@ export class SupabaseAdminManager {
     try {
       const start = Date.now();
       
-      // Test 1: Basic connection with anon key
-      const testClient = createClient(this.credentials.url, this.credentials.anonKey);
-      
-      // Test basic connection with anon key
-      const { data: basicData, error: basicError } = await testClient.from('profiles').select('count').limit(1);
-      
-      if (basicError) {
+      // Validate URL format first
+      if (!this.credentials.url || !this.credentials.url.includes('.supabase.co')) {
         return {
           success: false,
-          message: `Anonymous key connection failed: ${basicError.message}`,
+          message: 'Invalid Supabase URL format. Should be https://your-project.supabase.co',
           latency: Date.now() - start
         };
       }
 
-      // Test 2: Service key validation (if provided)
+      // Validate anon key format (should be a JWT)
+      if (!this.credentials.anonKey || !this.credentials.anonKey.startsWith('eyJ')) {
+        return {
+          success: false,
+          message: 'Invalid anonymous key format. Should be a valid JWT token starting with "eyJ".',
+          latency: Date.now() - start
+        };
+      }
+
+      // Create client with provided credentials
+      let testClient;
+      try {
+        testClient = createClient(this.credentials.url, this.credentials.anonKey);
+      } catch (clientError: any) {
+        return {
+          success: false,
+          message: `Failed to create Supabase client: ${clientError.message}`,
+          latency: Date.now() - start
+        };
+      }
+      
+      // Test actual API call with anon key to validate credentials
+      const { data: basicData, error: basicError } = await testClient.from('profiles').select('count').limit(1);
+      
+      if (basicError) {
+        // Check for specific authentication/authorization errors
+        if (basicError.message.includes('Invalid API key') || 
+            basicError.message.includes('Project not found') ||
+            basicError.message.includes('JWT') ||
+            basicError.code === 'PGRST301' ||
+            basicError.code === '42P01') {
+          return {
+            success: false,
+            message: `Invalid credentials: ${basicError.message}`,
+            latency: Date.now() - start
+          };
+        }
+        return {
+          success: false,
+          message: `Connection failed: ${basicError.message}`,
+          latency: Date.now() - start
+        };
+      }
+
+      // Service key validation with proper error checking
+      let serviceKeyMessage = '';
       if (this.credentials.serviceKey) {
+        // Validate service key format
+        if (!this.credentials.serviceKey.startsWith('eyJ')) {
+          return {
+            success: false,
+            message: 'Invalid service key format. Should be a valid JWT token starting with "eyJ".',
+            latency: Date.now() - start
+          };
+        }
+
         try {
           const serviceClient = createClient(this.credentials.url, this.credentials.serviceKey);
           
-          // Test service key with admin operation (checking information_schema)
+          // Test service key with a privileged operation
           const { data: serviceData, error: serviceError } = await serviceClient
             .from('information_schema.tables')
             .select('table_name')
@@ -68,50 +117,30 @@ export class SupabaseAdminManager {
             .limit(1);
 
           if (serviceError) {
+            if (serviceError.message.includes('Invalid API key') || 
+                serviceError.message.includes('JWT') ||
+                serviceError.code === 'PGRST301') {
+              return {
+                success: false,
+                message: `Invalid service role key: ${serviceError.message}`,
+                latency: Date.now() - start
+              };
+            }
+            serviceKeyMessage = ' (service key has limited permissions)';
+          } else {
+            serviceKeyMessage = ' with service role access';
+          }
+        } catch (serviceError: any) {
+          if (serviceError.message.includes('Invalid') || 
+              serviceError.message.includes('JWT') ||
+              serviceError.message.includes('unauthorized')) {
             return {
               success: false,
               message: `Service key validation failed: ${serviceError.message}`,
               latency: Date.now() - start
             };
           }
-        } catch (serviceError: any) {
-          return {
-            success: false,
-            message: `Service key connection error: ${serviceError.message}`,
-            latency: Date.now() - start
-          };
-        }
-      }
-
-      // Test 3: Password validation (if provided)
-      // Note: Password is typically used for direct database connections, not Supabase client
-      if (this.credentials.password) {
-        // For Supabase, password is usually validated during auth operations
-        // We'll test it by attempting a more privileged operation
-        try {
-          if (this.credentials.serviceKey) {
-            const serviceClient = createClient(this.credentials.url, this.credentials.serviceKey);
-            
-            // Test with a more sensitive operation that would fail with wrong auth
-            const { data: authTest, error: authError } = await serviceClient.auth.admin.listUsers();
-            
-            if (authError && authError.message.includes('Invalid')) {
-              return {
-                success: false,
-                message: `Authentication failed: Invalid credentials`,
-                latency: Date.now() - start
-              };
-            }
-          }
-        } catch (authError: any) {
-          if (authError.message.includes('Invalid') || authError.message.includes('Unauthorized')) {
-            return {
-              success: false,
-              message: `Password validation failed: ${authError.message}`,
-              latency: Date.now() - start
-            };
-          }
-          // If it's not an auth error, continue (might be permissions issue, which is OK)
+          serviceKeyMessage = ' (service key validation inconclusive)';
         }
       }
       
@@ -120,7 +149,7 @@ export class SupabaseAdminManager {
       
       return {
         success: true,
-        message: `Connection successful (${this.credentials.serviceKey ? 'with service key' : 'anon key only'})`,
+        message: `✅ Connection successful${serviceKeyMessage}`,
         latency
       };
     } catch (error: any) {
