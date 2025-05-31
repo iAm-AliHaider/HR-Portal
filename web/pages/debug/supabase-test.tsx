@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import DebugLayout from './_layout';
 import { 
   CheckCircle, 
   XCircle, 
@@ -331,81 +332,83 @@ export default function SupabaseTestPage() {
   };
   
   return (
-    <PageLayout
-      title="Supabase Connection Tests"
-      description="Test and verify all Supabase connections and functionality"
-      breadcrumbs={[
-        { label: 'Debug', href: '/debug' },
-        { label: 'Supabase Tests', href: '/debug/supabase-test' },
-      ]}
-    >
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-semibold mb-1">Supabase Connection Diagnostics</h2>
-          <p className="text-gray-500">
-            {lastTestTime ? `Last tested: ${lastTestTime}` : 'Testing Supabase connections...'}
-          </p>
-        </div>
-        <Button 
-          onClick={runAllTests} 
-          disabled={isLoading}
-          className="flex items-center"
-        >
-          {isLoading ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Testing...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Run Tests
-            </>
-          )}
-        </Button>
-      </div>
-      
-      <div className="grid grid-cols-1 gap-4">
-        {testResults.map((test, index) => (
-          <Card key={index} className="p-4 shadow-sm border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                {getTestIcon(test.name)}
-                <h3 className="font-medium ml-2">{test.name}</h3>
-              </div>
-              <div className="flex items-center">
-                {test.duration && (
-                  <span className="text-xs text-gray-500 mr-3">
-                    {formatDuration(test.duration)}
-                  </span>
-                )}
-                {getStatusIcon(test.status)}
-              </div>
-            </div>
-            <p className={`mt-2 text-sm ${
-              test.status === 'success' ? 'text-green-700' : 
-              test.status === 'error' ? 'text-red-700' : 
-              'text-gray-700'
-            }`}>
-              {test.message}
+    <DebugLayout>
+      <PageLayout
+        title="Supabase Connection Tests"
+        description="Test and verify all Supabase connections and functionality"
+        breadcrumbs={[
+          { label: 'Debug', href: '/debug' },
+          { label: 'Supabase Tests', href: '/debug/supabase-test' },
+        ]}
+      >
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-semibold mb-1">Supabase Connection Diagnostics</h2>
+            <p className="text-gray-500">
+              {lastTestTime ? `Last tested: ${lastTestTime}` : 'Testing Supabase connections...'}
             </p>
-          </Card>
-        ))}
-        
-        {testResults.length === 0 && isLoading && (
-          <div className="text-center py-8">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-gray-400" />
-            <p className="mt-4 text-gray-500">Running tests...</p>
           </div>
-        )}
+          <Button 
+            onClick={runAllTests} 
+            disabled={isLoading}
+            className="flex items-center"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                Testing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Run Tests
+              </>
+            )}
+          </Button>
+        </div>
         
-        {testResults.length === 0 && !isLoading && (
-          <div className="text-center py-8">
-            <AlertCircle className="h-8 w-8 mx-auto text-gray-400" />
-            <p className="mt-4 text-gray-500">No test results available</p>
-          </div>
-        )}
-      </div>
-    </PageLayout>
+        <div className="grid grid-cols-1 gap-4">
+          {testResults.map((test, index) => (
+            <Card key={index} className="p-4 shadow-sm border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  {getTestIcon(test.name)}
+                  <h3 className="font-medium ml-2">{test.name}</h3>
+                </div>
+                <div className="flex items-center">
+                  {test.duration && (
+                    <span className="text-xs text-gray-500 mr-3">
+                      {formatDuration(test.duration)}
+                    </span>
+                  )}
+                  {getStatusIcon(test.status)}
+                </div>
+              </div>
+              <p className={`mt-2 text-sm ${
+                test.status === 'success' ? 'text-green-700' : 
+                test.status === 'error' ? 'text-red-700' : 
+                'text-gray-700'
+              }`}>
+                {test.message}
+              </p>
+            </Card>
+          ))}
+          
+          {testResults.length === 0 && isLoading && (
+            <div className="text-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto text-gray-400" />
+              <p className="mt-4 text-gray-500">Running tests...</p>
+            </div>
+          )}
+          
+          {testResults.length === 0 && !isLoading && (
+            <div className="text-center py-8">
+              <AlertCircle className="h-8 w-8 mx-auto text-gray-400" />
+              <p className="mt-4 text-gray-500">No test results available</p>
+            </div>
+          )}
+        </div>
+      </PageLayout>
+    </DebugLayout>
   );
 } 
