@@ -13,11 +13,11 @@ async function createTestUser() {
     // Create the user with auth
     console.log('📧 Creating user account...');
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: 'sanfa360@gmail.com',
+      email: 'ali@smemail.com',
       password: 'admin123',
       email_confirm: true,
       user_metadata: {
-        name: 'Sanfa Ali',
+        name: 'Ali Haider',
         role: 'admin'
       }
     });
@@ -26,7 +26,7 @@ async function createTestUser() {
       // User might already exist, try to get existing user
       console.log('🔍 User might exist, trying to find existing user...');
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
-      const existingUser = existingUsers.users.find(u => u.email === 'sanfa360@gmail.com');
+      const existingUser = existingUsers.users.find(u => u.email === 'ali@smemail.com');
       
       if (existingUser) {
         console.log('✅ User already exists:', existingUser.email);
@@ -37,7 +37,8 @@ async function createTestUser() {
           .upsert({
             id: existingUser.id,
             email: existingUser.email,
-            name: 'Sanfa Ali',
+            first_name: 'Ali',
+            last_name: 'Haider',
             role: 'admin',
             department: 'IT',
             position: 'System Administrator',
@@ -67,7 +68,8 @@ async function createTestUser() {
       .insert({
         id: authData.user.id,
         email: authData.user.email,
-        name: 'Sanfa Ali',
+        first_name: 'Ali',
+        last_name: 'Haider',
         role: 'admin',
         department: 'IT',
         position: 'System Administrator',
@@ -138,7 +140,8 @@ async function createTestUser() {
           .insert({
             id: newUser.user.id,
             email: newUser.user.email,
-            name: testUser.name,
+            first_name: testUser.name.split(' ')[0],
+            last_name: testUser.name.split(' ').slice(1).join(' ') || '',
             role: testUser.role,
             department: testUser.department,
             position: testUser.position,
@@ -154,7 +157,7 @@ async function createTestUser() {
 
     console.log('\n🎉 Test users created successfully!');
     console.log('📝 Login credentials:');
-    console.log('• sanfa360@gmail.com / admin123');
+    console.log('• ali@smemail.com / admin123');
     console.log('• admin@company.com / admin123');
     console.log('• hr@company.com / hr123');
     console.log('• employee@company.com / employee123');

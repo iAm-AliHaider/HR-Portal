@@ -128,10 +128,6 @@ export default async function handler(
       const userProfile = {
         id: authData.user.id,
         email,
-        name:
-          fullName ||
-          `${firstName || ""} ${lastName || ""}`.trim() ||
-          email.split("@")[0],
         first_name: firstName || fullName?.split(" ")[0] || email.split("@")[0],
         last_name: lastName || fullName?.split(" ").slice(1).join(" ") || "",
         role,
