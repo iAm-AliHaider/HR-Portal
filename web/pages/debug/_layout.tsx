@@ -12,10 +12,28 @@ export default function DebugLayout({ children }: DebugLayoutProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
+  const [authTimeout, setAuthTimeout] = React.useState(false);
 
   // Only render after component is mounted to prevent hydration errors
   useEffect(() => {
     setMounted(true);
+    
+    // Handle authentication timeouts
+    const handleAuthTimeout = (event: any) => {
+      if (event?.detail?.message?.includes('Authentication timeout reached')) {
+        console.log('Debug mode: Handling auth timeout gracefully');
+        setAuthTimeout(true);
+      }
+    };
+    
+    // Listen for console warnings about auth timeouts
+    window.addEventListener('unhandledrejection', handleAuthTimeout);
+    window.addEventListener('error', handleAuthTimeout);
+    
+    return () => {
+      window.removeEventListener('unhandledrejection', handleAuthTimeout);
+      window.removeEventListener('error', handleAuthTimeout);
+    };
   }, []);
 
   if (!mounted) {

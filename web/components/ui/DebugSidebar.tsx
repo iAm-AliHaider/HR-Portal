@@ -143,21 +143,31 @@ export default function DebugSidebar({
 
       {/* User Profile Section */}
       <div className="mt-auto p-4 border-t border-zinc-200">
-        {user && (
+        {user ? (
           <div className="flex items-center mb-2">
             <Avatar className="h-8 w-8 mr-2 border border-zinc-200">
               <AvatarImage src={user.avatar || ''} alt={user.email || 'User'} />
               <AvatarFallback className="bg-zinc-100 text-zinc-900">
-                {user.email?.charAt(0).toUpperCase() || 'U'}
+                {user.email?.charAt(0).toUpperCase() || 'D'}
               </AvatarFallback>
             </Avatar>
             <div className="overflow-hidden">
               <p className="text-sm font-medium truncate text-zinc-900">
-                {user.name || user.email}
+                {user.name || user.email || 'Debug User'}
               </p>
               <p className="text-xs truncate text-zinc-500">
-                {role?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {role?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Admin'}
               </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center mb-2">
+            <Avatar className="h-8 w-8 mr-2 border border-zinc-200">
+              <AvatarFallback className="bg-zinc-100 text-zinc-900">D</AvatarFallback>
+            </Avatar>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium truncate text-zinc-900">Debug Mode</p>
+              <p className="text-xs truncate text-zinc-500">Admin</p>
             </div>
           </div>
         )}
