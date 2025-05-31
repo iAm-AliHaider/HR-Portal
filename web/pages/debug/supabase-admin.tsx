@@ -56,18 +56,37 @@ export default function SupabaseAdminPage() {
   const [allTemplates, setAllTemplates] = useState<UploadTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
-  // Load all templates (predefined + dynamic)
+  // Load all templates
   const loadAllTemplates = async () => {
     if (!adminManager) return;
     
     try {
       setTemplatesLoading(true);
-      const templates = await adminManager.getAllTemplates();
-      setAllTemplates(templates);
+      console.log('Loading all templates...');
+      
+      // First try to get all templates (predefined + dynamic)
+      const allTemplates = await adminManager.getAllTemplates();
+      console.log(`Successfully loaded ${allTemplates.length} templates:`, allTemplates.map(t => t.name));
+      setAllTemplates(allTemplates);
+      
+      if (allTemplates.length === 0) {
+        // If no templates loaded, fall back to predefined only
+        console.log('No templates found, loading predefined templates');
+        const predefinedTemplates = adminManager.getUploadTemplates();
+        console.log(`Loaded ${predefinedTemplates.length} predefined templates`);
+        setAllTemplates(predefinedTemplates);
+      }
     } catch (error) {
-      console.error('Failed to load templates:', error);
+      console.error('Failed to load all templates:', error);
       // Fallback to predefined templates only
-      setAllTemplates(adminManager.getUploadTemplates());
+      try {
+        const predefinedTemplates = adminManager.getUploadTemplates();
+        console.log(`Fallback: loaded ${predefinedTemplates.length} predefined templates`);
+        setAllTemplates(predefinedTemplates);
+      } catch (fallbackError) {
+        console.error('Failed to load even predefined templates:', fallbackError);
+        setAllTemplates([]);
+      }
     } finally {
       setTemplatesLoading(false);
     }
@@ -104,17 +123,40 @@ export default function SupabaseAdminPage() {
         const serviceInitialized = await manager.initializeServiceClient();
         console.log('Service client initialized:', serviceInitialized);
         
-        // Load tables
+        // Load tables first
         await loadTables(manager);
         
-        // Load templates after successful connection
+        // Load templates after successful connection and table loading
         try {
-          const templates = await manager.getAllTemplates();
-          console.log(`Loaded ${templates.length} templates`);
-          setAllTemplates(templates);
-        } catch (error) {
-          console.error('Failed to load templates:', error);
-          setAllTemplates(manager.getUploadTemplates());
+          console.log('Loading templates after connection...');
+          setTemplatesLoading(true);
+          
+          // First get predefined templates (these should always work)
+          const predefinedTemplates = manager.getUploadTemplates();
+          console.log(`Loaded ${predefinedTemplates.length} predefined templates`);
+          
+          // Try to get dynamic templates if service client is available
+          let allTemplates = [...predefinedTemplates];
+          if (serviceInitialized) {
+            try {
+              const dynamicTemplates = await manager.getDynamicTemplates();
+              console.log(`Loaded ${dynamicTemplates.length} dynamic templates`);
+              allTemplates = [...predefinedTemplates, ...dynamicTemplates];
+            } catch (dynamicError) {
+              console.warn('Failed to load dynamic templates, using predefined only:', dynamicError);
+            }
+          }
+          
+          setAllTemplates(allTemplates);
+          console.log(`Total templates available: ${allTemplates.length}`);
+        } catch (templateError) {
+          console.error('Failed to load templates:', templateError);
+          // Fallback to basic predefined templates
+          const fallbackTemplates = manager.getUploadTemplates();
+          setAllTemplates(fallbackTemplates);
+          console.log(`Using fallback: ${fallbackTemplates.length} templates`);
+        } finally {
+          setTemplatesLoading(false);
         }
       } else {
         setConnected(false);
@@ -476,28 +518,67 @@ export default function SupabaseAdminPage() {
                   {/* Template Selection */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Upload Templates</CardTitle>
+                      <CardTitle className="flex items-center justify-between">
+                        Upload Templates
+                        <Button 
+                          onClick={loadAllTemplates} 
+                          disabled={!adminManager || templatesLoading} 
+                          size="sm"
+                          variant="outline"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${templatesLoading ? 'animate-spin' : ''}`} />
+                        </Button>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <Select 
-                        value={uploadTemplate?.name || ''} 
-                        onValueChange={(value) => {
-                          const template = templates.find(t => t.name === value);
-                          setUploadTemplate(template || null);
-                          setUploadData('');
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={templatesLoading ? "Loading templates..." : "Select a template"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {templates.map((template) => (
-                            <SelectItem key={template.name} value={template.name}>
-                              {template.name} - {template.table}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div>
+                        <Label>Available Templates ({templates.length})</Label>
+                        <Select 
+                          value={uploadTemplate?.name || ''} 
+                          onValueChange={(value) => {
+                            const template = templates.find(t => t.name === value);
+                            setUploadTemplate(template || null);
+                            setUploadData('');
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={templatesLoading ? "Loading templates..." : "Select a template"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {templates.map((template) => (
+                              <SelectItem key={template.name} value={template.name}>
+                                {template.name} - {template.table}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Download All Templates Section */}
+                      {templates.length > 0 && (
+                        <div className="space-y-2">
+                          <Label>Download Templates (Bulk)</Label>
+                          <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded p-2">
+                            {templates.slice(0, 10).map((template) => (
+                              <Button 
+                                key={template.name}
+                                onClick={() => downloadTemplate(template)} 
+                                size="sm"
+                                variant="ghost"
+                                className="text-xs justify-start"
+                              >
+                                <Download className="h-3 w-3 mr-1" />
+                                {template.name}
+                              </Button>
+                            ))}
+                          </div>
+                          {templates.length > 10 && (
+                            <p className="text-xs text-gray-500">
+                              Showing first 10 templates. Select individual templates above to download others.
+                            </p>
+                          )}
+                        </div>
+                      )}
 
                       {uploadTemplate && (
                         <div className="space-y-4">
