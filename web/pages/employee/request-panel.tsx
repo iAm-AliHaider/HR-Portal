@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { 
   Accordion, AccordionContent, AccordionItem, AccordionTrigger 
-} from '@/components/ui/accordion';
+} from '@/components/ui/accordion-fixed';
 import { GetServerSideProps } from 'next';
 import { useDisclosure } from '@/components/ui/dialog';
 import {
