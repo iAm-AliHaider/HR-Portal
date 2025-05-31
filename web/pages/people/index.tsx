@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import {
-  useToast,
-  useForm, 
-  useModal, 
-  usePagination, 
-  useSearch 
-} from '../../hooks/useApi';
 import {
   User, Search, Filter, Grid, List, Plus, Edit, Trash2, 
-  CheckCircle, AlertCircle, Building, MapPin, Phone, Mail, Users
+  CheckCircle, AlertCircle, Building, MapPin, Phone, Mail, Users,
+  UserPlus, Briefcase, Calendar, Activity
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -22,6 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/lib/supabase';
 import { GetServerSideProps } from 'next';
+import { PageLayout, StatsCard, CardGrid, SearchFilterBar } from '@/components/layout/PageLayout';
+import { useToast, useForm, useModal, usePagination, useSearch } from '../../hooks/useApi';
 
 // Employee form interface
 interface EmployeeForm {
@@ -157,9 +150,9 @@ const PeopleDirectory = () => {
       id: 1,
       name: 'John Doe',
       email: 'john.doe@company.com',
-    department: 'Engineering',
+      department: 'Engineering',
       position: 'Senior Developer',
-    location: 'San Francisco',
+      location: 'San Francisco',
       phone: '+1 (555) 123-4567',
       hire_date: '2022-04-15',
       status: 'active',
@@ -169,7 +162,7 @@ const PeopleDirectory = () => {
       id: 2,
       name: 'Jane Smith',
       email: 'jane.smith@company.com',
-    department: 'Marketing',
+      department: 'Marketing',
       position: 'Marketing Manager',
       location: 'New York',
       phone: '+1 (555) 987-6543',
@@ -248,617 +241,684 @@ const PeopleDirectory = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
-    let hasErrors = false;
-    
-    if (!form.values.name) {
-      form.setError('name', 'Name is required');
-      hasErrors = true;
-    }
-    
-    if (!form.values.email) {
-      form.setError('email', 'Email is required');
-      hasErrors = true;
-    }
-    
-    if (!form.values.department) {
-      form.setError('department', 'Department is required');
-      hasErrors = true;
-    }
-
-    if (hasErrors) return;
-
-    setIsSubmitting(true);
-    
     try {
-      if (editModal.isOpen && selectedEmployee) {
+      setIsSubmitting(true);
+      
+      if (selectedEmployee) {
         // Update existing employee
         await updateEmployee(selectedEmployee.id, form.values);
-        toast.success('Employee updated successfully!');
+        toast.success('Employee updated successfully');
         editModal.closeModal();
       } else {
         // Create new employee
-        await createEmployee(form.values);
-        toast.success('Employee created successfully!');
+        await createEmployee({
+          ...form.values,
+          status: 'active',
+          created_at: new Date().toISOString()
+        });
+        toast.success('Employee added successfully');
         addModal.closeModal();
       }
       
+      // Reset form
       form.reset();
-      setSelectedEmployee(null);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save employee');
+    } catch (err) {
+      console.error('Error submitting form:', err);
+      toast.error('Failed to save employee data');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handle edit
   const handleEdit = (employee: any) => {
     setSelectedEmployee(employee);
-    // Set form values individually
-    form.setValue('name', employee.name);
-    form.setValue('email', employee.email);
-    form.setValue('department', employee.department);
-    form.setValue('position', employee.position);
-    form.setValue('location', employee.location);
-    form.setValue('phone', employee.phone);
-    form.setValue('salary', employee.salary);
-    form.setValue('manager_id', employee.manager_id || '');
-    form.setValue('hire_date', employee.hire_date);
+    
+    // Set form values
+    Object.keys(form.values).forEach(key => {
+      if (employee[key] !== undefined) {
+        form.setValue(key as keyof EmployeeForm, employee[key]);
+      }
+    });
+    
     editModal.openModal();
   };
 
-  // Handle delete
   const handleDelete = async () => {
     if (!selectedEmployee) return;
     
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       await deleteEmployee(selectedEmployee.id);
-      toast.success('Employee deleted successfully!');
+      toast.success('Employee removed successfully');
       deleteModal.closeModal();
       setSelectedEmployee(null);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete employee');
+    } catch (err) {
+      console.error('Error deleting employee:', err);
+      toast.error('Failed to delete employee');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Calculate statistics
-  const stats = {
-    total: employees.length,
-    active: employees.filter(emp => emp.status === 'active').length,
-    departments: Array.from(new Set(employees.map(emp => emp.department))).length,
-    newThisMonth: employees.filter(emp => {
-      const hireDate = new Date(emp.hire_date);
-      const now = new Date();
-      return hireDate.getMonth() === now.getMonth() && hireDate.getFullYear() === now.getFullYear();
-    }).length
-  };
-
-  if (loading) {
-    return (
-      <ModernDashboardLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      </ModernDashboardLayout>
-    );
-  }
+  // Department counts for stats
+  const departmentCounts = departments.reduce((acc, dept) => {
+    acc[dept] = employees.filter(emp => emp.department === dept).length;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
-    <ModernDashboardLayout>
-      <Head>
-        <title>People Directory | HR System</title>
-      </Head>
-      
-      <div className="container mx-auto px-4 py-8">
-            {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">People Directory</h1>
-              <p className="text-gray-600 mt-2">Manage employees and view directory</p>
-            </div>
-            <button
-              onClick={() => addModal.openModal()}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
-                  >
-                    Add Employee
-            </button>
-          </div>
+    <PageLayout
+      title="People Directory"
+      description="Manage employee information and organization structure"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "People" }
+      ]}
+      actionButton={{
+        label: "Add Employee",
+        onClick: addModal.openModal,
+        icon: <UserPlus className="h-4 w-4" strokeWidth={1.5} />,
+      }}
+    >
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard
+          title="Total Employees"
+          value={employees.length}
+          description="Across all departments"
+          icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
+        />
+        <StatsCard
+          title="Departments"
+          value={departments.length}
+          description="Organization units"
+          icon={<Building className="h-5 w-5" strokeWidth={1.5} />}
+        />
+        <StatsCard
+          title="Locations"
+          value={locations.length}
+          description="Office locations"
+          icon={<MapPin className="h-5 w-5" strokeWidth={1.5} />}
+        />
+        <StatsCard
+          title="New Hires"
+          value="3"
+          description="Last 30 days"
+          icon={<Calendar className="h-5 w-5" strokeWidth={1.5} />}
+        />
+      </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-4 flex items-center">
-                <div className="p-3 bg-blue-100 rounded-full mr-3">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Total Employees</p>
-                  <p className="text-2xl font-bold">{stats.total}</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4 flex items-center">
-                <div className="p-3 bg-green-100 rounded-full mr-3">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Active</p>
-                  <p className="text-2xl font-bold">{stats.active}</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4 flex items-center">
-                <div className="p-3 bg-purple-100 rounded-full mr-3">
-                  <Building className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Departments</p>
-                  <p className="text-2xl font-bold">{stats.departments}</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4 flex items-center">
-                <div className="p-3 bg-yellow-100 rounded-full mr-3">
-                  <User className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">New This Month</p>
-                  <p className="text-2xl font-bold">{stats.newThisMonth}</p>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Search and Filters */}
+      <SearchFilterBar>
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-zinc-400" strokeWidth={1.5} />
           </div>
-
-          {/* Search and Filters */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Search employees..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-4 py-2"
-                />
-              </div>
-              <div className="flex gap-4">
-                <button
-                        onClick={() => setViewMode('cards')}
-                  className={`px-4 py-2 rounded-md ${
-                    viewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
-                  }`}
-                      >
-                        Cards
-                </button>
-                <button
-                    onClick={() => setViewMode('table')}
-                  className={`px-4 py-2 rounded-md ${
-                    viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
-                  }`}
-                      >
-                        Table
-                </button>
-              </div>
-            </div>
-          </div>
+          <input
+            type="text"
+            placeholder="Search employees..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-zinc-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          />
         </div>
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-8">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Employee Grid/Table */}
-        {viewMode === 'cards' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            {filteredEmployees.map(employee => (
-              <Card key={employee.id} className="overflow-hidden hover:shadow-md transition-shadow h-full">
-                <div className="p-6 flex items-center">
-                  <div className="w-16 h-16 rounded-full bg-gray-200 mr-4 overflow-hidden flex-shrink-0">
-                    {employee.avatar ? (
-                      <img src={employee.avatar} alt={employee.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="h-full w-full p-4 text-gray-400" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-lg">{employee.name}</h3>
-                    <p className="text-gray-500">{employee.position}</p>
-                  </div>
-                </div>
-                <CardContent className="pb-2 border-t pt-4">
-                  <div className="space-y-2">
+        
+        <div className="w-full md:w-48">
+          <Select onValueChange={(value) => setSearchTerm(value !== 'all' ? value : '')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Filter by department" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Departments</SelectItem>
+              {departments.map(dept => (
+                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setViewMode('cards')}
+            className={viewMode === 'cards' ? 'bg-zinc-100' : ''}
+          >
+            <Grid className="h-4 w-4" strokeWidth={1.5} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setViewMode('table')}
+            className={viewMode === 'table' ? 'bg-zinc-100' : ''}
+          >
+            <List className="h-4 w-4" strokeWidth={1.5} />
+          </Button>
+        </div>
+      </SearchFilterBar>
+      
+      {/* Employee List */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
+        </div>
+      ) : (
+        <>
+          {viewMode === 'cards' ? (
+            <CardGrid columns={3}>
+              {filteredEmployees.map(employee => (
+                <div key={employee.id} className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+                  <div className="p-5">
                     <div className="flex items-start">
-                      <Mail className="h-4 w-4 text-gray-400 mt-1 mr-2" />
-                      <span className="text-gray-600">{employee.email}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <Building className="h-4 w-4 text-gray-400 mt-1 mr-2" />
-                      <span className="text-gray-600">{employee.department}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <MapPin className="h-4 w-4 text-gray-400 mt-1 mr-2" />
-                      <span className="text-gray-600">{employee.location}</span>
-                    </div>
-                    <div className="flex items-start">
-                      <Phone className="h-4 w-4 text-gray-400 mt-1 mr-2" />
-                      <span className="text-gray-600">{employee.phone}</span>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between pt-2">
-                  <Badge className={employee.status === 'active' ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                    {employee.status === 'active' ? 'Active' : 'Inactive'}
-                                  </Badge>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </CardFooter>
-                  </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Employee
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Department
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredEmployees.map(employee => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-gray-200 overflow-hidden">
-                          {employee.avatar ? (
-                            <img src={employee.avatar} alt={employee.name} className="h-full w-full object-cover" />
-                          ) : (
-                            <User className="h-full w-full p-2 text-gray-400" />
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          <div className="font-medium text-gray-900">{employee.name}</div>
-                          <div className="text-sm text-gray-500">{employee.email}</div>
-                        </div>
+                      <div className="flex-shrink-0 mr-4">
+                        {employee.avatar ? (
+                          <img 
+                            src={employee.avatar} 
+                            alt={employee.name} 
+                            className="h-12 w-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-full bg-zinc-200 flex items-center justify-center">
+                            <User className="h-6 w-6 text-zinc-500" strokeWidth={1.5} />
+                          </div>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{employee.department}</div>
-                      <div className="text-sm text-gray-500">{employee.position}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {employee.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className={employee.status === 'active' ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                        {employee.status === 'active' ? 'Active' : 'Inactive'}
-                                  </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => router.push(`/people/${employee.id}`)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleEdit(employee)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-lg font-medium text-zinc-900 truncate">{employee.name}</h2>
+                        <p className="mt-1 text-sm text-zinc-500 flex items-center">
+                          <Briefcase className="w-3 h-3 mr-1 inline" strokeWidth={1.5} />
+                          {employee.position}
+                        </p>
+                        <p className="mt-1 text-sm text-zinc-500 flex items-center">
+                          <Building className="w-3 h-3 mr-1 inline" strokeWidth={1.5} />
+                          {employee.department}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm text-zinc-500 flex items-center">
+                        <Mail className="w-4 h-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                        {employee.email}
+                      </p>
+                      {employee.phone && (
+                        <p className="text-sm text-zinc-500 flex items-center">
+                          <Phone className="w-4 h-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                          {employee.phone}
+                        </p>
+                      )}
+                      {employee.location && (
+                        <p className="text-sm text-zinc-500 flex items-center">
+                          <MapPin className="w-4 h-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                          {employee.location}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="mt-5 flex justify-end space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(employee)}>
+                        <Edit className="h-3 w-3 mr-1" strokeWidth={1.5} />
                         Edit
-                      </button>
-                      <button
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                         onClick={() => {
                           setSelectedEmployee(employee);
                           deleteModal.openModal();
                         }}
-                        className="text-red-600 hover:text-red-900"
                       >
+                        <Trash2 className="h-3 w-3 mr-1" strokeWidth={1.5} />
                         Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-700">
-              Showing {((currentPage - 1) * 12) + 1} to {Math.min(currentPage * 12, filteredItems.length)} of {filteredItems.length} results
-            </p>
-            <div className="flex space-x-2">
-              <button
-                onClick={prevPage}
-                disabled={!hasPrev}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <span className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-900">
-                {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={nextPage}
-                disabled={!hasNext}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Add/Edit Employee Modal */}
-        {(addModal.isOpen || editModal.isOpen) && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-90vh overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                {editModal.isOpen ? 'Edit Employee' : 'Add New Employee'}
-              </h3>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
               
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+              {filteredEmployees.length === 0 && (
+                <div className="col-span-full flex justify-center items-center h-64 bg-zinc-50 rounded-lg border border-zinc-200">
+                  <div className="text-center">
+                    <User className="h-10 w-10 text-zinc-400 mx-auto mb-3" strokeWidth={1.5} />
+                    <h3 className="text-zinc-500 text-lg">No employees found</h3>
+                    <p className="text-zinc-400 text-sm mt-1">Try adjusting your search or filters</p>
+                  </div>
+                </div>
+              )}
+            </CardGrid>
+          ) : (
+            <div className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+              <table className="min-w-full divide-y divide-zinc-200">
+                <thead className="bg-zinc-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Employee</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Department</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Position</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-zinc-200">
+                  {filteredEmployees.map(employee => (
+                    <tr key={employee.id} className="hover:bg-zinc-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            {employee.avatar ? (
+                              <img 
+                                src={employee.avatar} 
+                                alt={employee.name} 
+                                className="h-10 w-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center">
+                                <User className="h-5 w-5 text-zinc-500" strokeWidth={1.5} />
+                              </div>
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-zinc-900">{employee.name}</div>
+                            <div className="text-sm text-zinc-500">{employee.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-zinc-900">{employee.department}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-zinc-900">{employee.position}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-zinc-900">{employee.location}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                          employee.status === 'active' ? 'bg-green-100 text-green-800' : 
+                          employee.status === 'inactive' ? 'bg-red-100 text-red-800' : 
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {employee.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(employee)}>
+                          <Edit className="h-4 w-4" strokeWidth={1.5} />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => {
+                            setSelectedEmployee(employee);
+                            deleteModal.openModal();
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              {filteredEmployees.length === 0 && (
+                <div className="flex justify-center items-center h-64 bg-white">
+                  <div className="text-center">
+                    <User className="h-10 w-10 text-zinc-400 mx-auto mb-3" strokeWidth={1.5} />
+                    <h3 className="text-zinc-500 text-lg">No employees found</h3>
+                    <p className="text-zinc-400 text-sm mt-1">Try adjusting your search or filters</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+      
+      {/* Add Employee Modal */}
+      {addModal.isOpen && (
+        <Dialog open={true} onOpenChange={() => addModal.closeModal()}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add New Employee</DialogTitle>
+              <DialogDescription>
+                Enter the employee details below to add them to the directory.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label htmlFor="name" className="block text-sm font-medium text-zinc-700">
                       Full Name
                     </label>
-                    <input
-                      type="text"
+                    <Input
+                      id="name"
+                      name="name"
                       value={form.values.name}
-                      onChange={(e) => form.setValue('name', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      onChange={handleInputChange}
                       required
+                      className="mt-1"
                     />
-                    {form.errors.name && (
-                      <p className="text-red-600 text-sm mt-1">{form.errors.name}</p>
-                    )}
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
+                  
+                  <div className="col-span-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
+                      Email Address
                     </label>
-                    <input
+                    <Input
+                      id="email"
+                      name="email"
                       type="email"
                       value={form.values.email}
-                      onChange={(e) => form.setValue('email', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      onChange={handleInputChange}
                       required
+                      className="mt-1"
                     />
-                    {form.errors.email && (
-                      <p className="text-red-600 text-sm mt-1">{form.errors.email}</p>
-                    )}
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Department
-                      </label>
-                      <select
-                        value={form.values.department}
-                        onChange={(e) => form.setValue('department', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      >
-                        <option value="">Select department</option>
+                  
+                  <div>
+                    <label htmlFor="department" className="block text-sm font-medium text-zinc-700">
+                      Department
+                    </label>
+                    <Select 
+                      name="department" 
+                      value={form.values.department}
+                      onValueChange={(value) => form.setValue('department', value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
                         {departments.map(dept => (
-                        <option key={dept} value={dept}>{dept}</option>
-                      ))}
-                      </select>
-                      {form.errors.department && (
-                        <p className="text-red-600 text-sm mt-1">{form.errors.department}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Position
-                      </label>
-                      <input
-                        type="text"
-                        value={form.values.position}
-                        onChange={(e) => form.setValue('position', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Location
-                      </label>
-                      <select
-                        value={form.values.location}
-                        onChange={(e) => form.setValue('location', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      >
-                        <option value="">Select location</option>
-                        {locations.map(loc => (
-                          <option key={loc} value={loc}>{loc}</option>
+                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                         ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        value={form.values.phone}
-                        onChange={(e) => form.setValue('phone', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
+                      </SelectContent>
+                    </Select>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Salary
-                      </label>
-                      <input
-                        type="number"
-                        value={form.values.salary}
-                        onChange={(e) => form.setValue('salary', parseInt(e.target.value))}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Hire Date
-                      </label>
-                      <input
-                        type="date"
-                        value={form.values.hire_date}
-                        onChange={(e) => form.setValue('hire_date', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      />
-                    </div>
+                  
+                  <div>
+                    <label htmlFor="position" className="block text-sm font-medium text-zinc-700">
+                      Position
+                    </label>
+                    <Input
+                      id="position"
+                      name="position"
+                      value={form.values.position}
+                      onChange={handleInputChange}
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="location" className="block text-sm font-medium text-zinc-700">
+                      Location
+                    </label>
+                    <Select 
+                      name="location" 
+                      value={form.values.location}
+                      onValueChange={(value) => form.setValue('location', value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select location" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {locations.map(loc => (
+                          <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-zinc-700">
+                      Phone Number
+                    </label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={form.values.phone}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="hire_date" className="block text-sm font-medium text-zinc-700">
+                      Hire Date
+                    </label>
+                    <Input
+                      id="hire_date"
+                      name="hire_date"
+                      type="date"
+                      value={form.values.hire_date}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="salary" className="block text-sm font-medium text-zinc-700">
+                      Salary
+                    </label>
+                    <Input
+                      id="salary"
+                      name="salary"
+                      type="number"
+                      value={form.values.salary}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
                   </div>
                 </div>
-
-                <div className="flex space-x-4 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      addModal.closeModal();
-                      editModal.closeModal();
-                      form.reset();
-                      setSelectedEmployee(null);
-                    }}
-                    className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Saving...' : editModal.isOpen ? 'Update Employee' : 'Add Employee'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {deleteModal.isOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Employee</h3>
-              <p className="text-gray-600 mb-4">
-                Are you sure you want to delete {selectedEmployee?.name}? This action cannot be undone.
-              </p>
-
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => {
-                    deleteModal.closeModal();
-                    setSelectedEmployee(null);
-                  }}
-                  className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-                  disabled={isSubmitting}
-                >
+              </div>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => addModal.closeModal()} disabled={isSubmitting}>
                   Cancel
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Deleting...' : 'Delete Employee'}
-                </button>
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Add Employee'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Edit Employee Modal */}
+      {editModal.isOpen && (
+        <Dialog open={true} onOpenChange={() => editModal.closeModal()}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit Employee</DialogTitle>
+              <DialogDescription>
+                Update the employee details.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label htmlFor="edit-name" className="block text-sm font-medium text-zinc-700">
+                      Full Name
+                    </label>
+                    <Input
+                      id="edit-name"
+                      name="name"
+                      value={form.values.name}
+                      onChange={handleInputChange}
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div className="col-span-2">
+                    <label htmlFor="edit-email" className="block text-sm font-medium text-zinc-700">
+                      Email Address
+                    </label>
+                    <Input
+                      id="edit-email"
+                      name="email"
+                      type="email"
+                      value={form.values.email}
+                      onChange={handleInputChange}
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-department" className="block text-sm font-medium text-zinc-700">
+                      Department
+                    </label>
+                    <Select 
+                      name="department" 
+                      value={form.values.department}
+                      onValueChange={(value) => form.setValue('department', value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map(dept => (
+                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-position" className="block text-sm font-medium text-zinc-700">
+                      Position
+                    </label>
+                    <Input
+                      id="edit-position"
+                      name="position"
+                      value={form.values.position}
+                      onChange={handleInputChange}
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-location" className="block text-sm font-medium text-zinc-700">
+                      Location
+                    </label>
+                    <Select 
+                      name="location" 
+                      value={form.values.location}
+                      onValueChange={(value) => form.setValue('location', value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select location" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {locations.map(loc => (
+                          <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-phone" className="block text-sm font-medium text-zinc-700">
+                      Phone Number
+                    </label>
+                    <Input
+                      id="edit-phone"
+                      name="phone"
+                      value={form.values.phone}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-hire_date" className="block text-sm font-medium text-zinc-700">
+                      Hire Date
+                    </label>
+                    <Input
+                      id="edit-hire_date"
+                      name="hire_date"
+                      type="date"
+                      value={form.values.hire_date}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="edit-salary" className="block text-sm font-medium text-zinc-700">
+                      Salary
+                    </label>
+                    <Input
+                      id="edit-salary"
+                      name="salary"
+                      type="number"
+                      value={form.values.salary}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Toast Notifications */}
-        <div className="fixed top-4 right-4 z-50 space-y-2">
-          {toast.toasts.map(t => (
-            <div
-              key={t.id}
-              className={`px-6 py-3 rounded-lg shadow-lg text-white ${
-                t.type === 'success' ? 'bg-green-500' :
-                t.type === 'error' ? 'bg-red-500' :
-                t.type === 'warning' ? 'bg-yellow-500' :
-                'bg-blue-500'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <span>{t.message}</span>
-                <button
-                  onClick={() => toast.removeToast(t.id)}
-                  className="ml-2 text-white hover:text-gray-200"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </ModernDashboardLayout>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => editModal.closeModal()} disabled={isSubmitting}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Update Employee'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <Dialog open={true} onOpenChange={() => deleteModal.closeModal()}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to remove {selectedEmployee?.name} from the directory? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <DialogFooter className="sm:justify-end">
+              <Button type="button" variant="outline" onClick={() => deleteModal.closeModal()} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={handleDelete} 
+                disabled={isSubmitting}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isSubmitting ? 'Deleting...' : 'Delete Employee'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </PageLayout>
   );
 };
 
+export default PeopleDirectory;
 
-// Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {}
   };
-};
-
-
-export default PeopleDirectory; 
+}; 
