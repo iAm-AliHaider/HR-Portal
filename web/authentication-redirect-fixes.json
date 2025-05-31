@@ -20,10 +20,5 @@
     "/candidate",
     "/careers"
   ],
-  "fallbackPages": [
-    "/admin",
-    "/interviewer",
-    "/hiring",
-    "/jobs/[id]/edit"
-  ]
+  "fallbackPages": ["/admin", "/interviewer", "/hiring", "/jobs/[id]/edit"]
 }

@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
-import React from 'react';
-import { 
+import React from "react";
+
+import {
   Tabs as ChakraTabs,
   TabList as ChakraTabList,
   Tab as ChakraTab,
@@ -11,8 +12,8 @@ import {
   TabListProps as ChakraTabListProps,
   TabProps as ChakraTabProps,
   TabPanelsProps as ChakraTabPanelsProps,
-  TabPanelProps as ChakraTabPanelProps
-} from '@chakra-ui/react';
+  TabPanelProps as ChakraTabPanelProps,
+} from "@chakra-ui/react";
 
 // Tabs Container - Enhanced to manage panels
 export interface TabsProps extends ChakraTabsProps {
@@ -24,20 +25,28 @@ export interface TabsProps extends ChakraTabsProps {
 const Tabs = ({ children, defaultValue, value, ...props }: TabsProps) => {
   // Extract TabsList and TabsContent from children
   const childrenArray = React.Children.toArray(children);
-  const tabsList = childrenArray.find((child: any) => child?.type?.displayName === 'TabsList');
-  const tabsContents = childrenArray.filter((child: any) => child?.type?.displayName === 'TabsContent');
+  const tabsList = childrenArray.find(
+    (child: any) => child?.type?.displayName === "TabsList",
+  );
+  const tabsContents = childrenArray.filter(
+    (child: any) => child?.type?.displayName === "TabsContent",
+  );
 
   // Convert defaultValue/value to index for Chakra
   let defaultIndex = 0;
   let index;
-  
+
   if (defaultValue && tabsContents.length > 0) {
-    const foundIndex = tabsContents.findIndex((content: any) => content?.props?.value === defaultValue);
+    const foundIndex = tabsContents.findIndex(
+      (content: any) => content?.props?.value === defaultValue,
+    );
     if (foundIndex !== -1) defaultIndex = foundIndex;
   }
-  
+
   if (value && tabsContents.length > 0) {
-    const foundIndex = tabsContents.findIndex((content: any) => content?.props?.value === value);
+    const foundIndex = tabsContents.findIndex(
+      (content: any) => content?.props?.value === value,
+    );
     if (foundIndex !== -1) index = foundIndex;
   }
 
@@ -50,9 +59,7 @@ const Tabs = ({ children, defaultValue, value, ...props }: TabsProps) => {
       {...props}
     >
       {tabsList}
-      <ChakraTabPanels>
-        {tabsContents}
-      </ChakraTabPanels>
+      <ChakraTabPanels>{tabsContents}</ChakraTabPanels>
     </ChakraTabs>
   );
 };
@@ -69,7 +76,7 @@ const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
         {children}
       </ChakraTabList>
     );
-  }
+  },
 );
 
 TabsList.displayName = "TabsList";
@@ -86,7 +93,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         {children}
       </ChakraTab>
     );
-  }
+  },
 );
 
 TabsTrigger.displayName = "TabsTrigger";
@@ -103,14 +110,9 @@ const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
         {children}
       </ChakraTabPanel>
     );
-  }
+  },
 );
 
 TabsContent.displayName = "TabsContent";
 
-export { 
-  Tabs, 
-  TabsList, 
-  TabsTrigger, 
-  TabsContent 
-}; 
+export { Tabs, TabsList, TabsTrigger, TabsContent };

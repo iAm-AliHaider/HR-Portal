@@ -1,6 +1,7 @@
 import { useState } from "react";
+
 import { useRouter } from "next/router";
-import { useAuth } from "@/hooks/useAuth";
+
 import {
   Users,
   Settings,
@@ -22,7 +23,14 @@ import {
   UserPlus,
 } from "lucide-react";
 
-import { PageLayout, StatsCard, CardGrid, EmptyState, Card } from "@/components/layout/PageLayout";
+import {
+  PageLayout,
+  StatsCard,
+  CardGrid,
+  EmptyState,
+  Card,
+} from "@/components/layout/PageLayout";
+import { useAuth } from "@/hooks/useAuth";
 
 // Types for the administration page
 interface AdminSection {
@@ -115,7 +123,7 @@ const AdminPage = () => {
       description: "Manage company policies and compliance",
       icon: <FileText strokeWidth={1.5} />,
       path: "/settings/policies",
-    }
+    },
   ];
 
   return (
@@ -129,7 +137,9 @@ const AdminPage = () => {
     >
       {/* System Stats */}
       <div className="mb-8">
-        <h2 className="text-lg font-medium mb-4 text-zinc-900">System Overview</h2>
+        <h2 className="text-lg font-medium mb-4 text-zinc-900">
+          System Overview
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="Total Users"
@@ -160,32 +170,32 @@ const AdminPage = () => {
 
       {/* Quick Actions */}
       <div className="mb-8">
-        <h2 className="text-lg font-medium mb-4 text-zinc-900">Quick Actions</h2>
+        <h2 className="text-lg font-medium mb-4 text-zinc-900">
+          Quick Actions
+        </h2>
         <div className="flex flex-wrap gap-3">
-          <button 
-            onClick={() => router.push('/admin/user-management')}
+          <button
+            onClick={() => router.push("/admin/user-management")}
             className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
             <UserPlus className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Add User
           </button>
-          <button 
-            onClick={() => router.push('/settings/roles')}
+          <button
+            onClick={() => router.push("/settings/roles")}
             className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
             <Shield className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Manage Roles
           </button>
-          <button 
-            onClick={() => router.push('/settings/security')}
+          <button
+            onClick={() => router.push("/settings/security")}
             className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
           >
             <Lock className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Security Settings
           </button>
-          <button 
-            className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
-          >
+          <button className="inline-flex items-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50">
             <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
             Backup Data
           </button>
@@ -194,7 +204,9 @@ const AdminPage = () => {
 
       {/* Admin Sections */}
       <div>
-        <h2 className="text-lg font-medium mb-4 text-zinc-900">Administration Modules</h2>
+        <h2 className="text-lg font-medium mb-4 text-zinc-900">
+          Administration Modules
+        </h2>
         <CardGrid>
           {adminSections.map((section) => (
             <Card
@@ -211,8 +223,12 @@ const AdminPage = () => {
       {/* Recent Activity */}
       <div className="mt-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium text-zinc-900">Recent System Activity</h2>
-          <button className="text-sm text-zinc-500 hover:text-zinc-900">View all</button>
+          <h2 className="text-lg font-medium text-zinc-900">
+            Recent System Activity
+          </h2>
+          <button className="text-sm text-zinc-500 hover:text-zinc-900">
+            View all
+          </button>
         </div>
         <div className="rounded-md border border-zinc-200 bg-white shadow-sm overflow-hidden">
           <div className="p-4 border-b border-zinc-200 bg-zinc-50">
@@ -224,16 +240,38 @@ const AdminPage = () => {
           </div>
           <div className="divide-y divide-zinc-200">
             {[
-              { time: "2 mins ago", user: "Admin", action: "Updated user role for John Smith" },
-              { time: "1 hour ago", user: "System", action: "Scheduled backup completed successfully" },
-              { time: "3 hours ago", user: "Diana Wong", action: "Modified workflow for leave approvals" },
-              { time: "Yesterday", user: "System", action: "User account synced with directory service" },
-              { time: "2 days ago", user: "Admin", action: "Added new custom field to employee profiles" },
+              {
+                time: "2 mins ago",
+                user: "Admin",
+                action: "Updated user role for John Smith",
+              },
+              {
+                time: "1 hour ago",
+                user: "System",
+                action: "Scheduled backup completed successfully",
+              },
+              {
+                time: "3 hours ago",
+                user: "Diana Wong",
+                action: "Modified workflow for leave approvals",
+              },
+              {
+                time: "Yesterday",
+                user: "System",
+                action: "User account synced with directory service",
+              },
+              {
+                time: "2 days ago",
+                user: "Admin",
+                action: "Added new custom field to employee profiles",
+              },
             ].map((item, i) => (
               <div key={i} className="p-4">
                 <div className="flex items-center text-sm">
                   <span className="w-32 text-zinc-500">{item.time}</span>
-                  <span className="w-32 font-medium text-zinc-900">{item.user}</span>
+                  <span className="w-32 font-medium text-zinc-900">
+                    {item.user}
+                  </span>
                   <span className="flex-1 text-zinc-700">{item.action}</span>
                 </div>
               </div>
@@ -245,4 +283,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage; 
+export default AdminPage;

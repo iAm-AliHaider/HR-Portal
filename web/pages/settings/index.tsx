@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import { useAuth } from '@/hooks/useAuth';
+import { useState } from "react";
+
+import { useRouter } from "next/router";
+
 import {
   Settings,
   Building,
@@ -19,9 +20,10 @@ import {
   Info,
   Calendar,
   HardDrive,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { PageLayout, CardGrid, Card } from '@/components/layout/PageLayout';
+import { PageLayout, CardGrid, Card } from "@/components/layout/PageLayout";
+import { useAuth } from "@/hooks/useAuth";
 
 // Define types for settings categories
 interface SettingCategory {
@@ -40,96 +42,97 @@ const SettingsPage = () => {
   // Define settings categories with their access permissions
   const settingsCategories: SettingCategory[] = [
     {
-      name: 'Company Settings',
-      description: 'Configure organization details, branding, and global settings',
-      href: '/settings/company',
+      name: "Company Settings",
+      description:
+        "Configure organization details, branding, and global settings",
+      href: "/settings/company",
       icon: <Building strokeWidth={1.5} />,
-      access: ['admin', 'hr_director']
+      access: ["admin", "hr_director"],
     },
     {
-      name: 'User Roles & Permissions',
-      description: 'Manage user roles, access controls, and permissions',
-      href: '/settings/roles',
+      name: "User Roles & Permissions",
+      description: "Manage user roles, access controls, and permissions",
+      href: "/settings/roles",
       icon: <Shield strokeWidth={1.5} />,
-      access: ['admin', 'hr_director']
+      access: ["admin", "hr_director"],
     },
     {
-      name: 'Workflow Management',
-      description: 'Configure approval workflows and business processes',
-      href: '/settings/workflow-manager',
+      name: "Workflow Management",
+      description: "Configure approval workflows and business processes",
+      href: "/settings/workflow-manager",
       icon: <Layers strokeWidth={1.5} />,
-      access: ['admin', 'hr_director', 'hr_manager']
+      access: ["admin", "hr_director", "hr_manager"],
     },
     {
-      name: 'Notifications',
-      description: 'Configure email templates and notification preferences',
-      href: '/settings/notifications',
+      name: "Notifications",
+      description: "Configure email templates and notification preferences",
+      href: "/settings/notifications",
       icon: <Bell strokeWidth={1.5} />,
-      access: ['admin', 'hr_director', 'hr_manager']
+      access: ["admin", "hr_director", "hr_manager"],
     },
     {
-      name: 'Policy Management',
-      description: 'Manage company policies and compliance documents',
-      href: '/settings/policies',
+      name: "Policy Management",
+      description: "Manage company policies and compliance documents",
+      href: "/settings/policies",
       icon: <FileText strokeWidth={1.5} />,
-      access: ['admin', 'hr_director', 'hr_manager', 'compliance_manager']
+      access: ["admin", "hr_director", "hr_manager", "compliance_manager"],
     },
     {
-      name: 'Payroll Settings',
-      description: 'Configure payroll calculations, taxes, and compliance',
-      href: '/settings/payroll',
+      name: "Payroll Settings",
+      description: "Configure payroll calculations, taxes, and compliance",
+      href: "/settings/payroll",
       icon: <DollarSign strokeWidth={1.5} />,
-      access: ['admin', 'hr_director', 'finance_manager']
+      access: ["admin", "hr_director", "finance_manager"],
     },
     {
-      name: 'User Management',
-      description: 'Manage user accounts and permissions',
-      href: '/admin/user-management',
+      name: "User Management",
+      description: "Manage user accounts and permissions",
+      href: "/admin/user-management",
       icon: <Users strokeWidth={1.5} />,
-      access: ['admin', 'hr_director']
+      access: ["admin", "hr_director"],
     },
     {
-      name: 'Security Settings',
-      description: 'Configure security policies and access controls',
-      href: '/settings/security',
+      name: "Security Settings",
+      description: "Configure security policies and access controls",
+      href: "/settings/security",
       icon: <Lock strokeWidth={1.5} />,
-      access: ['admin']
+      access: ["admin"],
     },
     {
-      name: 'Integrations',
-      description: 'Connect with third-party services and applications',
-      href: '/settings/integrations',
+      name: "Integrations",
+      description: "Connect with third-party services and applications",
+      href: "/settings/integrations",
       icon: <Server strokeWidth={1.5} />,
-      access: ['admin'],
-      isNew: true
+      access: ["admin"],
+      isNew: true,
     },
     {
-      name: 'Data Management',
-      description: 'Manage data imports, exports, and retention policies',
-      href: '/settings/data-management',
+      name: "Data Management",
+      description: "Manage data imports, exports, and retention policies",
+      href: "/settings/data-management",
       icon: <Database strokeWidth={1.5} />,
-      access: ['admin']
+      access: ["admin"],
     },
     {
-      name: 'Internationalization',
-      description: 'Configure language, date formats, and regional settings',
-      href: '/settings/internationalization',
+      name: "Internationalization",
+      description: "Configure language, date formats, and regional settings",
+      href: "/settings/internationalization",
       icon: <Globe strokeWidth={1.5} />,
-      access: ['admin', 'hr_director']
+      access: ["admin", "hr_director"],
     },
     {
-      name: 'System Logs',
-      description: 'View system activity and audit trails',
-      href: '/logs',
+      name: "System Logs",
+      description: "View system activity and audit trails",
+      href: "/logs",
       icon: <FileText strokeWidth={1.5} />,
-      access: ['admin']
-    }
+      access: ["admin"],
+    },
   ];
 
   // Filter settings based on user role
-  const filteredSettings = settingsCategories.filter(category => {
+  const filteredSettings = settingsCategories.filter((category) => {
     if (!category.access) return true;
-    return category.access.includes(role || '') || role === 'admin';
+    return category.access.includes(role || "") || role === "admin";
   });
 
   return (
@@ -138,7 +141,7 @@ const SettingsPage = () => {
       description="Configure system settings and preferences"
       breadcrumbs={[
         { label: "Dashboard", href: "/dashboard" },
-        { label: "Settings" }
+        { label: "Settings" },
       ]}
     >
       <CardGrid columns={3}>
@@ -151,7 +154,9 @@ const SettingsPage = () => {
             onClick={() => router.push(category.href)}
           >
             {category.isNew && (
-              <span className="absolute top-4 right-4 bg-zinc-900 text-white text-xs px-2 py-0.5 rounded-full">NEW</span>
+              <span className="absolute top-4 right-4 bg-zinc-900 text-white text-xs px-2 py-0.5 rounded-full">
+                NEW
+              </span>
             )}
           </Card>
         ))}
@@ -161,7 +166,9 @@ const SettingsPage = () => {
       <div className="mt-12 rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex items-center mb-4">
           <Info className="h-5 w-5 mr-2 text-zinc-700" strokeWidth={1.5} />
-          <h2 className="text-lg font-medium text-zinc-900">System Information</h2>
+          <h2 className="text-lg font-medium text-zinc-900">
+            System Information
+          </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="border border-zinc-200 rounded-md p-4">
@@ -192,7 +199,9 @@ const SettingsPage = () => {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm text-zinc-500">Status</span>
-                <span className="text-sm font-medium text-green-600">Healthy</span>
+                <span className="text-sm font-medium text-green-600">
+                  Healthy
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-zinc-500">Last Backup</span>
@@ -230,4 +239,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage; 
+export default SettingsPage;

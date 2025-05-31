@@ -1,12 +1,15 @@
-"use client"
+"use client";
 
-import React from 'react';
-import { Box, Input } from '@chakra-ui/react';
+import React from "react";
+
+import { Box, Input } from "@chakra-ui/react";
 
 export interface CalendarProps {
-  mode?: 'single' | 'multiple' | 'range';
+  mode?: "single" | "multiple" | "range";
   selected?: Date | Date[] | { from: Date; to: Date };
-  onSelect?: (date: Date | Date[] | { from: Date; to: Date } | undefined) => void;
+  onSelect?: (
+    date: Date | Date[] | { from: Date; to: Date } | undefined,
+  ) => void;
   disabled?: (date: Date) => boolean;
   className?: string;
   classNames?: any;
@@ -19,7 +22,7 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   captionLayout = "dropdown",
-  mode = 'single',
+  mode = "single",
   selected,
   onSelect,
   disabled,
@@ -34,8 +37,8 @@ function Calendar({
     }
   };
 
-  const dateValue = selected instanceof Date ? 
-    selected.toISOString().split('T')[0] : '';
+  const dateValue =
+    selected instanceof Date ? selected.toISOString().split("T")[0] : "";
 
   return (
     <Box className={className}>
@@ -52,4 +55,4 @@ function Calendar({
 
 Calendar.displayName = "Calendar";
 
-export { Calendar }; 
+export { Calendar };

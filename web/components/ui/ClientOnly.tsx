@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface ClientOnlyProps {
   children: React.ReactNode;
@@ -9,7 +9,10 @@ interface ClientOnlyProps {
  * Component that only renders its children on the client-side
  * Useful for components that have hydration mismatches or client-only dependencies
  */
-const ClientOnly: React.FC<ClientOnlyProps> = ({ children, fallback = null }) => {
+const ClientOnly: React.FC<ClientOnlyProps> = ({
+  children,
+  fallback = null,
+}) => {
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -23,4 +26,4 @@ const ClientOnly: React.FC<ClientOnlyProps> = ({ children, fallback = null }) =>
   return <>{children}</>;
 };
 
-export default ClientOnly; 
+export default ClientOnly;

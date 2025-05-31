@@ -1,5 +1,9 @@
-import React from 'react';
-import { Textarea as ChakraTextarea, TextareaProps as ChakraTextareaProps } from '@chakra-ui/react';
+import React from "react";
+
+import {
+  Textarea as ChakraTextarea,
+  TextareaProps as ChakraTextareaProps,
+} from "@chakra-ui/react";
 
 export interface TextareaProps extends ChakraTextareaProps {}
 
@@ -14,9 +18,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 Textarea.displayName = "Textarea";
 
-export { Textarea }; 
+export { Textarea };

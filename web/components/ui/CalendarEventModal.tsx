@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from './button';
-import { CalendarEvent } from '@/services/calendar';
+import React, { useState, useEffect } from "react";
+
+import { CalendarEvent } from "@/services/calendar";
+
+import { Button } from "./button";
 
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (event: Omit<CalendarEvent, 'id'> | CalendarEvent) => void;
+  onSave: (event: Omit<CalendarEvent, "id"> | CalendarEvent) => void;
   event?: CalendarEvent;
   isEditMode?: boolean;
 }
 
 const eventTypes = [
-  { value: 'meeting', label: 'Meeting' },
-  { value: 'interview', label: 'Interview' },
-  { value: 'deadline', label: 'Deadline' },
-  { value: 'review', label: 'Review' },
-  { value: 'event', label: 'Event' }
+  { value: "meeting", label: "Meeting" },
+  { value: "interview", label: "Interview" },
+  { value: "deadline", label: "Deadline" },
+  { value: "review", label: "Review" },
+  { value: "event", label: "Event" },
 ];
 
 const CalendarEventModal: React.FC<EventModalProps> = ({
@@ -23,22 +25,22 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
   onClose,
   onSave,
   event,
-  isEditMode = false
+  isEditMode = false,
 }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [type, setType] = useState<CalendarEvent['type']>('meeting');
-  const [startDate, setStartDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [attendees, setAttendees] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [type, setType] = useState<CalendarEvent["type"]>("meeting");
+  const [startDate, setStartDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [attendees, setAttendees] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Format date and time for input fields
   const formatDateForInput = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   };
 
   const formatTimeForInput = (date: Date) => {
@@ -49,63 +51,63 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
   useEffect(() => {
     if (event) {
       setTitle(event.title);
-      setDescription(event.description || '');
-      setLocation(event.location || '');
+      setDescription(event.description || "");
+      setLocation(event.location || "");
       setType(event.type);
       setStartDate(formatDateForInput(event.start));
       setStartTime(formatTimeForInput(event.start));
       setEndDate(formatDateForInput(event.end));
       setEndTime(formatTimeForInput(event.end));
-      setAttendees(event.attendees?.join(', ') || '');
+      setAttendees(event.attendees?.join(", ") || "");
     } else {
       // Default to current date and time for new events
       const now = new Date();
       const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-      
-      setTitle('');
-      setDescription('');
-      setLocation('');
-      setType('meeting');
+
+      setTitle("");
+      setDescription("");
+      setLocation("");
+      setType("meeting");
       setStartDate(formatDateForInput(now));
       setStartTime(formatTimeForInput(now));
       setEndDate(formatDateForInput(oneHourLater));
       setEndTime(formatTimeForInput(oneHourLater));
-      setAttendees('');
+      setAttendees("");
     }
   }, [event, isOpen]);
 
   // Validate form
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
-    
+
     if (!startDate) {
-      newErrors.startDate = 'Start date is required';
+      newErrors.startDate = "Start date is required";
     }
-    
+
     if (!startTime) {
-      newErrors.startTime = 'Start time is required';
+      newErrors.startTime = "Start time is required";
     }
-    
+
     if (!endDate) {
-      newErrors.endDate = 'End date is required';
+      newErrors.endDate = "End date is required";
     }
-    
+
     if (!endTime) {
-      newErrors.endTime = 'End time is required';
+      newErrors.endTime = "End time is required";
     }
-    
+
     // Check if end date/time is after start date/time
     const startDateTime = new Date(`${startDate}T${startTime}`);
     const endDateTime = new Date(`${endDate}T${endTime}`);
-    
+
     if (endDateTime <= startDateTime) {
-      newErrors.endTime = 'End time must be after start time';
+      newErrors.endTime = "End time must be after start time";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -113,34 +115,34 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     const start = new Date(`${startDate}T${startTime}`);
     const end = new Date(`${endDate}T${endTime}`);
     const attendeesList = attendees
-      .split(',')
-      .map(email => email.trim())
-      .filter(email => email !== '');
-    
-    const eventData: Omit<CalendarEvent, 'id'> = {
+      .split(",")
+      .map((email) => email.trim())
+      .filter((email) => email !== "");
+
+    const eventData: Omit<CalendarEvent, "id"> = {
       title,
       description,
       location,
       type,
       start,
       end,
-      attendees: attendeesList
+      attendees: attendeesList,
     };
-    
+
     if (isEditMode && event?.id) {
       onSave({ ...eventData, id: event.id });
     } else {
       onSave(eventData);
     }
-    
+
     onClose();
   };
 
@@ -152,29 +154,39 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-lg shadow-xl w-full max-w-md"
         onClick={handleModalClick}
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold">
-              {isEditMode ? 'Edit Event' : 'Create New Event'}
+              {isEditMode ? "Edit Event" : "Create New Event"}
             </h3>
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               {/* Title */}
@@ -187,7 +199,7 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md ${
-                    errors.title ? 'border-red-500' : 'border-gray-300'
+                    errors.title ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Event title"
                 />
@@ -195,7 +207,7 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                   <p className="mt-1 text-sm text-red-600">{errors.title}</p>
                 )}
               </div>
-              
+
               {/* Event Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -203,7 +215,9 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                 </label>
                 <select
                   value={type}
-                  onChange={(e) => setType(e.target.value as CalendarEvent['type'])}
+                  onChange={(e) =>
+                    setType(e.target.value as CalendarEvent["type"])
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
                 >
                   {eventTypes.map((type) => (
@@ -213,7 +227,7 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                   ))}
                 </select>
               </div>
-              
+
               {/* Start Date/Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -225,11 +239,13 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-md ${
-                      errors.startDate ? 'border-red-500' : 'border-gray-300'
+                      errors.startDate ? "border-red-500" : "border-gray-300"
                     }`}
                   />
                   {errors.startDate && (
-                    <p className="mt-1 text-sm text-red-600">{errors.startDate}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.startDate}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -241,15 +257,17 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-md ${
-                      errors.startTime ? 'border-red-500' : 'border-gray-300'
+                      errors.startTime ? "border-red-500" : "border-gray-300"
                     }`}
                   />
                   {errors.startTime && (
-                    <p className="mt-1 text-sm text-red-600">{errors.startTime}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.startTime}
+                    </p>
                   )}
                 </div>
               </div>
-              
+
               {/* End Date/Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -261,11 +279,13 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-md ${
-                      errors.endDate ? 'border-red-500' : 'border-gray-300'
+                      errors.endDate ? "border-red-500" : "border-gray-300"
                     }`}
                   />
                   {errors.endDate && (
-                    <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.endDate}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -277,15 +297,17 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-md ${
-                      errors.endTime ? 'border-red-500' : 'border-gray-300'
+                      errors.endTime ? "border-red-500" : "border-gray-300"
                     }`}
                   />
                   {errors.endTime && (
-                    <p className="mt-1 text-sm text-red-600">{errors.endTime}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.endTime}
+                    </p>
                   )}
                 </div>
               </div>
-              
+
               {/* Location */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -299,7 +321,7 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                   placeholder="Event location (optional)"
                 />
               </div>
-              
+
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -313,7 +335,7 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                   placeholder="Event description (optional)"
                 />
               </div>
-              
+
               {/* Attendees */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -331,13 +353,18 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-6 flex justify-end space-x-2">
-              <Button variant="outline" size="sm" type="button" onClick={onClose}>
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={onClose}
+              >
                 Cancel
               </Button>
               <Button variant="default" size="sm" type="submit">
-                {isEditMode ? 'Update Event' : 'Create Event'}
+                {isEditMode ? "Update Event" : "Create Event"}
               </Button>
             </div>
           </form>
@@ -347,4 +374,4 @@ const CalendarEventModal: React.FC<EventModalProps> = ({
   );
 };
 
-export default CalendarEventModal; 
+export default CalendarEventModal;

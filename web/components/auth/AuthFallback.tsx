@@ -1,8 +1,11 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Lock, User, ArrowRight } from 'lucide-react';
+import React from "react";
+
+import Link from "next/link";
+
+import { Lock, User, ArrowRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AuthFallbackProps {
   title?: string;
@@ -10,10 +13,10 @@ interface AuthFallbackProps {
   showLoginButton?: boolean;
 }
 
-export default function AuthFallback({ 
+export default function AuthFallback({
   title = "Authentication Required",
   message = "This page requires authentication to access all features.",
-  showLoginButton = true 
+  showLoginButton = true,
 }: AuthFallbackProps) {
   return (
     <div className="p-4 md:p-6 flex items-center justify-center min-h-[400px]">
@@ -26,7 +29,7 @@ export default function AuthFallback({
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-gray-600">{message}</p>
-          
+
           {showLoginButton && (
             <div className="space-y-3">
               <Link href="/login">
@@ -36,16 +39,19 @@ export default function AuthFallback({
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-              
+
               <p className="text-sm text-gray-500">
-                Don't have an account?{' '}
-                <Link href="/register" className="text-blue-600 hover:underline">
+                Don't have an account?{" "}
+                <Link
+                  href="/register"
+                  className="text-blue-600 hover:underline"
+                >
                   Register here
                 </Link>
               </p>
             </div>
           )}
-          
+
           <div className="pt-4 border-t">
             <p className="text-xs text-gray-400">
               You can still browse public content without signing in.

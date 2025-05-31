@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { supabase } from '../../lib/supabase/client';
-import { useAuth } from '../../hooks/useAuth';
-import { GetServerSideProps } from 'next';
+import React, { useState, useEffect } from "react";
 
+import Head from "next/head";
+
+import { GetServerSideProps } from "next";
+
+import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../lib/supabase/client";
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
-
 
 export default function AuthDebugPage() {
   const { user, role, loading, error } = useAuth();
@@ -24,24 +25,26 @@ export default function AuthDebugPage() {
     const fetchDebugData = async () => {
       try {
         // Get current session
-        const { data: session, error: sessionError } = await supabase.auth.getSession();
+        const { data: session, error: sessionError } =
+          await supabase.auth.getSession();
         setSessionData({ data: session, error: sessionError });
 
         // Get auth user
-        const { data: authUser, error: authUserError } = await supabase.auth.getUser();
+        const { data: authUser, error: authUserError } =
+          await supabase.auth.getUser();
         setAuthUserData({ data: authUser, error: authUserError });
 
         // If we have a user, get their profile
         if (authUser.user) {
           const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', authUser.user.id)
+            .from("profiles")
+            .select("*")
+            .eq("id", authUser.user.id)
             .single();
           setProfileData({ data: profile, error: profileError });
         }
       } catch (err) {
-        console.error('Debug fetch error:', err);
+        console.error("Debug fetch error:", err);
       } finally {
         setDebugLoading(false);
       }
@@ -54,13 +57,13 @@ export default function AuthDebugPage() {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Manual sign out error:', error);
+        console.error("Manual sign out error:", error);
       } else {
-        console.log('Manual sign out successful');
+        console.log("Manual sign out successful");
         window.location.reload();
       }
     } catch (err) {
-      console.error('Manual sign out exception:', err);
+      console.error("Manual sign out exception:", err);
     }
   };
 
@@ -68,30 +71,30 @@ export default function AuthDebugPage() {
     try {
       localStorage.clear();
       sessionStorage.clear();
-      console.log('Storage cleared');
+      console.log("Storage cleared");
       window.location.reload();
     } catch (err) {
-      console.error('Storage clear error:', err);
+      console.error("Storage clear error:", err);
     }
   };
 
   const handleTestRoleUpdate = async () => {
     if (!authUserData?.data?.user?.id) return;
-    
+
     try {
       const { error } = await supabase
-        .from('profiles')
-        .update({ role: 'admin' })
-        .eq('id', authUserData.data.user.id);
-      
+        .from("profiles")
+        .update({ role: "admin" })
+        .eq("id", authUserData.data.user.id);
+
       if (error) {
-        console.error('Role update error:', error);
+        console.error("Role update error:", error);
       } else {
-        console.log('Role updated to admin');
+        console.log("Role updated to admin");
         window.location.reload();
       }
     } catch (err) {
-      console.error('Role update exception:', err);
+      console.error("Role update exception:", err);
     }
   };
 
@@ -103,17 +106,30 @@ export default function AuthDebugPage() {
 
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Authentication Debug</h1>
-          
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+            Authentication Debug
+          </h1>
+
           <div className="space-y-6">
             {/* Current Auth State */}
             <div className="border rounded-lg p-4">
-              <h2 className="text-lg font-semibold mb-3">Current Auth State (useAuth hook)</h2>
+              <h2 className="text-lg font-semibold mb-3">
+                Current Auth State (useAuth hook)
+              </h2>
               <div className="space-y-2">
-                <p><strong>Loading:</strong> {loading ? 'true' : 'false'}</p>
-                <p><strong>Error:</strong> {error || 'none'}</p>
-                <p><strong>User:</strong> {user ? JSON.stringify(user, null, 2) : 'null'}</p>
-                <p><strong>Role:</strong> {role || 'null'}</p>
+                <p>
+                  <strong>Loading:</strong> {loading ? "true" : "false"}
+                </p>
+                <p>
+                  <strong>Error:</strong> {error || "none"}
+                </p>
+                <p>
+                  <strong>User:</strong>{" "}
+                  {user ? JSON.stringify(user, null, 2) : "null"}
+                </p>
+                <p>
+                  <strong>Role:</strong> {role || "null"}
+                </p>
               </div>
             </div>
 
@@ -189,9 +205,19 @@ export default function AuthDebugPage() {
             <div className="border rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-3">Environment Info</h2>
               <div className="space-y-2">
-                <p><strong>NODE_ENV:</strong> {process.env.NODE_ENV}</p>
-                <p><strong>Supabase URL:</strong> {process.env.NEXT_PUBLIC_SUPABASE_URL}</p>
-                <p><strong>Anon Key:</strong> {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Present' : 'Missing'}</p>
+                <p>
+                  <strong>NODE_ENV:</strong> {process.env.NODE_ENV}
+                </p>
+                <p>
+                  <strong>Supabase URL:</strong>{" "}
+                  {process.env.NEXT_PUBLIC_SUPABASE_URL}
+                </p>
+                <p>
+                  <strong>Anon Key:</strong>{" "}
+                  {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+                    ? "Present"
+                    : "Missing"}
+                </p>
               </div>
             </div>
           </div>
@@ -199,4 +225,4 @@ export default function AuthDebugPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import Modal from '../ui/Modal';
+import React, { useState } from "react";
+
+import Modal from "../ui/Modal";
 
 interface ExpenseRequestModalProps {
   isOpen: boolean;
@@ -19,31 +20,35 @@ interface ExpenseRequestData {
 const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
   isOpen,
   onClose,
-  onSubmit
+  onSubmit,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<ExpenseRequestData>({
-    date: '',
-    category: '',
-    description: '',
-    amount: '',
+    date: "",
+    category: "",
+    description: "",
+    amount: "",
     receipt: null,
-    notes: ''
+    notes: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      receipt: file
+      receipt: file,
     }));
   };
 
@@ -53,55 +58,53 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (onSubmit) {
         onSubmit(formData);
       }
-      
+
       // Reset form
       setFormData({
-        date: '',
-        category: '',
-        description: '',
-        amount: '',
+        date: "",
+        category: "",
+        description: "",
+        amount: "",
         receipt: null,
-        notes: ''
+        notes: "",
       });
-      
+
       onClose();
-      alert('Expense submitted successfully!');
+      alert("Expense submitted successfully!");
     } catch (error) {
-      console.error('Error submitting expense:', error);
-      alert('Failed to submit expense. Please try again.');
+      console.error("Error submitting expense:", error);
+      alert("Failed to submit expense. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const expenseCategories = [
-    { value: 'travel', label: 'Travel & Transportation' },
-    { value: 'meals', label: 'Meals & Entertainment' },
-    { value: 'office', label: 'Office Supplies' },
-    { value: 'training', label: 'Training & Development' },
-    { value: 'equipment', label: 'Equipment & Software' },
-    { value: 'accommodation', label: 'Accommodation' },
-    { value: 'communication', label: 'Communication' },
-    { value: 'other', label: 'Other' }
+    { value: "travel", label: "Travel & Transportation" },
+    { value: "meals", label: "Meals & Entertainment" },
+    { value: "office", label: "Office Supplies" },
+    { value: "training", label: "Training & Development" },
+    { value: "equipment", label: "Equipment & Software" },
+    { value: "accommodation", label: "Accommodation" },
+    { value: "communication", label: "Communication" },
+    { value: "other", label: "Other" },
   ];
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Submit Expense"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Submit Expense" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Date and Category */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="date"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Expense Date *
             </label>
             <input
@@ -116,7 +119,10 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Category *
             </label>
             <select
@@ -128,7 +134,7 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
               required
             >
               <option value="">Select category</option>
-              {expenseCategories.map(category => (
+              {expenseCategories.map((category) => (
                 <option key={category.value} value={category.value}>
                   {category.label}
                 </option>
@@ -139,7 +145,10 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Description *
           </label>
           <input
@@ -156,7 +165,10 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
 
         {/* Amount */}
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="amount"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Amount ($) *
           </label>
           <input
@@ -175,7 +187,10 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
 
         {/* Receipt Upload */}
         <div>
-          <label htmlFor="receipt" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="receipt"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Receipt/Supporting Document
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
@@ -191,11 +206,23 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
               htmlFor="receipt"
               className="cursor-pointer flex flex-col items-center"
             >
-              <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <svg
+                className="w-8 h-8 text-gray-400 mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
               </svg>
               <span className="text-sm text-gray-600">
-                {formData.receipt ? formData.receipt.name : 'Click to upload or drag and drop'}
+                {formData.receipt
+                  ? formData.receipt.name
+                  : "Click to upload or drag and drop"}
               </span>
               <span className="text-xs text-gray-500 mt-1">
                 Images, PDF, Word documents (Max 10MB)
@@ -204,8 +231,18 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
           </div>
           {formData.receipt && (
             <div className="mt-2 flex items-center text-sm text-green-600">
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               File uploaded: {formData.receipt.name}
             </div>
@@ -214,7 +251,10 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
 
         {/* Notes */}
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="notes"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Additional Notes
           </label>
           <textarea
@@ -231,8 +271,18 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
         {/* Policy Reminder */}
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <div className="flex">
-            <svg className="w-5 h-5 text-amber-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            <svg
+              className="w-5 h-5 text-amber-400 mt-0.5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 15.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
             <div className="text-sm text-amber-700">
               <p className="font-medium mb-1">Expense Policy Reminder:</p>
@@ -266,7 +316,7 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
                 Submitting...
               </div>
             ) : (
-              'Submit Expense'
+              "Submit Expense"
             )}
           </button>
         </div>
@@ -275,4 +325,4 @@ const ExpenseRequestModal: React.FC<ExpenseRequestModalProps> = ({
   );
 };
 
-export default ExpenseRequestModal; 
+export default ExpenseRequestModal;

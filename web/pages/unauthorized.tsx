@@ -1,35 +1,37 @@
-import React from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useAuth } from '@/hooks/useAuth';
+import React from "react";
+
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+
+import { useAuth } from "@/hooks/useAuth";
 
 export default function UnauthorizedPage() {
   const router = useRouter();
   const { user, role } = useAuth();
 
   const handleGoBack = () => {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
+    if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {
-      router.push('/');
+      router.push("/");
     }
   };
 
   const getRedirectPath = () => {
-    if (!user) return '/login';
-    
+    if (!user) return "/login";
+
     switch (role) {
-      case 'admin':
-      case 'hr':
-      case 'manager':
-        return '/dashboard';
-      case 'employee':
-        return '/employee/dashboard';
-      case 'candidate':
-        return '/candidate/dashboard';
+      case "admin":
+      case "hr":
+      case "manager":
+        return "/dashboard";
+      case "employee":
+        return "/employee/dashboard";
+      case "candidate":
+        return "/candidate/dashboard";
       default:
-        return '/dashboard';
+        return "/dashboard";
     }
   };
 
@@ -37,7 +39,10 @@ export default function UnauthorizedPage() {
     <>
       <Head>
         <title>Unauthorized Access | HR Portal</title>
-        <meta name="description" content="You don't have permission to access this page" />
+        <meta
+          name="description"
+          content="You don't have permission to access this page"
+        />
       </Head>
 
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -61,7 +66,7 @@ export default function UnauthorizedPage() {
             </p>
             {user && (
               <p className="mt-1 text-xs text-gray-500">
-                Current role: {role || 'No role assigned'}
+                Current role: {role || "No role assigned"}
               </p>
             )}
           </div>
@@ -102,11 +107,12 @@ export default function UnauthorizedPage() {
 
           <div className="text-center">
             <p className="text-xs text-gray-500">
-              If you believe this is an error, please contact your administrator.
+              If you believe this is an error, please contact your
+              administrator.
             </p>
           </div>
         </div>
       </div>
     </>
   );
-} 
+}

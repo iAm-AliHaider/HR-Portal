@@ -1,4 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+
+import {
+  EditIcon,
+  DeleteIcon,
+  AddIcon,
+  SearchIcon,
+  SettingsIcon,
+  ViewIcon,
+  CheckIcon,
+  WarningIcon,
+  InfoIcon,
+  CalendarIcon,
+  TimeIcon,
+} from "@chakra-ui/icons";
 import {
   Box,
   VStack,
@@ -67,60 +81,63 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Heading
-} from '@chakra-ui/react';
+  Heading,
+} from "@chakra-ui/react";
+import { format } from "date-fns";
+
 import {
-  EditIcon,
-  DeleteIcon,
-  AddIcon,
-  SearchIcon,
-  SettingsIcon,
-  ViewIcon,
-  CheckIcon,
-  WarningIcon,
-  InfoIcon,
-  CalendarIcon,
-  TimeIcon
-} from '@chakra-ui/icons';
-import { format } from 'date-fns';
-import { BookingService } from '../../services/booking';
-import { MeetingRoom, Asset, RoomBooking, AssetBooking } from '../../../packages/types/hr';
+  MeetingRoom,
+  Asset,
+  RoomBooking,
+  AssetBooking,
+} from "../../../packages/types/hr";
+import { BookingService } from "../../services/booking";
 
 interface ResourceManagementDashboardProps {
   orgId: string;
 }
 
-const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = ({ orgId }) => {
+const ResourceManagementDashboard: React.FC<
+  ResourceManagementDashboardProps
+> = ({ orgId }) => {
   const toast = useToast();
   const [meetingRooms, setMeetingRooms] = useState<MeetingRoom[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedTab, setSelectedTab] = useState(0);
 
   // Modal states
-  const { isOpen: isRoomModalOpen, onOpen: onRoomModalOpen, onClose: onRoomModalClose } = useDisclosure();
-  const { isOpen: isAssetModalOpen, onOpen: onAssetModalOpen, onClose: onAssetModalClose } = useDisclosure();
+  const {
+    isOpen: isRoomModalOpen,
+    onOpen: onRoomModalOpen,
+    onClose: onRoomModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isAssetModalOpen,
+    onOpen: onAssetModalOpen,
+    onClose: onAssetModalClose,
+  } = useDisclosure();
   const [selectedRoom, setSelectedRoom] = useState<MeetingRoom | undefined>();
   const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>();
 
   // Form states
   const [roomForm, setRoomForm] = useState({
-    name: '',
-    description: '',
-    location: '',
-    building: '',
-    floor: '',
+    name: "",
+    description: "",
+    location: "",
+    building: "",
+    floor: "",
     capacity: 4,
     equipment: [] as string[],
     amenities: [] as string[],
     is_active: true,
     hourly_rate: 0,
-    contact_person: '',
-    contact_email: '',
-    contact_phone: '',
+    contact_person: "",
+    contact_email: "",
+    contact_phone: "",
     video_conference_enabled: false,
     accessibility_features: [] as string[],
     booking_rules: {
@@ -130,35 +147,35 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
       max_advance_days: 30,
       requires_approval: false,
       business_hours_only: true,
-      allowed_roles: ['admin', 'manager', 'hr', 'employee']
-    }
+      allowed_roles: ["admin", "manager", "hr", "employee"],
+    },
   });
 
   const [assetForm, setAssetForm] = useState({
-    name: '',
-    description: '',
-    category: '',
-    brand: '',
-    model: '',
-    serial_number: '',
-    asset_tag: '',
-    location: '',
-    status: 'available' as 'available' | 'in_use' | 'maintenance' | 'retired',
-    condition: 'excellent' as 'excellent' | 'good' | 'fair' | 'poor',
-    purchase_date: '',
-    warranty_expiry: '',
+    name: "",
+    description: "",
+    category: "",
+    brand: "",
+    model: "",
+    serial_number: "",
+    asset_tag: "",
+    location: "",
+    status: "available" as "available" | "in_use" | "maintenance" | "retired",
+    condition: "excellent" as "excellent" | "good" | "fair" | "poor",
+    purchase_date: "",
+    warranty_expiry: "",
     specifications: {} as Record<string, any>,
     hourly_rate: 0,
     daily_rate: 0,
-    responsible_person: '',
-    maintenance_schedule: '',
+    responsible_person: "",
+    maintenance_schedule: "",
     booking_rules: {
       max_duration_hours: 24,
       advance_booking_hours: 2,
       requires_approval: false,
       checkout_required: true,
-      allowed_roles: ['admin', 'manager', 'employee']
-    }
+      allowed_roles: ["admin", "manager", "employee"],
+    },
   });
 
   const [stats, setStats] = useState({
@@ -167,7 +184,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     totalAssets: 0,
     availableAssets: 0,
     roomUtilization: 0,
-    assetUtilization: 0
+    assetUtilization: 0,
   });
 
   useEffect(() => {
@@ -179,31 +196,38 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     try {
       const [roomsData, assetsData] = await Promise.all([
         BookingService.getMeetingRooms(orgId),
-        BookingService.getAssets(orgId)
+        BookingService.getAssets(orgId),
       ]);
 
       setMeetingRooms(roomsData);
       setAssets(assetsData);
 
       // Calculate statistics
-      const activeRooms = roomsData.filter(room => room.is_active).length;
-      const availableAssets = assetsData.filter(asset => asset.status === 'available').length;
+      const activeRooms = roomsData.filter((room) => room.is_active).length;
+      const availableAssets = assetsData.filter(
+        (asset) => asset.status === "available",
+      ).length;
 
       setStats({
         totalRooms: roomsData.length,
         activeRooms,
         totalAssets: assetsData.length,
         availableAssets,
-        roomUtilization: roomsData.length > 0 ? Math.round((activeRooms / roomsData.length) * 100) : 0,
-        assetUtilization: assetsData.length > 0 ? Math.round((availableAssets / assetsData.length) * 100) : 0
+        roomUtilization:
+          roomsData.length > 0
+            ? Math.round((activeRooms / roomsData.length) * 100)
+            : 0,
+        assetUtilization:
+          assetsData.length > 0
+            ? Math.round((availableAssets / assetsData.length) * 100)
+            : 0,
       });
-
     } catch (error) {
-      console.error('Error loading resources:', error);
+      console.error("Error loading resources:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load resource data',
-        status: 'error',
+        title: "Error",
+        description: "Failed to load resource data",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -212,59 +236,74 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     }
   };
 
-  const filteredRooms = meetingRooms.filter(room => {
-    const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         room.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && room.is_active) ||
-                         (statusFilter === 'inactive' && !room.is_active);
+  const filteredRooms = meetingRooms.filter((room) => {
+    const matchesSearch =
+      room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      room.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && room.is_active) ||
+      (statusFilter === "inactive" && !room.is_active);
     return matchesSearch && matchesStatus;
   });
 
-  const filteredAssets = assets.filter(asset => {
-    const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         asset.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
-    const matchesCategory = categoryFilter === 'all' || asset.category === categoryFilter;
+  const filteredAssets = assets.filter((asset) => {
+    const matchesSearch =
+      asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      asset.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || asset.status === statusFilter;
+    const matchesCategory =
+      categoryFilter === "all" || asset.category === categoryFilter;
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'green';
-      case 'in_use': return 'blue';
-      case 'maintenance': return 'yellow';
-      case 'retired': return 'red';
-      default: return 'gray';
+      case "available":
+        return "green";
+      case "in_use":
+        return "blue";
+      case "maintenance":
+        return "yellow";
+      case "retired":
+        return "red";
+      default:
+        return "gray";
     }
   };
 
   const getConditionColor = (condition: string) => {
     switch (condition) {
-      case 'excellent': return 'green';
-      case 'good': return 'blue';
-      case 'fair': return 'yellow';
-      case 'poor': return 'red';
-      default: return 'gray';
+      case "excellent":
+        return "green";
+      case "good":
+        return "blue";
+      case "fair":
+        return "yellow";
+      case "poor":
+        return "red";
+      default:
+        return "gray";
     }
   };
 
   const handleCreateRoom = () => {
     setSelectedRoom(undefined);
     setRoomForm({
-      name: '',
-      description: '',
-      location: '',
-      building: '',
-      floor: '',
+      name: "",
+      description: "",
+      location: "",
+      building: "",
+      floor: "",
       capacity: 4,
       equipment: [],
       amenities: [],
       is_active: true,
       hourly_rate: 0,
-      contact_person: '',
-      contact_email: '',
-      contact_phone: '',
+      contact_person: "",
+      contact_email: "",
+      contact_phone: "",
       video_conference_enabled: false,
       accessibility_features: [],
       booking_rules: {
@@ -274,8 +313,8 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
         max_advance_days: 30,
         requires_approval: false,
         business_hours_only: true,
-        allowed_roles: ['admin', 'manager', 'hr', 'employee']
-      }
+        allowed_roles: ["admin", "manager", "hr", "employee"],
+      },
     });
     onRoomModalOpen();
   };
@@ -284,18 +323,18 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     setSelectedRoom(room);
     setRoomForm({
       name: room.name,
-      description: room.description || '',
+      description: room.description || "",
       location: room.location,
-      building: room.building || '',
-      floor: room.floor || '',
+      building: room.building || "",
+      floor: room.floor || "",
       capacity: room.capacity,
       equipment: room.equipment || [],
       amenities: room.amenities || [],
       is_active: room.is_active,
       hourly_rate: room.hourly_rate || 0,
-      contact_person: room.contact_person || '',
-      contact_email: room.contact_email || '',
-      contact_phone: room.contact_phone || '',
+      contact_person: room.contact_person || "",
+      contact_email: room.contact_email || "",
+      contact_phone: room.contact_phone || "",
       video_conference_enabled: room.video_conference_enabled || false,
       accessibility_features: room.accessibility_features || [],
       booking_rules: {
@@ -305,8 +344,13 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
         max_advance_days: room.booking_rules?.max_advance_days ?? 30,
         requires_approval: room.booking_rules?.requires_approval ?? false,
         business_hours_only: room.booking_rules?.business_hours_only ?? true,
-        allowed_roles: room.booking_rules?.allowed_roles ?? ['admin', 'manager', 'hr', 'employee']
-      }
+        allowed_roles: room.booking_rules?.allowed_roles ?? [
+          "admin",
+          "manager",
+          "hr",
+          "employee",
+        ],
+      },
     });
     onRoomModalOpen();
   };
@@ -314,30 +358,30 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
   const handleCreateAsset = () => {
     setSelectedAsset(undefined);
     setAssetForm({
-      name: '',
-      description: '',
-      category: '',
-      brand: '',
-      model: '',
-      serial_number: '',
-      asset_tag: '',
-      location: '',
-      status: 'available',
-      condition: 'excellent',
-      purchase_date: '',
-      warranty_expiry: '',
+      name: "",
+      description: "",
+      category: "",
+      brand: "",
+      model: "",
+      serial_number: "",
+      asset_tag: "",
+      location: "",
+      status: "available",
+      condition: "excellent",
+      purchase_date: "",
+      warranty_expiry: "",
       specifications: {},
       hourly_rate: 0,
       daily_rate: 0,
-      responsible_person: '',
-      maintenance_schedule: '',
+      responsible_person: "",
+      maintenance_schedule: "",
       booking_rules: {
         max_duration_hours: 24,
         advance_booking_hours: 2,
         requires_approval: false,
         checkout_required: true,
-        allowed_roles: ['admin', 'manager', 'employee']
-      }
+        allowed_roles: ["admin", "manager", "employee"],
+      },
     });
     onAssetModalOpen();
   };
@@ -346,29 +390,37 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     setSelectedAsset(asset);
     setAssetForm({
       name: asset.name,
-      description: asset.description || '',
+      description: asset.description || "",
       category: asset.category,
-      brand: asset.brand || '',
-      model: asset.model || '',
-      serial_number: asset.serial_number || '',
-      asset_tag: asset.asset_tag || '',
-      location: asset.location || '',
-      status: asset.status as 'available' | 'in_use' | 'maintenance' | 'retired',
-      condition: asset.condition as 'excellent' | 'good' | 'fair' | 'poor',
-      purchase_date: asset.purchase_date || '',
-      warranty_expiry: asset.warranty_expiry || '',
+      brand: asset.brand || "",
+      model: asset.model || "",
+      serial_number: asset.serial_number || "",
+      asset_tag: asset.asset_tag || "",
+      location: asset.location || "",
+      status: asset.status as
+        | "available"
+        | "in_use"
+        | "maintenance"
+        | "retired",
+      condition: asset.condition as "excellent" | "good" | "fair" | "poor",
+      purchase_date: asset.purchase_date || "",
+      warranty_expiry: asset.warranty_expiry || "",
       specifications: asset.specifications || {},
       hourly_rate: asset.hourly_rate || 0,
       daily_rate: asset.daily_rate || 0,
-      responsible_person: asset.responsible_person || '',
-      maintenance_schedule: asset.maintenance_schedule || '',
+      responsible_person: asset.responsible_person || "",
+      maintenance_schedule: asset.maintenance_schedule || "",
       booking_rules: {
         max_duration_hours: asset.booking_rules?.max_duration_hours ?? 24,
         advance_booking_hours: asset.booking_rules?.advance_booking_hours ?? 2,
         requires_approval: asset.booking_rules?.requires_approval ?? false,
         checkout_required: asset.booking_rules?.checkout_required ?? true,
-        allowed_roles: asset.booking_rules?.allowed_roles ?? ['admin', 'manager', 'employee']
-      }
+        allowed_roles: asset.booking_rules?.allowed_roles ?? [
+          "admin",
+          "manager",
+          "employee",
+        ],
+      },
     });
     onAssetModalOpen();
   };
@@ -377,7 +429,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     try {
       const roomData = {
         ...roomForm,
-        org_id: orgId
+        org_id: orgId,
       };
 
       if (selectedRoom) {
@@ -387,9 +439,9 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
       }
 
       toast({
-        title: 'Success',
-        description: `Meeting room ${selectedRoom ? 'updated' : 'created'} successfully`,
-        status: 'success',
+        title: "Success",
+        description: `Meeting room ${selectedRoom ? "updated" : "created"} successfully`,
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
@@ -398,9 +450,9 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
       loadData();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: `Failed to ${selectedRoom ? 'update' : 'create'} meeting room`,
-        status: 'error',
+        title: "Error",
+        description: `Failed to ${selectedRoom ? "update" : "create"} meeting room`,
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -411,7 +463,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     try {
       const assetData = {
         ...assetForm,
-        org_id: orgId
+        org_id: orgId,
       };
 
       if (selectedAsset) {
@@ -421,9 +473,9 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
       }
 
       toast({
-        title: 'Success',
-        description: `Asset ${selectedAsset ? 'updated' : 'created'} successfully`,
-        status: 'success',
+        title: "Success",
+        description: `Asset ${selectedAsset ? "updated" : "created"} successfully`,
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
@@ -432,9 +484,9 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
       loadData();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: `Failed to ${selectedAsset ? 'update' : 'create'} asset`,
-        status: 'error',
+        title: "Error",
+        description: `Failed to ${selectedAsset ? "update" : "create"} asset`,
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -445,18 +497,18 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     try {
       await BookingService.deleteMeetingRoom(roomId);
       toast({
-        title: 'Success',
-        description: 'Meeting room deleted successfully',
-        status: 'success',
+        title: "Success",
+        description: "Meeting room deleted successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
       loadData();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to delete meeting room',
-        status: 'error',
+        title: "Error",
+        description: "Failed to delete meeting room",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -467,18 +519,18 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
     try {
       await BookingService.deleteAsset(assetId);
       toast({
-        title: 'Success',
-        description: 'Asset deleted successfully',
-        status: 'success',
+        title: "Success",
+        description: "Asset deleted successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
       loadData();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to delete asset',
-        status: 'error',
+        title: "Error",
+        description: "Failed to delete asset",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -487,17 +539,17 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
 
   const addEquipmentItem = (item: string) => {
     if (item && !roomForm.equipment.includes(item)) {
-      setRoomForm(prev => ({
+      setRoomForm((prev) => ({
         ...prev,
-        equipment: [...prev.equipment, item]
+        equipment: [...prev.equipment, item],
       }));
     }
   };
 
   const removeEquipmentItem = (item: string) => {
-    setRoomForm(prev => ({
+    setRoomForm((prev) => ({
       ...prev,
-      equipment: prev.equipment.filter(eq => eq !== item)
+      equipment: prev.equipment.filter((eq) => eq !== item),
     }));
   };
 
@@ -510,9 +562,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
             <Stat>
               <StatLabel>Total Meeting Rooms</StatLabel>
               <StatNumber>{stats.totalRooms}</StatNumber>
-              <StatHelpText>
-                {stats.activeRooms} active
-              </StatHelpText>
+              <StatHelpText>{stats.activeRooms} active</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
@@ -522,9 +572,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
             <Stat>
               <StatLabel>Total Assets</StatLabel>
               <StatNumber>{stats.totalAssets}</StatNumber>
-              <StatHelpText>
-                {stats.availableAssets} available
-              </StatHelpText>
+              <StatHelpText>{stats.availableAssets} available</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
@@ -534,7 +582,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
             <Stat>
               <StatLabel>Room Utilization</StatLabel>
               <StatNumber>{stats.roomUtilization}%</StatNumber>
-              <Progress value={stats.roomUtilization} colorScheme="blue" size="sm" mt={2} />
+              <Progress
+                value={stats.roomUtilization}
+                colorScheme="blue"
+                size="sm"
+                mt={2}
+              />
             </Stat>
           </CardBody>
         </Card>
@@ -544,7 +597,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
             <Stat>
               <StatLabel>Asset Availability</StatLabel>
               <StatNumber>{stats.assetUtilization}%</StatNumber>
-              <Progress value={stats.assetUtilization} colorScheme="green" size="sm" mt={2} />
+              <Progress
+                value={stats.assetUtilization}
+                colorScheme="green"
+                size="sm"
+                mt={2}
+              />
             </Stat>
           </CardBody>
         </Card>
@@ -605,10 +663,18 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
             <Spacer />
 
             <ButtonGroup>
-              <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={handleCreateRoom}>
+              <Button
+                leftIcon={<AddIcon />}
+                colorScheme="blue"
+                onClick={handleCreateRoom}
+              >
                 Add Room
               </Button>
-              <Button leftIcon={<AddIcon />} colorScheme="green" onClick={handleCreateAsset}>
+              <Button
+                leftIcon={<AddIcon />}
+                colorScheme="green"
+                onClick={handleCreateAsset}
+              >
                 Add Asset
               </Button>
             </ButtonGroup>
@@ -617,7 +683,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
       </Card>
 
       {/* Resource Tables */}
-      <Tabs index={selectedTab} onChange={setSelectedTab} variant="enclosed" colorScheme="blue">
+      <Tabs
+        index={selectedTab}
+        onChange={setSelectedTab}
+        variant="enclosed"
+        colorScheme="blue"
+      >
         <TabList>
           <Tab>
             <HStack>
@@ -656,7 +727,11 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                           <VStack align="start" spacing={1}>
                             <Text fontWeight="medium">{room.name}</Text>
                             {room.description && (
-                              <Text fontSize="sm" color="gray.500" noOfLines={2}>
+                              <Text
+                                fontSize="sm"
+                                color="gray.500"
+                                noOfLines={2}
+                              >
                                 {room.description}
                               </Text>
                             )}
@@ -678,7 +753,9 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                             {room.equipment && room.equipment.length > 3 && (
                               <WrapItem>
                                 <Tag size="sm" colorScheme="gray">
-                                  <TagLabel>+{room.equipment.length - 3} more</TagLabel>
+                                  <TagLabel>
+                                    +{room.equipment.length - 3} more
+                                  </TagLabel>
                                 </Tag>
                               </WrapItem>
                             )}
@@ -686,8 +763,8 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                         </Td>
                         <Td>${room.hourly_rate || 0}/hr</Td>
                         <Td>
-                          <Badge colorScheme={room.is_active ? 'green' : 'red'}>
-                            {room.is_active ? 'Active' : 'Inactive'}
+                          <Badge colorScheme={room.is_active ? "green" : "red"}>
+                            {room.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </Td>
                         <Td>
@@ -748,13 +825,17 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                           <Text fontSize="sm">{asset.location}</Text>
                         </Td>
                         <Td>
-                          <Badge colorScheme={getConditionColor(asset.condition)}>
+                          <Badge
+                            colorScheme={getConditionColor(asset.condition)}
+                          >
                             {asset.condition}
                           </Badge>
                         </Td>
                         <Td>
                           <VStack align="start" spacing={0}>
-                            <Text fontSize="sm">${asset.hourly_rate || 0}/hr</Text>
+                            <Text fontSize="sm">
+                              ${asset.hourly_rate || 0}/hr
+                            </Text>
                             <Text fontSize="xs" color="gray.500">
                               ${asset.daily_rate || 0}/day
                             </Text>
@@ -762,7 +843,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                         </Td>
                         <Td>
                           <Badge colorScheme={getStatusColor(asset.status)}>
-                            {asset.status.replace('_', ' ')}
+                            {asset.status.replace("_", " ")}
                           </Badge>
                         </Td>
                         <Td>
@@ -795,7 +876,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {selectedRoom ? 'Edit Meeting Room' : 'Add Meeting Room'}
+            {selectedRoom ? "Edit Meeting Room" : "Add Meeting Room"}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -805,7 +886,9 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Name</FormLabel>
                   <Input
                     value={roomForm.name}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({ ...prev, name: e.target.value }))
+                    }
                     placeholder="Conference Room A"
                   />
                 </FormControl>
@@ -813,7 +896,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Capacity</FormLabel>
                   <NumberInput
                     value={roomForm.capacity}
-                    onChange={(value) => setRoomForm(prev => ({ ...prev, capacity: parseInt(value) || 4 }))}
+                    onChange={(value) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        capacity: parseInt(value) || 4,
+                      }))
+                    }
                     min={1}
                     max={100}
                   >
@@ -830,7 +918,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                 <FormLabel>Description</FormLabel>
                 <Textarea
                   value={roomForm.description}
-                  onChange={(e) => setRoomForm(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setRoomForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   placeholder="Brief description of the room"
                 />
               </FormControl>
@@ -840,7 +933,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Location</FormLabel>
                   <Input
                     value={roomForm.location}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
                     placeholder="Building A, Floor 2, Room 205"
                   />
                 </FormControl>
@@ -848,7 +946,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Hourly Rate ($)</FormLabel>
                   <NumberInput
                     value={roomForm.hourly_rate}
-                    onChange={(value) => setRoomForm(prev => ({ ...prev, hourly_rate: parseFloat(value) || 0 }))}
+                    onChange={(value) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        hourly_rate: parseFloat(value) || 0,
+                      }))
+                    }
                     min={0}
                   >
                     <NumberInputField />
@@ -865,7 +968,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Building</FormLabel>
                   <Input
                     value={roomForm.building}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, building: e.target.value }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        building: e.target.value,
+                      }))
+                    }
                     placeholder="Building A"
                   />
                 </FormControl>
@@ -873,7 +981,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Floor</FormLabel>
                   <Input
                     value={roomForm.floor}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, floor: e.target.value }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        floor: e.target.value,
+                      }))
+                    }
                     placeholder="2"
                   />
                 </FormControl>
@@ -886,7 +999,9 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                     <WrapItem key={index}>
                       <Tag size="md" colorScheme="blue">
                         <TagLabel>{item}</TagLabel>
-                        <TagCloseButton onClick={() => removeEquipmentItem(item)} />
+                        <TagCloseButton
+                          onClick={() => removeEquipmentItem(item)}
+                        />
                       </Tag>
                     </WrapItem>
                   ))}
@@ -895,19 +1010,20 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <Input
                     placeholder="Add equipment item"
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         addEquipmentItem(e.currentTarget.value);
-                        e.currentTarget.value = '';
+                        e.currentTarget.value = "";
                       }
                     }}
                   />
                   <Button
                     size="sm"
                     onClick={(e) => {
-                      const input = e.currentTarget.parentElement?.querySelector('input');
+                      const input =
+                        e.currentTarget.parentElement?.querySelector("input");
                       if (input?.value) {
                         addEquipmentItem(input.value);
-                        input.value = '';
+                        input.value = "";
                       }
                     }}
                   >
@@ -921,7 +1037,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Contact Person</FormLabel>
                   <Input
                     value={roomForm.contact_person}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, contact_person: e.target.value }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        contact_person: e.target.value,
+                      }))
+                    }
                     placeholder="John Doe"
                   />
                 </FormControl>
@@ -929,7 +1050,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Contact Email</FormLabel>
                   <Input
                     value={roomForm.contact_email}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, contact_email: e.target.value }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        contact_email: e.target.value,
+                      }))
+                    }
                     placeholder="john@company.com"
                   />
                 </FormControl>
@@ -940,14 +1066,24 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel mb="0">Active</FormLabel>
                   <Switch
                     isChecked={roomForm.is_active}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, is_active: e.target.checked }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        is_active: e.target.checked,
+                      }))
+                    }
                   />
                 </FormControl>
                 <FormControl display="flex" alignItems="center">
                   <FormLabel mb="0">Video Conference</FormLabel>
                   <Switch
                     isChecked={roomForm.video_conference_enabled}
-                    onChange={(e) => setRoomForm(prev => ({ ...prev, video_conference_enabled: e.target.checked }))}
+                    onChange={(e) =>
+                      setRoomForm((prev) => ({
+                        ...prev,
+                        video_conference_enabled: e.target.checked,
+                      }))
+                    }
                   />
                 </FormControl>
               </HStack>
@@ -958,7 +1094,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
               Cancel
             </Button>
             <Button colorScheme="blue" onClick={handleSaveRoom}>
-              {selectedRoom ? 'Update' : 'Create'} Room
+              {selectedRoom ? "Update" : "Create"} Room
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -969,7 +1105,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {selectedAsset ? 'Edit Asset' : 'Add Asset'}
+            {selectedAsset ? "Edit Asset" : "Add Asset"}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -979,7 +1115,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Name</FormLabel>
                   <Input
                     value={assetForm.name}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
                     placeholder="MacBook Pro 15"
                   />
                 </FormControl>
@@ -987,7 +1128,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Category</FormLabel>
                   <Select
                     value={assetForm.category}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, category: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        category: e.target.value,
+                      }))
+                    }
                   >
                     <option value="">Select category</option>
                     <option value="laptop">Laptop</option>
@@ -1006,7 +1152,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                 <FormLabel>Description</FormLabel>
                 <Textarea
                   value={assetForm.description}
-                  onChange={(e) => setAssetForm(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setAssetForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   placeholder="Brief description of the asset"
                 />
               </FormControl>
@@ -1016,7 +1167,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Brand</FormLabel>
                   <Input
                     value={assetForm.brand}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, brand: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        brand: e.target.value,
+                      }))
+                    }
                     placeholder="Apple"
                   />
                 </FormControl>
@@ -1024,7 +1180,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Model</FormLabel>
                   <Input
                     value={assetForm.model}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, model: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        model: e.target.value,
+                      }))
+                    }
                     placeholder="MacBook Pro 15-inch"
                   />
                 </FormControl>
@@ -1035,7 +1196,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Serial Number</FormLabel>
                   <Input
                     value={assetForm.serial_number}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, serial_number: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        serial_number: e.target.value,
+                      }))
+                    }
                     placeholder="C02ZN1JDMD6R"
                   />
                 </FormControl>
@@ -1043,7 +1209,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Asset Tag</FormLabel>
                   <Input
                     value={assetForm.asset_tag}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, asset_tag: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        asset_tag: e.target.value,
+                      }))
+                    }
                     placeholder="LAPTOP-001"
                   />
                 </FormControl>
@@ -1053,7 +1224,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                 <FormLabel>Location</FormLabel>
                 <Input
                   value={assetForm.location}
-                  onChange={(e) => setAssetForm(prev => ({ ...prev, location: e.target.value }))}
+                  onChange={(e) =>
+                    setAssetForm((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
                   placeholder="IT Equipment Room, Building A"
                 />
               </FormControl>
@@ -1063,7 +1239,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Status</FormLabel>
                   <Select
                     value={assetForm.status}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, status: e.target.value as any }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        status: e.target.value as any,
+                      }))
+                    }
                   >
                     <option value="available">Available</option>
                     <option value="in_use">In Use</option>
@@ -1075,7 +1256,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Condition</FormLabel>
                   <Select
                     value={assetForm.condition}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, condition: e.target.value as any }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        condition: e.target.value as any,
+                      }))
+                    }
                   >
                     <option value="excellent">Excellent</option>
                     <option value="good">Good</option>
@@ -1090,7 +1276,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Hourly Rate ($)</FormLabel>
                   <NumberInput
                     value={assetForm.hourly_rate}
-                    onChange={(value) => setAssetForm(prev => ({ ...prev, hourly_rate: parseFloat(value) || 0 }))}
+                    onChange={(value) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        hourly_rate: parseFloat(value) || 0,
+                      }))
+                    }
                     min={0}
                   >
                     <NumberInputField />
@@ -1104,7 +1295,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <FormLabel>Daily Rate ($)</FormLabel>
                   <NumberInput
                     value={assetForm.daily_rate}
-                    onChange={(value) => setAssetForm(prev => ({ ...prev, daily_rate: parseFloat(value) || 0 }))}
+                    onChange={(value) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        daily_rate: parseFloat(value) || 0,
+                      }))
+                    }
                     min={0}
                   >
                     <NumberInputField />
@@ -1122,7 +1318,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <Input
                     type="date"
                     value={assetForm.purchase_date}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, purchase_date: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        purchase_date: e.target.value,
+                      }))
+                    }
                   />
                 </FormControl>
                 <FormControl>
@@ -1130,7 +1331,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                   <Input
                     type="date"
                     value={assetForm.warranty_expiry}
-                    onChange={(e) => setAssetForm(prev => ({ ...prev, warranty_expiry: e.target.value }))}
+                    onChange={(e) =>
+                      setAssetForm((prev) => ({
+                        ...prev,
+                        warranty_expiry: e.target.value,
+                      }))
+                    }
                   />
                 </FormControl>
               </HStack>
@@ -1139,7 +1345,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                 <FormLabel>Responsible Person</FormLabel>
                 <Input
                   value={assetForm.responsible_person}
-                  onChange={(e) => setAssetForm(prev => ({ ...prev, responsible_person: e.target.value }))}
+                  onChange={(e) =>
+                    setAssetForm((prev) => ({
+                      ...prev,
+                      responsible_person: e.target.value,
+                    }))
+                  }
                   placeholder="IT Admin"
                 />
               </FormControl>
@@ -1148,7 +1359,12 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
                 <FormLabel>Maintenance Schedule</FormLabel>
                 <Input
                   value={assetForm.maintenance_schedule}
-                  onChange={(e) => setAssetForm(prev => ({ ...prev, maintenance_schedule: e.target.value }))}
+                  onChange={(e) =>
+                    setAssetForm((prev) => ({
+                      ...prev,
+                      maintenance_schedule: e.target.value,
+                    }))
+                  }
                   placeholder="Monthly cleaning and updates"
                 />
               </FormControl>
@@ -1159,7 +1375,7 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
               Cancel
             </Button>
             <Button colorScheme="blue" onClick={handleSaveAsset}>
-              {selectedAsset ? 'Update' : 'Create'} Asset
+              {selectedAsset ? "Update" : "Create"} Asset
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -1168,4 +1384,4 @@ const ResourceManagementDashboard: React.FC<ResourceManagementDashboardProps> = 
   );
 };
 
-export default ResourceManagementDashboard; 
+export default ResourceManagementDashboard;

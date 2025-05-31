@@ -1,16 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/router';
-import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { 
-  Building, 
+import React, { useState, useEffect } from "react";
+
+import { useRouter } from "next/router";
+
+import {
+  Building,
   Calendar as CalendarIcon,
   Clock,
   Users,
@@ -27,14 +20,42 @@ import {
   FileText,
   PieChart,
   TrendingUp,
-  Package
-} from 'lucide-react';
-import { GetServerSideProps } from 'next';
+  Package,
+} from "lucide-react";
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/hooks/useAuth";
+
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
 
 // Force Server-Side Rendering
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
@@ -42,96 +63,98 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const meetingRooms = [
   {
     id: 1,
-    name: 'Conference Room A',
+    name: "Conference Room A",
     capacity: 10,
-    floor: '3rd Floor',
-    features: ['Projector', 'Whiteboard', 'Video Conference'],
-    status: 'available',
-    nextBooking: '2:00 PM - 3:00 PM'
+    floor: "3rd Floor",
+    features: ["Projector", "Whiteboard", "Video Conference"],
+    status: "available",
+    nextBooking: "2:00 PM - 3:00 PM",
   },
   {
     id: 2,
-    name: 'Board Room',
+    name: "Board Room",
     capacity: 20,
-    floor: '5th Floor',
-    features: ['Large Screen', 'Video Conference', 'Audio System'],
-    status: 'occupied',
-    currentBooking: 'Strategy Meeting - Until 1:00 PM'
+    floor: "5th Floor",
+    features: ["Large Screen", "Video Conference", "Audio System"],
+    status: "occupied",
+    currentBooking: "Strategy Meeting - Until 1:00 PM",
   },
   {
     id: 3,
-    name: 'Small Meeting Room 1',
+    name: "Small Meeting Room 1",
     capacity: 4,
-    floor: '2nd Floor',
-    features: ['TV Screen', 'Whiteboard'],
-    status: 'available',
-    nextBooking: '4:00 PM - 5:00 PM'
-  }
+    floor: "2nd Floor",
+    features: ["TV Screen", "Whiteboard"],
+    status: "available",
+    nextBooking: "4:00 PM - 5:00 PM",
+  },
 ];
 
 const equipment = [
   {
     id: 1,
-    name: 'Dell Laptop #1',
-    type: 'Laptop',
-    status: 'available',
-    specifications: 'Intel i5, 8GB RAM, 256GB SSD',
-    lastBooked: 'John Doe - 2 days ago'
+    name: "Dell Laptop #1",
+    type: "Laptop",
+    status: "available",
+    specifications: "Intel i5, 8GB RAM, 256GB SSD",
+    lastBooked: "John Doe - 2 days ago",
   },
   {
     id: 2,
-    name: 'Projector - Epson',
-    type: 'Projector',
-    status: 'booked',
-    specifications: '1080p, HDMI, VGA',
-    currentBooking: 'Sarah Smith - Until 5:00 PM'
+    name: "Projector - Epson",
+    type: "Projector",
+    status: "booked",
+    specifications: "1080p, HDMI, VGA",
+    currentBooking: "Sarah Smith - Until 5:00 PM",
   },
   {
     id: 3,
-    name: 'Conference Camera',
-    type: 'Camera',
-    status: 'available',
-    specifications: '4K, Wide Angle, USB-C',
-    lastBooked: 'Mike Johnson - 1 week ago'
-  }
+    name: "Conference Camera",
+    type: "Camera",
+    status: "available",
+    specifications: "4K, Wide Angle, USB-C",
+    lastBooked: "Mike Johnson - 1 week ago",
+  },
 ];
 
 const recentBookings = [
   {
     id: 1,
-    resource: 'Conference Room A',
-    type: 'room',
-    bookedBy: 'John Doe',
-    date: '2024-01-10',
-    time: '10:00 AM - 12:00 PM',
-    status: 'upcoming'
+    resource: "Conference Room A",
+    type: "room",
+    bookedBy: "John Doe",
+    date: "2024-01-10",
+    time: "10:00 AM - 12:00 PM",
+    status: "upcoming",
   },
   {
     id: 2,
-    resource: 'Dell Laptop #1',
-    type: 'equipment',
-    bookedBy: 'Sarah Smith',
-    date: '2024-01-09',
-    time: 'All Day',
-    status: 'active'
-  }
+    resource: "Dell Laptop #1",
+    type: "equipment",
+    bookedBy: "Sarah Smith",
+    date: "2024-01-09",
+    time: "All Day",
+    status: "active",
+  },
 ];
 
 export default function FacilitiesPage() {
   const router = useRouter();
   const { user, role } = useAuth();
-  const [activeTab, setActiveTab] = useState('rooms');
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterFloor, setFilterFloor] = useState('all');
+  const [activeTab, setActiveTab] = useState("rooms");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterFloor, setFilterFloor] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
 
   // Set active tab based on URL query parameter
   useEffect(() => {
     if (router.query.tab) {
       const tab = router.query.tab as string;
-      if (['rooms', 'equipment', 'reports'].includes(tab)) {
+      if (["rooms", "equipment", "reports"].includes(tab)) {
         setActiveTab(tab);
       }
     }
@@ -139,21 +162,27 @@ export default function FacilitiesPage() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    router.push({
-      pathname: router.pathname,
-      query: { tab }
-    }, undefined, { shallow: true });
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { tab },
+      },
+      undefined,
+      { shallow: true },
+    );
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'available':
+      case "available":
         return <Badge className="bg-green-100 text-green-800">Available</Badge>;
-      case 'occupied':
-      case 'booked':
+      case "occupied":
+      case "booked":
         return <Badge className="bg-red-100 text-red-800">Occupied</Badge>;
-      case 'maintenance':
-        return <Badge className="bg-yellow-100 text-yellow-800">Maintenance</Badge>;
+      case "maintenance":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">Maintenance</Badge>
+        );
       default:
         return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
     }
@@ -161,13 +190,13 @@ export default function FacilitiesPage() {
 
   const getEquipmentIcon = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'laptop':
+      case "laptop":
         return <Laptop className="h-5 w-5" />;
-      case 'projector':
+      case "projector":
         return <Projector className="h-5 w-5" />;
-      case 'camera':
+      case "camera":
         return <Monitor className="h-5 w-5" />;
-      case 'headset':
+      case "headset":
         return <Headphones className="h-5 w-5" />;
       default:
         return <Package className="h-5 w-5" />;
@@ -175,12 +204,17 @@ export default function FacilitiesPage() {
   };
 
   return (
-    <ModernDashboardLayout title="Facilities Management" subtitle="Manage meeting rooms, equipment, and facility resources">
+    <ModernDashboardLayout
+      title="Facilities Management"
+      subtitle="Manage meeting rooms, equipment, and facility resources"
+    >
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Available Rooms</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Available Rooms
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -192,7 +226,9 @@ export default function FacilitiesPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Equipment Available</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Equipment Available
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -204,7 +240,9 @@ export default function FacilitiesPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Today's Bookings</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Today's Bookings
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -216,7 +254,9 @@ export default function FacilitiesPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Maintenance Issues</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Maintenance Issues
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -228,7 +268,11 @@ export default function FacilitiesPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="space-y-4"
+      >
         <TabsList>
           <TabsTrigger value="rooms">
             <Building className="mr-2 h-4 w-4" />
@@ -251,7 +295,9 @@ export default function FacilitiesPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Meeting Rooms</CardTitle>
-                  <CardDescription>Book and manage conference rooms</CardDescription>
+                  <CardDescription>
+                    Book and manage conference rooms
+                  </CardDescription>
                 </div>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -297,8 +343,11 @@ export default function FacilitiesPage() {
 
               {/* Room List */}
               <div className="space-y-4">
-                {meetingRooms.map(room => (
-                  <div key={room.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                {meetingRooms.map((room) => (
+                  <div
+                    key={room.id}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -317,18 +366,27 @@ export default function FacilitiesPage() {
                         </div>
                         <div className="flex flex-wrap gap-2 mb-2">
                           {room.features.map((feature, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-xs"
+                            >
                               {feature}
                             </Badge>
                           ))}
                         </div>
                         <div className="text-sm">
-                          {room.status === 'available' ? (
+                          {room.status === "available" ? (
                             <span className="text-gray-600">
-                              Next booking: <span className="font-medium">{room.nextBooking}</span>
+                              Next booking:{" "}
+                              <span className="font-medium">
+                                {room.nextBooking}
+                              </span>
                             </span>
                           ) : (
-                            <span className="text-red-600">{room.currentBooking}</span>
+                            <span className="text-red-600">
+                              {room.currentBooking}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -336,7 +394,7 @@ export default function FacilitiesPage() {
                         <Button variant="outline" size="sm">
                           View Schedule
                         </Button>
-                        {room.status === 'available' && (
+                        {room.status === "available" && (
                           <Button size="sm">Book Now</Button>
                         )}
                       </div>
@@ -355,7 +413,9 @@ export default function FacilitiesPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Equipment Booking</CardTitle>
-                  <CardDescription>Reserve laptops, projectors, and other equipment</CardDescription>
+                  <CardDescription>
+                    Reserve laptops, projectors, and other equipment
+                  </CardDescription>
                 </div>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -365,8 +425,11 @@ export default function FacilitiesPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {equipment.map(item => (
-                  <div key={item.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                {equipment.map((item) => (
+                  <div
+                    key={item.id}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -374,12 +437,18 @@ export default function FacilitiesPage() {
                           <h3 className="text-lg font-semibold">{item.name}</h3>
                           {getStatusBadge(item.status)}
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">{item.specifications}</p>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {item.specifications}
+                        </p>
                         <div className="text-sm">
-                          {item.status === 'available' ? (
-                            <span className="text-gray-600">Last booked: {item.lastBooked}</span>
+                          {item.status === "available" ? (
+                            <span className="text-gray-600">
+                              Last booked: {item.lastBooked}
+                            </span>
                           ) : (
-                            <span className="text-red-600">{item.currentBooking}</span>
+                            <span className="text-red-600">
+                              {item.currentBooking}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -387,7 +456,7 @@ export default function FacilitiesPage() {
                         <Button variant="outline" size="sm">
                           View History
                         </Button>
-                        {item.status === 'available' && (
+                        {item.status === "available" && (
                           <Button size="sm">Book Now</Button>
                         )}
                       </div>
@@ -471,23 +540,38 @@ export default function FacilitiesPage() {
           <Card>
             <CardHeader>
               <CardTitle>Recent Bookings</CardTitle>
-              <CardDescription>Latest facility and equipment bookings</CardDescription>
+              <CardDescription>
+                Latest facility and equipment bookings
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 px-4 font-medium text-gray-500">Resource</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-500">Type</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-500">Booked By</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-500">Date & Time</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-500">Status</th>
+                      <th className="text-left py-2 px-4 font-medium text-gray-500">
+                        Resource
+                      </th>
+                      <th className="text-left py-2 px-4 font-medium text-gray-500">
+                        Type
+                      </th>
+                      <th className="text-left py-2 px-4 font-medium text-gray-500">
+                        Booked By
+                      </th>
+                      <th className="text-left py-2 px-4 font-medium text-gray-500">
+                        Date & Time
+                      </th>
+                      <th className="text-left py-2 px-4 font-medium text-gray-500">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {recentBookings.map(booking => (
-                      <tr key={booking.id} className="border-b hover:bg-gray-50">
+                    {recentBookings.map((booking) => (
+                      <tr
+                        key={booking.id}
+                        className="border-b hover:bg-gray-50"
+                      >
                         <td className="py-3 px-4">{booking.resource}</td>
                         <td className="py-3 px-4">
                           <Badge variant="outline" className="capitalize">
@@ -499,11 +583,13 @@ export default function FacilitiesPage() {
                           {booking.date} • {booking.time}
                         </td>
                         <td className="py-3 px-4">
-                          <Badge className={
-                            booking.status === 'active' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-blue-100 text-blue-800'
-                          }>
+                          <Badge
+                            className={
+                              booking.status === "active"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-blue-100 text-blue-800"
+                            }
+                          >
                             {booking.status}
                           </Badge>
                         </td>
@@ -519,4 +605,3 @@ export default function FacilitiesPage() {
     </ModernDashboardLayout>
   );
 }
- 

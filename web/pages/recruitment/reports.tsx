@@ -1,17 +1,34 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import { 
-  Box, 
-  Heading, 
-  Text, 
-  Button, 
-  Grid, 
-  GridItem, 
-  Flex, 
-  Badge, 
-  Input, 
-  Select, 
+import { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import {
+  SearchIcon,
+  CalendarIcon,
+  DownloadIcon,
+  SettingsIcon,
+  AddIcon,
+  ViewIcon,
+  InfoIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  TriangleUpIcon,
+  TriangleDownIcon,
+  ChevronRightIcon,
+  ExternalLinkIcon,
+} from "@chakra-ui/icons";
+import {
+  Box,
+  Heading,
+  Text,
+  Button,
+  Grid,
+  GridItem,
+  Flex,
+  Badge,
+  Input,
+  Select,
   Card,
   CardBody,
   CardFooter,
@@ -61,26 +78,12 @@ import {
   Tooltip,
   Divider,
   Center,
-  Link
-} from '@chakra-ui/react';
-import {
-  SearchIcon,
-  CalendarIcon,
-  DownloadIcon,
-  SettingsIcon,
-  AddIcon,
-  ViewIcon,
-  InfoIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-  TriangleUpIcon,
-  TriangleDownIcon,
-  ChevronRightIcon,
-  ExternalLinkIcon
-} from '@chakra-ui/icons';
-import { format, subDays, subMonths, subWeeks } from 'date-fns';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { GetServerSideProps } from 'next';
+  Link,
+} from "@chakra-ui/react";
+import { format, subDays, subMonths, subWeeks } from "date-fns";
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
 
 // Mock data interfaces
 interface RecruitmentMetrics {
@@ -157,86 +160,164 @@ const MOCK_METRICS: RecruitmentMetrics = {
   averageTimeToHire: 28,
   costPerHire: 4250,
   sourceEffectiveness: [
-    { source: 'LinkedIn', applications: 423, hires: 8, conversionRate: 1.9, cost: 3200 },
-    { source: 'Indeed', applications: 298, hires: 4, conversionRate: 1.3, cost: 1800 },
-    { source: 'Company Website', applications: 245, hires: 2, conversionRate: 0.8, cost: 500 },
-    { source: 'Employee Referral', applications: 156, hires: 5, conversionRate: 3.2, cost: 2500 },
-    { source: 'Glassdoor', applications: 125, hires: 1, conversionRate: 0.8, cost: 1200 }
+    {
+      source: "LinkedIn",
+      applications: 423,
+      hires: 8,
+      conversionRate: 1.9,
+      cost: 3200,
+    },
+    {
+      source: "Indeed",
+      applications: 298,
+      hires: 4,
+      conversionRate: 1.3,
+      cost: 1800,
+    },
+    {
+      source: "Company Website",
+      applications: 245,
+      hires: 2,
+      conversionRate: 0.8,
+      cost: 500,
+    },
+    {
+      source: "Employee Referral",
+      applications: 156,
+      hires: 5,
+      conversionRate: 3.2,
+      cost: 2500,
+    },
+    {
+      source: "Glassdoor",
+      applications: 125,
+      hires: 1,
+      conversionRate: 0.8,
+      cost: 1200,
+    },
   ],
   departmentMetrics: [
-    { department: 'Engineering', openJobs: 8, applications: 456, interviews: 67, hires: 6, averageTimeToHire: 32 },
-    { department: 'Product', openJobs: 3, applications: 234, interviews: 34, hires: 3, averageTimeToHire: 25 },
-    { department: 'Design', openJobs: 2, applications: 189, interviews: 28, hires: 2, averageTimeToHire: 22 },
-    { department: 'Marketing', openJobs: 3, applications: 198, interviews: 18, hires: 3, averageTimeToHire: 18 },
-    { department: 'Sales', openJobs: 2, applications: 170, interviews: 13, hires: 1, averageTimeToHire: 35 }
+    {
+      department: "Engineering",
+      openJobs: 8,
+      applications: 456,
+      interviews: 67,
+      hires: 6,
+      averageTimeToHire: 32,
+    },
+    {
+      department: "Product",
+      openJobs: 3,
+      applications: 234,
+      interviews: 34,
+      hires: 3,
+      averageTimeToHire: 25,
+    },
+    {
+      department: "Design",
+      openJobs: 2,
+      applications: 189,
+      interviews: 28,
+      hires: 2,
+      averageTimeToHire: 22,
+    },
+    {
+      department: "Marketing",
+      openJobs: 3,
+      applications: 198,
+      interviews: 18,
+      hires: 3,
+      averageTimeToHire: 18,
+    },
+    {
+      department: "Sales",
+      openJobs: 2,
+      applications: 170,
+      interviews: 13,
+      hires: 1,
+      averageTimeToHire: 35,
+    },
   ],
   timeToFillTrend: [
-    { month: 'Oct', days: 31 },
-    { month: 'Nov', days: 28 },
-    { month: 'Dec', days: 35 },
-    { month: 'Jan', days: 25 },
-    { month: 'Feb', days: 28 },
-    { month: 'Mar', days: 22 }
+    { month: "Oct", days: 31 },
+    { month: "Nov", days: 28 },
+    { month: "Dec", days: 35 },
+    { month: "Jan", days: 25 },
+    { month: "Feb", days: 28 },
+    { month: "Mar", days: 22 },
   ],
   applicationStatusDistribution: [
-    { status: 'New', count: 423, percentage: 34 },
-    { status: 'Screening', count: 298, percentage: 24 },
-    { status: 'Interview', count: 245, percentage: 20 },
-    { status: 'Offer', count: 156, percentage: 12 },
-    { status: 'Hired', count: 89, percentage: 7 },
-    { status: 'Rejected', count: 36, percentage: 3 }
+    { status: "New", count: 423, percentage: 34 },
+    { status: "Screening", count: 298, percentage: 24 },
+    { status: "Interview", count: 245, percentage: 20 },
+    { status: "Offer", count: 156, percentage: 12 },
+    { status: "Hired", count: 89, percentage: 7 },
+    { status: "Rejected", count: 36, percentage: 3 },
   ],
   salaryAnalysis: {
     averageSalary: 95000,
     medianSalary: 88000,
     salaryRange: {
       min: 45000,
-      max: 180000
+      max: 180000,
     },
     departmentSalaries: [
-      { department: 'Engineering', average: 115000 },
-      { department: 'Product', average: 105000 },
-      { department: 'Design', average: 85000 },
-      { department: 'Marketing', average: 75000 },
-      { department: 'Sales', average: 70000 }
-    ]
-  }
+      { department: "Engineering", average: 115000 },
+      { department: "Product", average: 105000 },
+      { department: "Design", average: 85000 },
+      { department: "Marketing", average: 75000 },
+      { department: "Sales", average: 70000 },
+    ],
+  },
 };
 
-type DateRange = '7d' | '30d' | '90d' | '1y';
-type ReportType = 'overview' | 'sources' | 'departments' | 'performance' | 'compensation';
+type DateRange = "7d" | "30d" | "90d" | "1y";
+type ReportType =
+  | "overview"
+  | "sources"
+  | "departments"
+  | "performance"
+  | "compensation";
 
 const ReportsPage = () => {
   const router = useRouter();
   const toast = useToast();
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  
+  const cardBg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const bgColor = useColorModeValue("gray.50", "gray.900");
+
   // State
   const [metrics, setMetrics] = useState<RecruitmentMetrics>(MOCK_METRICS);
   const [isLoading, setIsLoading] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange>('30d');
-  const [reportType, setReportType] = useState<ReportType>('overview');
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [dateRange, setDateRange] = useState<DateRange>("30d");
+  const [reportType, setReportType] = useState<ReportType>("overview");
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
 
   // Calculate metrics
-  const conversionRate = metrics.totalApplications > 0 
-    ? Math.round((metrics.hires / metrics.totalApplications) * 100 * 100) / 100 
-    : 0;
-  
-  const offerAcceptanceRate = metrics.offersExtended > 0 
-    ? Math.round((metrics.offerAcceptances / metrics.offersExtended) * 100 * 100) / 100 
-    : 0;
+  const conversionRate =
+    metrics.totalApplications > 0
+      ? Math.round((metrics.hires / metrics.totalApplications) * 100 * 100) /
+        100
+      : 0;
 
-  const interviewToOfferRate = metrics.interviewsCompleted > 0 
-    ? Math.round((metrics.offersExtended / metrics.interviewsCompleted) * 100 * 100) / 100 
-    : 0;
+  const offerAcceptanceRate =
+    metrics.offersExtended > 0
+      ? Math.round(
+          (metrics.offerAcceptances / metrics.offersExtended) * 100 * 100,
+        ) / 100
+      : 0;
+
+  const interviewToOfferRate =
+    metrics.interviewsCompleted > 0
+      ? Math.round(
+          (metrics.offersExtended / metrics.interviewsCompleted) * 100 * 100,
+        ) / 100
+      : 0;
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -244,19 +325,24 @@ const ReportsPage = () => {
 
   const getDateRangeLabel = (range: DateRange) => {
     switch (range) {
-      case '7d': return 'Last 7 days';
-      case '30d': return 'Last 30 days';
-      case '90d': return 'Last 90 days';
-      case '1y': return 'Last 12 months';
-      default: return 'Last 30 days';
+      case "7d":
+        return "Last 7 days";
+      case "30d":
+        return "Last 30 days";
+      case "90d":
+        return "Last 90 days";
+      case "1y":
+        return "Last 12 months";
+      default:
+        return "Last 30 days";
     }
   };
 
   const exportReport = () => {
     toast({
-      title: 'Report exported',
-      description: 'Your recruitment report has been downloaded.',
-      status: 'success',
+      title: "Report exported",
+      description: "Your recruitment report has been downloaded.",
+      status: "success",
       duration: 3000,
       isClosable: true,
     });
@@ -265,48 +351,79 @@ const ReportsPage = () => {
   // Key Metrics Cards
   const KeyMetricsCards = () => (
     <SimpleGrid columns={{ base: 2, md: 3, lg: 6 }} spacing={4} mb={6}>
-      <Stat bg={cardBg} p={4} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
+      <Stat
+        bg={cardBg}
+        p={4}
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor={borderColor}
+      >
         <StatLabel fontSize="xs">Total Applications</StatLabel>
-        <StatNumber fontSize="xl">{metrics.totalApplications.toLocaleString()}</StatNumber>
+        <StatNumber fontSize="xl">
+          {metrics.totalApplications.toLocaleString()}
+        </StatNumber>
         <StatHelpText>
-          <StatArrow type="increase" />
-          +{metrics.newApplications} this period
+          <StatArrow type="increase" />+{metrics.newApplications} this period
         </StatHelpText>
       </Stat>
-      
-      <Stat bg={cardBg} p={4} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
+
+      <Stat
+        bg={cardBg}
+        p={4}
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor={borderColor}
+      >
         <StatLabel fontSize="xs">Active Jobs</StatLabel>
         <StatNumber fontSize="xl">{metrics.activeJobs}</StatNumber>
-        <StatHelpText>
-          of {metrics.totalJobs} total jobs
-        </StatHelpText>
+        <StatHelpText>of {metrics.totalJobs} total jobs</StatHelpText>
       </Stat>
-      
-      <Stat bg={cardBg} p={4} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
+
+      <Stat
+        bg={cardBg}
+        p={4}
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor={borderColor}
+      >
         <StatLabel fontSize="xs">Interviews</StatLabel>
         <StatNumber fontSize="xl">{metrics.interviewsScheduled}</StatNumber>
-        <StatHelpText>
-          {metrics.interviewsCompleted} completed
-        </StatHelpText>
+        <StatHelpText>{metrics.interviewsCompleted} completed</StatHelpText>
       </Stat>
-      
-      <Stat bg={cardBg} p={4} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
+
+      <Stat
+        bg={cardBg}
+        p={4}
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor={borderColor}
+      >
         <StatLabel fontSize="xs">Offers Extended</StatLabel>
         <StatNumber fontSize="xl">{metrics.offersExtended}</StatNumber>
-        <StatHelpText>
-          {offerAcceptanceRate}% acceptance rate
-        </StatHelpText>
+        <StatHelpText>{offerAcceptanceRate}% acceptance rate</StatHelpText>
       </Stat>
-      
-      <Stat bg={cardBg} p={4} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
+
+      <Stat
+        bg={cardBg}
+        p={4}
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor={borderColor}
+      >
         <StatLabel fontSize="xs">Hires</StatLabel>
-        <StatNumber fontSize="xl" color="green.500">{metrics.hires}</StatNumber>
-        <StatHelpText>
-          {conversionRate}% conversion rate
-        </StatHelpText>
+        <StatNumber fontSize="xl" color="green.500">
+          {metrics.hires}
+        </StatNumber>
+        <StatHelpText>{conversionRate}% conversion rate</StatHelpText>
       </Stat>
-      
-      <Stat bg={cardBg} p={4} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
+
+      <Stat
+        bg={cardBg}
+        p={4}
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor={borderColor}
+      >
         <StatLabel fontSize="xs">Avg Time to Hire</StatLabel>
         <StatNumber fontSize="xl">{metrics.averageTimeToHire}</StatNumber>
         <StatHelpText>days</StatHelpText>
@@ -325,15 +442,33 @@ const ReportsPage = () => {
           {metrics.applicationStatusDistribution.map((status, index) => (
             <Box key={status.status}>
               <Flex justify="space-between" mb={2}>
-                <Text fontSize="sm" fontWeight="medium">{status.status}</Text>
+                <Text fontSize="sm" fontWeight="medium">
+                  {status.status}
+                </Text>
                 <HStack spacing={2}>
-                  <Text fontSize="sm" color="gray.500">{status.count}</Text>
-                  <Text fontSize="sm" fontWeight="medium">{status.percentage}%</Text>
+                  <Text fontSize="sm" color="gray.500">
+                    {status.count}
+                  </Text>
+                  <Text fontSize="sm" fontWeight="medium">
+                    {status.percentage}%
+                  </Text>
                 </HStack>
               </Flex>
-              <Progress 
-                value={status.percentage} 
-                colorScheme={index === 0 ? 'blue' : index === 1 ? 'orange' : index === 2 ? 'yellow' : index === 3 ? 'purple' : index === 4 ? 'green' : 'red'}
+              <Progress
+                value={status.percentage}
+                colorScheme={
+                  index === 0
+                    ? "blue"
+                    : index === 1
+                      ? "orange"
+                      : index === 2
+                        ? "yellow"
+                        : index === 3
+                          ? "purple"
+                          : index === 4
+                            ? "green"
+                            : "red"
+                }
                 size="sm"
                 borderRadius="md"
               />
@@ -370,14 +505,36 @@ const ReportsPage = () => {
                   <Td isNumeric>{source.applications}</Td>
                   <Td isNumeric>{source.hires}</Td>
                   <Td isNumeric>
-                    <Badge colorScheme={source.conversionRate > 2 ? 'green' : source.conversionRate > 1 ? 'yellow' : 'red'} variant="subtle">
+                    <Badge
+                      colorScheme={
+                        source.conversionRate > 2
+                          ? "green"
+                          : source.conversionRate > 1
+                            ? "yellow"
+                            : "red"
+                      }
+                      variant="subtle"
+                    >
                       {source.conversionRate}%
                     </Badge>
                   </Td>
                   <Td isNumeric>{formatCurrency(source.cost)}</Td>
                   <Td isNumeric>
-                    <Badge colorScheme={source.cost < 3000 ? 'green' : source.cost < 4000 ? 'yellow' : 'red'} variant="outline">
-                      {source.cost < 3000 ? 'High' : source.cost < 4000 ? 'Medium' : 'Low'}
+                    <Badge
+                      colorScheme={
+                        source.cost < 3000
+                          ? "green"
+                          : source.cost < 4000
+                            ? "yellow"
+                            : "red"
+                      }
+                      variant="outline"
+                    >
+                      {source.cost < 3000
+                        ? "High"
+                        : source.cost < 4000
+                          ? "Medium"
+                          : "Low"}
                     </Badge>
                   </Td>
                 </Tr>
@@ -411,7 +568,11 @@ const ReportsPage = () => {
             </Thead>
             <Tbody>
               {metrics.departmentMetrics.map((dept) => {
-                const conversionRate = dept.applications > 0 ? Math.round((dept.hires / dept.applications) * 100 * 100) / 100 : 0;
+                const conversionRate =
+                  dept.applications > 0
+                    ? Math.round((dept.hires / dept.applications) * 100 * 100) /
+                      100
+                    : 0;
                 return (
                   <Tr key={dept.department}>
                     <Td fontWeight="medium">{dept.department}</Td>
@@ -421,7 +582,16 @@ const ReportsPage = () => {
                     <Td isNumeric>{dept.hires}</Td>
                     <Td isNumeric>{dept.averageTimeToHire} days</Td>
                     <Td isNumeric>
-                      <Badge colorScheme={conversionRate > 2 ? 'green' : conversionRate > 1 ? 'yellow' : 'red'} variant="subtle">
+                      <Badge
+                        colorScheme={
+                          conversionRate > 2
+                            ? "green"
+                            : conversionRate > 1
+                              ? "yellow"
+                              : "red"
+                        }
+                        variant="subtle"
+                      >
                         {conversionRate}%
                       </Badge>
                     </Td>
@@ -459,18 +629,25 @@ const ReportsPage = () => {
             <Stat textAlign="center">
               <StatLabel fontSize="xs">Salary Range</StatLabel>
               <StatNumber fontSize="sm">
-                {formatCurrency(metrics.salaryAnalysis.salaryRange.min)} - {formatCurrency(metrics.salaryAnalysis.salaryRange.max)}
+                {formatCurrency(metrics.salaryAnalysis.salaryRange.min)} -{" "}
+                {formatCurrency(metrics.salaryAnalysis.salaryRange.max)}
               </StatNumber>
             </Stat>
           </SimpleGrid>
-          
+
           <Divider />
-          
+
           <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={3}>Average Salary by Department</Text>
+            <Text fontSize="sm" fontWeight="medium" mb={3}>
+              Average Salary by Department
+            </Text>
             <VStack spacing={3} align="stretch">
               {metrics.salaryAnalysis.departmentSalaries.map((dept) => (
-                <Flex key={dept.department} justify="space-between" align="center">
+                <Flex
+                  key={dept.department}
+                  justify="space-between"
+                  align="center"
+                >
                   <Text fontSize="sm">{dept.department}</Text>
                   <Text fontSize="sm" fontWeight="medium">
                     {formatCurrency(dept.average)}
@@ -489,38 +666,54 @@ const ReportsPage = () => {
     <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} mb={6}>
       <Card bg={cardBg} borderColor={borderColor} p={4}>
         <VStack spacing={2}>
-          <Text fontSize="xs" color="gray.500">Conversion Rate</Text>
-          <Text fontSize="2xl" fontWeight="bold" color="blue.500">{conversionRate}%</Text>
+          <Text fontSize="xs" color="gray.500">
+            Conversion Rate
+          </Text>
+          <Text fontSize="2xl" fontWeight="bold" color="blue.500">
+            {conversionRate}%
+          </Text>
           <Text fontSize="xs" color="green.500">
             <ChevronUpIcon boxSize={3} /> +0.5% vs last period
           </Text>
         </VStack>
       </Card>
-      
+
       <Card bg={cardBg} borderColor={borderColor} p={4}>
         <VStack spacing={2}>
-          <Text fontSize="xs" color="gray.500">Offer Acceptance</Text>
-          <Text fontSize="2xl" fontWeight="bold" color="green.500">{offerAcceptanceRate}%</Text>
+          <Text fontSize="xs" color="gray.500">
+            Offer Acceptance
+          </Text>
+          <Text fontSize="2xl" fontWeight="bold" color="green.500">
+            {offerAcceptanceRate}%
+          </Text>
           <Text fontSize="xs" color="green.500">
             <ChevronUpIcon boxSize={3} /> +2.1% vs last period
           </Text>
         </VStack>
       </Card>
-      
+
       <Card bg={cardBg} borderColor={borderColor} p={4}>
         <VStack spacing={2}>
-          <Text fontSize="xs" color="gray.500">Interview to Offer</Text>
-          <Text fontSize="2xl" fontWeight="bold" color="purple.500">{interviewToOfferRate}%</Text>
+          <Text fontSize="xs" color="gray.500">
+            Interview to Offer
+          </Text>
+          <Text fontSize="2xl" fontWeight="bold" color="purple.500">
+            {interviewToOfferRate}%
+          </Text>
           <Text fontSize="xs" color="red.500">
             <ChevronDownIcon boxSize={3} /> -1.2% vs last period
           </Text>
         </VStack>
       </Card>
-      
+
       <Card bg={cardBg} borderColor={borderColor} p={4}>
         <VStack spacing={2}>
-          <Text fontSize="xs" color="gray.500">Cost per Hire</Text>
-          <Text fontSize="2xl" fontWeight="bold" color="orange.500">{formatCurrency(metrics.costPerHire)}</Text>
+          <Text fontSize="xs" color="gray.500">
+            Cost per Hire
+          </Text>
+          <Text fontSize="2xl" fontWeight="bold" color="orange.500">
+            {formatCurrency(metrics.costPerHire)}
+          </Text>
           <Text fontSize="xs" color="green.500">
             <ChevronDownIcon boxSize={3} /> -$350 vs last period
           </Text>
@@ -533,16 +726,19 @@ const ReportsPage = () => {
     <>
       <Head>
         <title>Recruitment Reports | HR Portal</title>
-        <meta name="description" content="Recruitment analytics and reporting dashboard" />
+        <meta
+          name="description"
+          content="Recruitment analytics and reporting dashboard"
+        />
       </Head>
-      
+
       <ModernDashboardLayout>
         <Box bg={bgColor} minH="100vh" pb={8}>
           <Container maxW="full" py={6}>
             {/* Breadcrumb */}
             <Breadcrumb mb={6} fontSize="sm">
               <BreadcrumbItem>
-                <BreadcrumbLink onClick={() => router.push('/dashboard')}>
+                <BreadcrumbLink onClick={() => router.push("/dashboard")}>
                   Dashboard
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -558,12 +754,14 @@ const ReportsPage = () => {
             <Flex justify="space-between" align="center" mb={6}>
               <Box>
                 <Heading size="lg">Recruitment Analytics</Heading>
-                <Text color="gray.600">Data-driven insights for your recruitment process</Text>
+                <Text color="gray.600">
+                  Data-driven insights for your recruitment process
+                </Text>
               </Box>
-              
+
               <HStack spacing={3}>
-                <Select 
-                  value={dateRange} 
+                <Select
+                  value={dateRange}
                   onChange={(e) => setDateRange(e.target.value as DateRange)}
                   width="auto"
                   size="sm"
@@ -573,15 +771,19 @@ const ReportsPage = () => {
                   <option value="90d">Last 90 days</option>
                   <option value="1y">Last 12 months</option>
                 </Select>
-                
+
                 <ButtonGroup spacing={2}>
-                  <Button variant="outline" leftIcon={<DownloadIcon />} onClick={exportReport}>
+                  <Button
+                    variant="outline"
+                    leftIcon={<DownloadIcon />}
+                    onClick={exportReport}
+                  >
                     Export Report
                   </Button>
-                  <Button 
-                    colorScheme="blue" 
+                  <Button
+                    colorScheme="blue"
                     leftIcon={<AddIcon />}
-                    onClick={() => router.push('/jobs/new')}
+                    onClick={() => router.push("/jobs/new")}
                   >
                     Post New Job
                   </Button>
@@ -594,7 +796,8 @@ const ReportsPage = () => {
               <AlertIcon />
               <AlertTitle>Showing data for:</AlertTitle>
               <AlertDescription>
-                {getDateRangeLabel(dateRange)} ({format(new Date(), 'MMM d, yyyy')})
+                {getDateRangeLabel(dateRange)} (
+                {format(new Date(), "MMM d, yyyy")})
               </AlertDescription>
             </Alert>
 
@@ -617,7 +820,10 @@ const ReportsPage = () => {
               <TabPanels>
                 {/* Overview Tab */}
                 <TabPanel p={0}>
-                  <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={6}>
+                  <Grid
+                    templateColumns={{ base: "1fr", lg: "2fr 1fr" }}
+                    gap={6}
+                  >
                     <ApplicationStatusChart />
                     <VStack spacing={6}>
                       <Card bg={cardBg} borderColor={borderColor} width="100%">
@@ -626,29 +832,47 @@ const ReportsPage = () => {
                         </CardHeader>
                         <CardBody>
                           <VStack spacing={3} align="stretch">
-                            <Button variant="outline" leftIcon={<ViewIcon />} onClick={() => router.push('/applications')}>
+                            <Button
+                              variant="outline"
+                              leftIcon={<ViewIcon />}
+                              onClick={() => router.push("/applications")}
+                            >
                               Review Applications
                             </Button>
-                            <Button variant="outline" leftIcon={<CalendarIcon />} onClick={() => router.push('/interviews')}>
+                            <Button
+                              variant="outline"
+                              leftIcon={<CalendarIcon />}
+                              onClick={() => router.push("/interviews")}
+                            >
                               Schedule Interviews
                             </Button>
-                            <Button variant="outline" leftIcon={<ExternalLinkIcon />} onClick={() => router.push('/offers')}>
+                            <Button
+                              variant="outline"
+                              leftIcon={<ExternalLinkIcon />}
+                              onClick={() => router.push("/offers")}
+                            >
                               Manage Offers
                             </Button>
-                            <Button variant="outline" leftIcon={<AddIcon />} onClick={() => router.push('/jobs/new')}>
+                            <Button
+                              variant="outline"
+                              leftIcon={<AddIcon />}
+                              onClick={() => router.push("/jobs/new")}
+                            >
                               Post New Job
                             </Button>
                           </VStack>
                         </CardBody>
                       </Card>
-                      
+
                       <Card bg={cardBg} borderColor={borderColor} width="100%">
                         <CardHeader>
                           <Heading size="sm">Recent Activity</Heading>
                         </CardHeader>
                         <CardBody>
                           <VStack spacing={3} align="stretch">
-                            <Text fontSize="xs" color="gray.500">Today</Text>
+                            <Text fontSize="xs" color="gray.500">
+                              Today
+                            </Text>
                             <HStack justify="space-between">
                               <Text fontSize="sm">New applications</Text>
                               <Badge colorScheme="blue">+12</Badge>
@@ -694,7 +918,8 @@ const ReportsPage = () => {
                         <VStack spacing={4}>
                           <Text color="gray.500">Time to Fill Trend Chart</Text>
                           <Text fontSize="sm" color="gray.400">
-                            Advanced charts and trends visualization coming soon...
+                            Advanced charts and trends visualization coming
+                            soon...
                           </Text>
                           <Button variant="outline" size="sm">
                             View Historical Data
@@ -713,13 +938,11 @@ const ReportsPage = () => {
   );
 };
 
-
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
-
-export default ReportsPage; 
+export default ReportsPage;

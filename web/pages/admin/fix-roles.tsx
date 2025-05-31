@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { supabase } from '../../lib/supabase/client';
-import { useAuth } from '../../hooks/useAuth';
-import { useRouter } from 'next/router';
-import { GetServerSideProps } from 'next';
+import React, { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import { GetServerSideProps } from "next";
+
+import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../lib/supabase/client";
 
 interface Profile {
   id: string;
@@ -14,26 +17,24 @@ interface Profile {
   created_at: string;
 }
 
-
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
-
 
 export default function FixRolesPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const { user, role } = useAuth();
   const router = useRouter();
 
   // Only allow admin access
   useEffect(() => {
-    if (user && role && role !== 'admin') {
-      router.push('/dashboard');
+    if (user && role && role !== "admin") {
+      router.push("/dashboard");
     }
   }, [user, role, router]);
 
@@ -44,19 +45,19 @@ export default function FixRolesPage() {
   const fetchProfiles = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, email, first_name, last_name, role, created_at')
-        .order('created_at', { ascending: false });
+        .from("profiles")
+        .select("id, email, first_name, last_name, role, created_at")
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching profiles:', error);
-        setMessage('Error fetching profiles: ' + error.message);
+        console.error("Error fetching profiles:", error);
+        setMessage("Error fetching profiles: " + error.message);
       } else {
         setProfiles(data || []);
       }
     } catch (err) {
-      console.error('Unexpected error:', err);
-      setMessage('Unexpected error fetching profiles');
+      console.error("Unexpected error:", err);
+      setMessage("Unexpected error fetching profiles");
     } finally {
       setLoading(false);
     }
@@ -65,50 +66,52 @@ export default function FixRolesPage() {
   const fixRole = async (profileId: string, newRole: string) => {
     try {
       const { error } = await supabase
-        .from('profiles')
-        .update({ 
+        .from("profiles")
+        .update({
           role: newRole,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', profileId);
+        .eq("id", profileId);
 
       if (error) {
-        setMessage('Error updating role: ' + error.message);
+        setMessage("Error updating role: " + error.message);
       } else {
         setMessage(`Successfully updated role to ${newRole}`);
         fetchProfiles(); // Refresh the list
       }
     } catch (err) {
-      console.error('Error updating role:', err);
-      setMessage('Unexpected error updating role');
+      console.error("Error updating role:", err);
+      setMessage("Unexpected error updating role");
     }
   };
 
   const fixAllNullRoles = async () => {
     try {
       const { error } = await supabase
-        .from('profiles')
-        .update({ role: 'employee' })
-        .is('role', null);
+        .from("profiles")
+        .update({ role: "employee" })
+        .is("role", null);
 
       if (error) {
-        setMessage('Error fixing null roles: ' + error.message);
+        setMessage("Error fixing null roles: " + error.message);
       } else {
-        setMessage('Successfully fixed all null roles');
+        setMessage("Successfully fixed all null roles");
         fetchProfiles();
       }
     } catch (err) {
-      console.error('Error fixing null roles:', err);
-      setMessage('Unexpected error fixing null roles');
+      console.error("Error fixing null roles:", err);
+      setMessage("Unexpected error fixing null roles");
     }
   };
 
-  if (role !== 'admin') {
+  if (role !== "admin") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">Access Denied</h1>
-          <p className="text-gray-600 mt-2">Only administrators can access this page.</p>
+          <p className="text-gray-600 mt-2">
+            Only administrators can access this page.
+          </p>
         </div>
       </div>
     );
@@ -124,8 +127,12 @@ export default function FixRolesPage() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Fix User Roles</h1>
-              <p className="text-gray-600">Admin utility to check and fix user role assignments</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Fix User Roles
+              </h1>
+              <p className="text-gray-600">
+                Admin utility to check and fix user role assignments
+              </p>
             </div>
             <button
               onClick={fixAllNullRoles}
@@ -136,11 +143,13 @@ export default function FixRolesPage() {
           </div>
 
           {message && (
-            <div className={`mb-4 p-3 rounded-md ${
-              message.includes('Error') || message.includes('error') 
-                ? 'bg-red-50 text-red-700 border border-red-200'
-                : 'bg-green-50 text-green-700 border border-green-200'
-            }`}>
+            <div
+              className={`mb-4 p-3 rounded-md ${
+                message.includes("Error") || message.includes("error")
+                  ? "bg-red-50 text-red-700 border border-red-200"
+                  : "bg-green-50 text-green-700 border border-green-200"
+              }`}
+            >
               {message}
             </div>
           )}
@@ -173,18 +182,25 @@ export default function FixRolesPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {profiles.map((profile) => (
-                    <tr key={profile.id} className={profile.role === null ? 'bg-red-50' : ''}>
+                    <tr
+                      key={profile.id}
+                      className={profile.role === null ? "bg-red-50" : ""}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {profile.first_name} {profile.last_name}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{profile.email}</div>
+                        <div className="text-sm text-gray-900">
+                          {profile.email}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`text-sm ${profile.role === null ? 'text-red-600 font-medium' : 'text-gray-900'}`}>
-                          {profile.role || 'NULL'}
+                        <div
+                          className={`text-sm ${profile.role === null ? "text-red-600 font-medium" : "text-gray-900"}`}
+                        >
+                          {profile.role || "NULL"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -192,7 +208,10 @@ export default function FixRolesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <select
-                          onChange={(e) => e.target.value && fixRole(profile.id, e.target.value)}
+                          onChange={(e) =>
+                            e.target.value &&
+                            fixRole(profile.id, e.target.value)
+                          }
                           className="text-sm border border-gray-300 rounded px-2 py-1"
                           defaultValue=""
                         >
@@ -212,11 +231,16 @@ export default function FixRolesPage() {
           )}
 
           <div className="mt-6 text-sm text-gray-500">
-            <p><strong>Total profiles:</strong> {profiles.length}</p>
-            <p><strong>Profiles with null roles:</strong> {profiles.filter(p => p.role === null).length}</p>
+            <p>
+              <strong>Total profiles:</strong> {profiles.length}
+            </p>
+            <p>
+              <strong>Profiles with null roles:</strong>{" "}
+              {profiles.filter((p) => p.role === null).length}
+            </p>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

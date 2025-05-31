@@ -3,41 +3,42 @@
  * Sets up mock authentication to prevent login redirects
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-console.log('🔧 Fixing Jobs Page Authentication Issue...\n');
+console.log("🔧 Fixing Jobs Page Authentication Issue...\n");
 
 // Read the jobs index file
-const jobsPagePath = path.join(process.cwd(), 'pages/jobs/index.tsx');
+const jobsPagePath = path.join(process.cwd(), "pages/jobs/index.tsx");
 
 if (!fs.existsSync(jobsPagePath)) {
-  console.error('❌ Jobs page not found at:', jobsPagePath);
+  console.error("❌ Jobs page not found at:", jobsPagePath);
   process.exit(1);
 }
 
-const content = fs.readFileSync(jobsPagePath, 'utf8');
+const content = fs.readFileSync(jobsPagePath, "utf8");
 
 // Check if the page has RequireRole wrapper
-const hasRequireRole = content.includes('<RequireRole');
+const hasRequireRole = content.includes("<RequireRole");
 
 if (hasRequireRole) {
-  console.log('🔍 Found RequireRole wrapper causing auth redirect...');
-  
+  console.log("🔍 Found RequireRole wrapper causing auth redirect...");
+
   // Option 1: Remove RequireRole wrapper for jobs page (since jobs should be public)
   const newContent = content
-    .replace(/import.*RequireRole.*from.*;\n/, '')
-    .replace(/<RequireRole[^>]*>\s*/g, '')
-    .replace(/\s*<\/RequireRole>/g, '');
-  
+    .replace(/import.*RequireRole.*from.*;\n/, "")
+    .replace(/<RequireRole[^>]*>\s*/g, "")
+    .replace(/\s*<\/RequireRole>/g, "");
+
   // Write the fixed content
-  fs.writeFileSync(jobsPagePath, newContent, 'utf8');
-  
-  console.log('✅ Removed RequireRole wrapper from jobs page');
-  console.log('✅ Jobs page should now be accessible without authentication');
-  
+  fs.writeFileSync(jobsPagePath, newContent, "utf8");
+
+  console.log("✅ Removed RequireRole wrapper from jobs page");
+  console.log("✅ Jobs page should now be accessible without authentication");
 } else {
-  console.log('ℹ️  No RequireRole wrapper found - jobs page should be accessible');
+  console.log(
+    "ℹ️  No RequireRole wrapper found - jobs page should be accessible",
+  );
 }
 
 // Create a public jobs page test
@@ -177,18 +178,18 @@ export default function JobsTestPage() {
 }`;
 
 // Create the test page
-const testPagePath = path.join(process.cwd(), 'pages/jobs-test.tsx');
-fs.writeFileSync(testPagePath, testPageContent, 'utf8');
+const testPagePath = path.join(process.cwd(), "pages/jobs-test.tsx");
+fs.writeFileSync(testPagePath, testPageContent, "utf8");
 
-console.log('✅ Created test page: /jobs-test');
-console.log('\n🎯 Fix Summary:');
-console.log('1. ✅ Removed RequireRole wrapper from jobs page');
-console.log('2. ✅ Created jobs-test page for verification');
-console.log('3. ✅ Jobs page should now be publicly accessible');
+console.log("✅ Created test page: /jobs-test");
+console.log("\n🎯 Fix Summary:");
+console.log("1. ✅ Removed RequireRole wrapper from jobs page");
+console.log("2. ✅ Created jobs-test page for verification");
+console.log("3. ✅ Jobs page should now be publicly accessible");
 
-console.log('\n📝 Next Steps:');
-console.log('1. Test the jobs page: http://localhost:3000/jobs');
-console.log('2. Test the test page: http://localhost:3000/jobs-test');
-console.log('3. Commit changes if working correctly');
+console.log("\n📝 Next Steps:");
+console.log("1. Test the jobs page: http://localhost:3000/jobs");
+console.log("2. Test the test page: http://localhost:3000/jobs-test");
+console.log("3. Commit changes if working correctly");
 
-console.log('\n✅ Jobs authentication issue fixed!'); 
+console.log("\n✅ Jobs authentication issue fixed!");

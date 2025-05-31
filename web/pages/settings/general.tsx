@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { useRouter } from 'next/router';
-import { useAuth } from '../../hooks/useAuth';
-import { shouldBypassAuth } from '@/lib/auth';
-import type { NextPage } from 'next';
-import { GetServerSideProps } from 'next';
+import React, { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import type { NextPage } from "next";
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+import { shouldBypassAuth } from "@/lib/auth";
+
+import { useAuth } from "../../hooks/useAuth";
 
 interface GeneralSettings {
   language: string;
@@ -27,23 +31,27 @@ const GeneralSettingsPage: NextPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState<GeneralSettings>({
-    language: 'en',
-    timezone: 'UTC',
-    dateFormat: 'MM/DD/YYYY',
-    timeFormat: '12h',
-    theme: 'light',
+    language: "en",
+    timezone: "UTC",
+    dateFormat: "MM/DD/YYYY",
+    timeFormat: "12h",
+    theme: "light",
     notifications: true,
     autoSave: true,
     sessionTimeout: 60,
-    defaultView: 'dashboard',
-    itemsPerPage: 25
+    defaultView: "dashboard",
+    itemsPerPage: 25,
   });
 
   // Ensure user has access to this page
   useEffect(() => {
-    if (!allowAccess && !['employee', 'manager', 'admin'].includes(role) && !authLoading) {
+    if (
+      !allowAccess &&
+      !["employee", "manager", "admin"].includes(role) &&
+      !authLoading
+    ) {
       // Redirect user to login if they don't have access
-      router.push('/login');
+      router.push("/login");
     }
   }, [allowAccess, role, router, authLoading]);
 
@@ -54,7 +62,7 @@ const GeneralSettingsPage: NextPage = () => {
         // Mock data - replace with actual API call
         setIsLoading(false);
       } catch (error) {
-        console.error('Error loading settings:', error);
+        console.error("Error loading settings:", error);
         setIsLoading(false);
       }
     };
@@ -73,9 +81,9 @@ const GeneralSettingsPage: NextPage = () => {
   }, [authLoading]);
 
   const handleSettingChange = (key: keyof GeneralSettings, value: any) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
@@ -83,34 +91,36 @@ const GeneralSettingsPage: NextPage = () => {
     setIsSaving(true);
     try {
       // Here you would make an API call to save the settings
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('General settings saved successfully!');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      alert("General settings saved successfully!");
     } catch (error) {
-      console.error('Error saving settings:', error);
-      alert('Failed to save settings. Please try again.');
+      console.error("Error saving settings:", error);
+      alert("Failed to save settings. Please try again.");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleReset = () => {
-    if (confirm('Are you sure you want to reset all settings to default values?')) {
+    if (
+      confirm("Are you sure you want to reset all settings to default values?")
+    ) {
       setSettings({
-        language: 'en',
-        timezone: 'UTC',
-        dateFormat: 'MM/DD/YYYY',
-        timeFormat: '12h',
-        theme: 'light',
+        language: "en",
+        timezone: "UTC",
+        dateFormat: "MM/DD/YYYY",
+        timeFormat: "12h",
+        theme: "light",
         notifications: true,
         autoSave: true,
         sessionTimeout: 60,
-        defaultView: 'dashboard',
-        itemsPerPage: 25
+        defaultView: "dashboard",
+        itemsPerPage: 25,
       });
     }
   };
 
-  if (!allowAccess && !['employee', 'manager', 'admin'].includes(role)) {
+  if (!allowAccess && !["employee", "manager", "admin"].includes(role)) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -122,16 +132,23 @@ const GeneralSettingsPage: NextPage = () => {
     <>
       <Head>
         <title>General Settings - HR Management</title>
-        <meta name="description" content="Configure general system preferences and settings" />
+        <meta
+          name="description"
+          content="Configure general system preferences and settings"
+        />
       </Head>
-      
+
       <div className="container mx-auto p-6">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">General Settings</h1>
-              <p className="text-gray-600 mt-1">Configure system preferences and user experience settings</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                General Settings
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Configure system preferences and user experience settings
+              </p>
             </div>
             <div className="flex space-x-4">
               <button
@@ -151,7 +168,7 @@ const GeneralSettingsPage: NextPage = () => {
                     Saving...
                   </div>
                 ) : (
-                  'Save Settings'
+                  "Save Settings"
                 )}
               </button>
             </div>
@@ -166,7 +183,9 @@ const GeneralSettingsPage: NextPage = () => {
           <div className="space-y-6">
             {/* Language and Localization */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold mb-4">Language & Localization</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                Language & Localization
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -174,7 +193,9 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.language}
-                    onChange={(e) => handleSettingChange('language', e.target.value)}
+                    onChange={(e) =>
+                      handleSettingChange("language", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="en">English</option>
@@ -191,14 +212,26 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.timezone}
-                    onChange={(e) => handleSettingChange('timezone', e.target.value)}
+                    onChange={(e) =>
+                      handleSettingChange("timezone", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
-                    <option value="UTC">UTC (Coordinated Universal Time)</option>
-                    <option value="America/New_York">Eastern Time (EST/EDT)</option>
-                    <option value="America/Chicago">Central Time (CST/CDT)</option>
-                    <option value="America/Denver">Mountain Time (MST/MDT)</option>
-                    <option value="America/Los_Angeles">Pacific Time (PST/PDT)</option>
+                    <option value="UTC">
+                      UTC (Coordinated Universal Time)
+                    </option>
+                    <option value="America/New_York">
+                      Eastern Time (EST/EDT)
+                    </option>
+                    <option value="America/Chicago">
+                      Central Time (CST/CDT)
+                    </option>
+                    <option value="America/Denver">
+                      Mountain Time (MST/MDT)
+                    </option>
+                    <option value="America/Los_Angeles">
+                      Pacific Time (PST/PDT)
+                    </option>
                     <option value="Europe/London">London (GMT/BST)</option>
                     <option value="Europe/Paris">Paris (CET/CEST)</option>
                     <option value="Asia/Tokyo">Tokyo (JST)</option>
@@ -210,7 +243,9 @@ const GeneralSettingsPage: NextPage = () => {
 
             {/* Date and Time Formats */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold mb-4">Date & Time Formats</h2>
+              <h2 className="text-lg font-semibold mb-4">
+                Date & Time Formats
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -218,13 +253,17 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.dateFormat}
-                    onChange={(e) => handleSettingChange('dateFormat', e.target.value)}
+                    onChange={(e) =>
+                      handleSettingChange("dateFormat", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="MM/DD/YYYY">MM/DD/YYYY (12/31/2024)</option>
                     <option value="DD/MM/YYYY">DD/MM/YYYY (31/12/2024)</option>
                     <option value="YYYY-MM-DD">YYYY-MM-DD (2024-12-31)</option>
-                    <option value="MMM DD, YYYY">MMM DD, YYYY (Dec 31, 2024)</option>
+                    <option value="MMM DD, YYYY">
+                      MMM DD, YYYY (Dec 31, 2024)
+                    </option>
                   </select>
                 </div>
                 <div>
@@ -233,7 +272,9 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.timeFormat}
-                    onChange={(e) => handleSettingChange('timeFormat', e.target.value)}
+                    onChange={(e) =>
+                      handleSettingChange("timeFormat", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="12h">12-hour (2:30 PM)</option>
@@ -253,7 +294,9 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.theme}
-                    onChange={(e) => handleSettingChange('theme', e.target.value)}
+                    onChange={(e) =>
+                      handleSettingChange("theme", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="light">Light</option>
@@ -267,7 +310,9 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.defaultView}
-                    onChange={(e) => handleSettingChange('defaultView', e.target.value)}
+                    onChange={(e) =>
+                      handleSettingChange("defaultView", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="dashboard">Dashboard</option>
@@ -287,28 +332,38 @@ const GeneralSettingsPage: NextPage = () => {
                   <input
                     type="checkbox"
                     checked={settings.notifications}
-                    onChange={(e) => handleSettingChange('notifications', e.target.checked)}
+                    onChange={(e) =>
+                      handleSettingChange("notifications", e.target.checked)
+                    }
                     className="rounded border-gray-300 text-blue-600 mr-3"
                   />
                   <div>
-                    <span className="text-sm font-medium">Enable Notifications</span>
-                    <p className="text-xs text-gray-500">Show system notifications and alerts</p>
+                    <span className="text-sm font-medium">
+                      Enable Notifications
+                    </span>
+                    <p className="text-xs text-gray-500">
+                      Show system notifications and alerts
+                    </p>
                   </div>
                 </label>
                 <label className="flex items-center">
                   <input
                     type="checkbox"
                     checked={settings.autoSave}
-                    onChange={(e) => handleSettingChange('autoSave', e.target.checked)}
+                    onChange={(e) =>
+                      handleSettingChange("autoSave", e.target.checked)
+                    }
                     className="rounded border-gray-300 text-blue-600 mr-3"
                   />
                   <div>
                     <span className="text-sm font-medium">Auto-save</span>
-                    <p className="text-xs text-gray-500">Automatically save form data while typing</p>
+                    <p className="text-xs text-gray-500">
+                      Automatically save form data while typing
+                    </p>
                   </div>
                 </label>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -316,7 +371,12 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.sessionTimeout}
-                    onChange={(e) => handleSettingChange('sessionTimeout', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleSettingChange(
+                        "sessionTimeout",
+                        parseInt(e.target.value),
+                      )
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value={15}>15 minutes</option>
@@ -332,7 +392,12 @@ const GeneralSettingsPage: NextPage = () => {
                   </label>
                   <select
                     value={settings.itemsPerPage}
-                    onChange={(e) => handleSettingChange('itemsPerPage', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleSettingChange(
+                        "itemsPerPage",
+                        parseInt(e.target.value),
+                      )
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value={10}>10</option>
@@ -350,13 +415,11 @@ const GeneralSettingsPage: NextPage = () => {
   );
 };
 
-
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
-
-export default GeneralSettingsPage; 
+export default GeneralSettingsPage;

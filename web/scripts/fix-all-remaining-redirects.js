@@ -3,8 +3,8 @@
  * Comprehensive fix for all pages that still have hardcoded login redirects
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track all changes made
 let changesLog = [];
@@ -18,21 +18,21 @@ function logChange(file, action) {
 
 // List of pages with hardcoded redirects that need fixing
 const pagesToFix = [
-  'pages/calendar.tsx',
-  'pages/candidate/dashboard.tsx',
-  'pages/careers/jobs/[id]/apply.tsx',
-  'pages/facilities/equipment.tsx',
-  'pages/expenses/reports.tsx',
-  'pages/facilities/reports.tsx',
-  'pages/learning.tsx',
-  'pages/leave/approvals.tsx',
-  'pages/people/add.tsx',
-  'pages/people/reports.tsx',
-  'pages/people/[id].tsx',
-  'pages/settings/general.tsx',
-  'pages/settings/index.tsx',
-  'pages/settings/notifications.tsx',
-  'pages/settings/users.tsx'
+  "pages/calendar.tsx",
+  "pages/candidate/dashboard.tsx",
+  "pages/careers/jobs/[id]/apply.tsx",
+  "pages/facilities/equipment.tsx",
+  "pages/expenses/reports.tsx",
+  "pages/facilities/reports.tsx",
+  "pages/learning.tsx",
+  "pages/leave/approvals.tsx",
+  "pages/people/add.tsx",
+  "pages/people/reports.tsx",
+  "pages/people/[id].tsx",
+  "pages/settings/general.tsx",
+  "pages/settings/index.tsx",
+  "pages/settings/notifications.tsx",
+  "pages/settings/users.tsx",
 ];
 
 function fixPageRedirects(filePath) {
@@ -41,9 +41,9 @@ function fixPageRedirects(filePath) {
       console.log(`❌ ${filePath} not found`);
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
+    const content = fs.readFileSync(filePath, "utf8");
     let newContent = content;
     let hasChanges = false;
 
@@ -51,26 +51,30 @@ function fixPageRedirects(filePath) {
     const redirectPatterns = [
       /router\.push\(['"]\/login\?redirect=[^'"]*['"]\);/g,
       /router\.push\(['"]\/candidate\/login\?redirect=[^'"]*['"]\);/g,
-      /router\.push\(\`\/candidate\/login\?redirect=\$\{[^}]*\}\`\);/g
+      /router\.push\(\`\/candidate\/login\?redirect=\$\{[^}]*\}\`\);/g,
     ];
 
-    redirectPatterns.forEach(pattern => {
+    redirectPatterns.forEach((pattern) => {
       if (content.match(pattern)) {
-        newContent = newContent.replace(pattern, '// Redirect removed - using graceful fallback instead');
+        newContent = newContent.replace(
+          pattern,
+          "// Redirect removed - using graceful fallback instead",
+        );
         hasChanges = true;
-        logChange(filePath, 'Removed hardcoded login redirect');
+        logChange(filePath, "Removed hardcoded login redirect");
       }
     });
 
     // Pattern 2: Fix useEffect blocks that redirect to login
-    const useEffectRedirectPattern = /useEffect\(\(\) => \{[\s\S]*?router\.push\(['"][^'"]*login[^'"]*['"]\);[\s\S]*?\}, \[[^\]]*\]\);/g;
-    
+    const useEffectRedirectPattern =
+      /useEffect\(\(\) => \{[\s\S]*?router\.push\(['"][^'"]*login[^'"]*['"]\);[\s\S]*?\}, \[[^\]]*\]\);/g;
+
     if (content.match(useEffectRedirectPattern)) {
       newContent = newContent.replace(useEffectRedirectPattern, (match) => {
         // Extract dependencies from the useEffect
         const depsMatch = match.match(/\}, \[([^\]]*)\]\);/);
-        const deps = depsMatch ? depsMatch[1] : '';
-        
+        const deps = depsMatch ? depsMatch[1] : "";
+
         return `useEffect(() => {
     // Authentication check with graceful fallback
     if (process.env.NODE_ENV === 'development') {
@@ -84,28 +88,34 @@ function fixPageRedirects(filePath) {
   }, [${deps}]);`;
       });
       hasChanges = true;
-      logChange(filePath, 'Replaced useEffect redirect with graceful fallback');
+      logChange(filePath, "Replaced useEffect redirect with graceful fallback");
     }
 
     // Pattern 3: Add ModernDashboardLayout if not present
-    if (!content.includes('ModernDashboardLayout') && !content.includes('DashboardLayout')) {
+    if (
+      !content.includes("ModernDashboardLayout") &&
+      !content.includes("DashboardLayout")
+    ) {
       // Add import
-      if (content.includes('import Head from \'next/head\';')) {
+      if (content.includes("import Head from 'next/head';")) {
         newContent = newContent.replace(
           /import Head from 'next\/head';/,
           `import Head from 'next/head';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`,
         );
         hasChanges = true;
-        logChange(filePath, 'Added ModernDashboardLayout import');
+        logChange(filePath, "Added ModernDashboardLayout import");
       }
     }
 
     // Pattern 4: Fix conditional rendering that blocks access
-    const blockingRenderPattern = /if \([^)]*!user[^)]*\) \{[\s\S]*?return[\s\S]*?Loading[\s\S]*?\);[\s\S]*?\}/g;
-    
+    const blockingRenderPattern =
+      /if \([^)]*!user[^)]*\) \{[\s\S]*?return[\s\S]*?Loading[\s\S]*?\);[\s\S]*?\}/g;
+
     if (content.match(blockingRenderPattern)) {
-      newContent = newContent.replace(blockingRenderPattern, `if (isLoading) {
+      newContent = newContent.replace(
+        blockingRenderPattern,
+        `if (isLoading) {
     return (
       <div className="p-4 md:p-6 flex items-center justify-center h-[calc(100vh-200px)]">
         <div className="text-center">
@@ -114,16 +124,16 @@ import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`
         </div>
       </div>
     );
-  }`);
+  }`,
+      );
       hasChanges = true;
-      logChange(filePath, 'Fixed blocking render condition');
+      logChange(filePath, "Fixed blocking render condition");
     }
 
     if (hasChanges) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
     }
-
   } catch (error) {
     console.error(`❌ Error processing ${filePath}:`, error.message);
   }
@@ -131,187 +141,239 @@ import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`
 
 function fixSpecificPages() {
   // Fix calendar.tsx
-  const calendarPath = path.join(process.cwd(), 'pages/calendar.tsx');
+  const calendarPath = path.join(process.cwd(), "pages/calendar.tsx");
   if (fs.existsSync(calendarPath)) {
-    let content = fs.readFileSync(calendarPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/calendar\');')) {
+    let content = fs.readFileSync(calendarPath, "utf8");
+    if (content.includes("router.push('/login?redirect=/calendar');")) {
       content = content.replace(
-        'router.push(\'/login?redirect=/calendar\');',
-        '// Authentication handled gracefully - no redirect needed'
+        "router.push('/login?redirect=/calendar');",
+        "// Authentication handled gracefully - no redirect needed",
       );
-      fs.writeFileSync(calendarPath, content, 'utf8');
-      logChange('pages/calendar.tsx', 'Fixed calendar page redirect');
+      fs.writeFileSync(calendarPath, content, "utf8");
+      logChange("pages/calendar.tsx", "Fixed calendar page redirect");
       filesChanged++;
     }
   }
 
   // Fix candidate dashboard
-  const candidateDashPath = path.join(process.cwd(), 'pages/candidate/dashboard.tsx');
+  const candidateDashPath = path.join(
+    process.cwd(),
+    "pages/candidate/dashboard.tsx",
+  );
   if (fs.existsSync(candidateDashPath)) {
-    let content = fs.readFileSync(candidateDashPath, 'utf8');
-    if (content.includes('router.push(\'/candidate/login?redirect=/candidate/dashboard\');')) {
+    let content = fs.readFileSync(candidateDashPath, "utf8");
+    if (
+      content.includes(
+        "router.push('/candidate/login?redirect=/candidate/dashboard');",
+      )
+    ) {
       content = content.replace(
-        'router.push(\'/candidate/login?redirect=/candidate/dashboard\');',
-        '// Candidate authentication handled gracefully'
+        "router.push('/candidate/login?redirect=/candidate/dashboard');",
+        "// Candidate authentication handled gracefully",
       );
-      fs.writeFileSync(candidateDashPath, content, 'utf8');
-      logChange('pages/candidate/dashboard.tsx', 'Fixed candidate dashboard redirect');
+      fs.writeFileSync(candidateDashPath, content, "utf8");
+      logChange(
+        "pages/candidate/dashboard.tsx",
+        "Fixed candidate dashboard redirect",
+      );
       filesChanged++;
     }
   }
 
   // Fix job application page
-  const jobApplyPath = path.join(process.cwd(), 'pages/careers/jobs/[id]/apply.tsx');
+  const jobApplyPath = path.join(
+    process.cwd(),
+    "pages/careers/jobs/[id]/apply.tsx",
+  );
   if (fs.existsSync(jobApplyPath)) {
-    let content = fs.readFileSync(jobApplyPath, 'utf8');
-    if (content.includes('router.push(`/candidate/login?redirect=${encodeURIComponent(router.asPath)}`);')) {
+    let content = fs.readFileSync(jobApplyPath, "utf8");
+    if (
+      content.includes(
+        "router.push(`/candidate/login?redirect=${encodeURIComponent(router.asPath)}`);",
+      )
+    ) {
       content = content.replace(
-        'router.push(`/candidate/login?redirect=${encodeURIComponent(router.asPath)}`);',
-        '// Job application should be accessible to all - no redirect needed'
+        "router.push(`/candidate/login?redirect=${encodeURIComponent(router.asPath)}`);",
+        "// Job application should be accessible to all - no redirect needed",
       );
-      fs.writeFileSync(jobApplyPath, content, 'utf8');
-      logChange('pages/careers/jobs/[id]/apply.tsx', 'Fixed job application redirect');
+      fs.writeFileSync(jobApplyPath, content, "utf8");
+      logChange(
+        "pages/careers/jobs/[id]/apply.tsx",
+        "Fixed job application redirect",
+      );
       filesChanged++;
     }
   }
 
   // Fix facilities equipment
-  const facilitiesEquipPath = path.join(process.cwd(), 'pages/facilities/equipment.tsx');
+  const facilitiesEquipPath = path.join(
+    process.cwd(),
+    "pages/facilities/equipment.tsx",
+  );
   if (fs.existsSync(facilitiesEquipPath)) {
-    let content = fs.readFileSync(facilitiesEquipPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/facilities/equipment\');')) {
+    let content = fs.readFileSync(facilitiesEquipPath, "utf8");
+    if (
+      content.includes("router.push('/login?redirect=/facilities/equipment');")
+    ) {
       content = content.replace(
-        'router.push(\'/login?redirect=/facilities/equipment\');',
-        '// Equipment page accessible with limited functionality'
+        "router.push('/login?redirect=/facilities/equipment');",
+        "// Equipment page accessible with limited functionality",
       );
-      fs.writeFileSync(facilitiesEquipPath, content, 'utf8');
-      logChange('pages/facilities/equipment.tsx', 'Fixed facilities equipment redirect');
+      fs.writeFileSync(facilitiesEquipPath, content, "utf8");
+      logChange(
+        "pages/facilities/equipment.tsx",
+        "Fixed facilities equipment redirect",
+      );
       filesChanged++;
     }
   }
 
   // Fix expenses reports
-  const expensesReportsPath = path.join(process.cwd(), 'pages/expenses/reports.tsx');
+  const expensesReportsPath = path.join(
+    process.cwd(),
+    "pages/expenses/reports.tsx",
+  );
   if (fs.existsSync(expensesReportsPath)) {
-    let content = fs.readFileSync(expensesReportsPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/expenses/reports\');')) {
+    let content = fs.readFileSync(expensesReportsPath, "utf8");
+    if (content.includes("router.push('/login?redirect=/expenses/reports');")) {
       content = content.replace(
-        'router.push(\'/login?redirect=/expenses/reports\');',
-        '// Expenses reports with graceful authentication'
+        "router.push('/login?redirect=/expenses/reports');",
+        "// Expenses reports with graceful authentication",
       );
-      fs.writeFileSync(expensesReportsPath, content, 'utf8');
-      logChange('pages/expenses/reports.tsx', 'Fixed expenses reports redirect');
+      fs.writeFileSync(expensesReportsPath, content, "utf8");
+      logChange(
+        "pages/expenses/reports.tsx",
+        "Fixed expenses reports redirect",
+      );
       filesChanged++;
     }
   }
 
   // Fix facilities reports
-  const facilitiesReportsPath = path.join(process.cwd(), 'pages/facilities/reports.tsx');
+  const facilitiesReportsPath = path.join(
+    process.cwd(),
+    "pages/facilities/reports.tsx",
+  );
   if (fs.existsSync(facilitiesReportsPath)) {
-    let content = fs.readFileSync(facilitiesReportsPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/facilities/reports\');')) {
+    let content = fs.readFileSync(facilitiesReportsPath, "utf8");
+    if (
+      content.includes("router.push('/login?redirect=/facilities/reports');")
+    ) {
       content = content.replace(
-        'router.push(\'/login?redirect=/facilities/reports\');',
-        '// Facilities reports with graceful authentication'
+        "router.push('/login?redirect=/facilities/reports');",
+        "// Facilities reports with graceful authentication",
       );
-      fs.writeFileSync(facilitiesReportsPath, content, 'utf8');
-      logChange('pages/facilities/reports.tsx', 'Fixed facilities reports redirect');
+      fs.writeFileSync(facilitiesReportsPath, content, "utf8");
+      logChange(
+        "pages/facilities/reports.tsx",
+        "Fixed facilities reports redirect",
+      );
       filesChanged++;
     }
   }
 
   // Fix learning page
-  const learningPath = path.join(process.cwd(), 'pages/learning.tsx');
+  const learningPath = path.join(process.cwd(), "pages/learning.tsx");
   if (fs.existsSync(learningPath)) {
-    let content = fs.readFileSync(learningPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/learning\');')) {
+    let content = fs.readFileSync(learningPath, "utf8");
+    if (content.includes("router.push('/login?redirect=/learning');")) {
       content = content.replace(
-        'router.push(\'/login?redirect=/learning\');',
-        '// Learning portal accessible to all employees'
+        "router.push('/login?redirect=/learning');",
+        "// Learning portal accessible to all employees",
       );
-      fs.writeFileSync(learningPath, content, 'utf8');
-      logChange('pages/learning.tsx', 'Fixed learning page redirect');
+      fs.writeFileSync(learningPath, content, "utf8");
+      logChange("pages/learning.tsx", "Fixed learning page redirect");
       filesChanged++;
     }
   }
 
   // Fix leave approvals
-  const leaveApprovalsPath = path.join(process.cwd(), 'pages/leave/approvals.tsx');
+  const leaveApprovalsPath = path.join(
+    process.cwd(),
+    "pages/leave/approvals.tsx",
+  );
   if (fs.existsSync(leaveApprovalsPath)) {
-    let content = fs.readFileSync(leaveApprovalsPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/leave/approvals\');')) {
+    let content = fs.readFileSync(leaveApprovalsPath, "utf8");
+    if (content.includes("router.push('/login?redirect=/leave/approvals');")) {
       content = content.replace(
-        'router.push(\'/login?redirect=/leave/approvals\');',
-        '// Leave approvals with role-based access'
+        "router.push('/login?redirect=/leave/approvals');",
+        "// Leave approvals with role-based access",
       );
-      fs.writeFileSync(leaveApprovalsPath, content, 'utf8');
-      logChange('pages/leave/approvals.tsx', 'Fixed leave approvals redirect');
+      fs.writeFileSync(leaveApprovalsPath, content, "utf8");
+      logChange("pages/leave/approvals.tsx", "Fixed leave approvals redirect");
       filesChanged++;
     }
   }
 
   // Fix people add
-  const peopleAddPath = path.join(process.cwd(), 'pages/people/add.tsx');
+  const peopleAddPath = path.join(process.cwd(), "pages/people/add.tsx");
   if (fs.existsSync(peopleAddPath)) {
-    let content = fs.readFileSync(peopleAddPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/people/add\');')) {
+    let content = fs.readFileSync(peopleAddPath, "utf8");
+    if (content.includes("router.push('/login?redirect=/people/add');")) {
       content = content.replace(
-        'router.push(\'/login?redirect=/people/add\');',
-        '// People management with appropriate permissions'
+        "router.push('/login?redirect=/people/add');",
+        "// People management with appropriate permissions",
       );
-      fs.writeFileSync(peopleAddPath, content, 'utf8');
-      logChange('pages/people/add.tsx', 'Fixed people add redirect');
+      fs.writeFileSync(peopleAddPath, content, "utf8");
+      logChange("pages/people/add.tsx", "Fixed people add redirect");
       filesChanged++;
     }
   }
 
   // Fix people reports
-  const peopleReportsPath = path.join(process.cwd(), 'pages/people/reports.tsx');
+  const peopleReportsPath = path.join(
+    process.cwd(),
+    "pages/people/reports.tsx",
+  );
   if (fs.existsSync(peopleReportsPath)) {
-    let content = fs.readFileSync(peopleReportsPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/people/reports\');')) {
+    let content = fs.readFileSync(peopleReportsPath, "utf8");
+    if (content.includes("router.push('/login?redirect=/people/reports');")) {
       content = content.replace(
-        'router.push(\'/login?redirect=/people/reports\');',
-        '// People reports with role-based access'
+        "router.push('/login?redirect=/people/reports');",
+        "// People reports with role-based access",
       );
-      fs.writeFileSync(peopleReportsPath, content, 'utf8');
-      logChange('pages/people/reports.tsx', 'Fixed people reports redirect');
+      fs.writeFileSync(peopleReportsPath, content, "utf8");
+      logChange("pages/people/reports.tsx", "Fixed people reports redirect");
       filesChanged++;
     }
   }
 
   // Fix people detail page
-  const peopleDetailPath = path.join(process.cwd(), 'pages/people/[id].tsx');
+  const peopleDetailPath = path.join(process.cwd(), "pages/people/[id].tsx");
   if (fs.existsSync(peopleDetailPath)) {
-    let content = fs.readFileSync(peopleDetailPath, 'utf8');
-    if (content.includes('router.push(\'/login?redirect=/people\');')) {
+    let content = fs.readFileSync(peopleDetailPath, "utf8");
+    if (content.includes("router.push('/login?redirect=/people');")) {
       content = content.replace(
-        'router.push(\'/login?redirect=/people\');',
-        '// People detail with appropriate access control'
+        "router.push('/login?redirect=/people');",
+        "// People detail with appropriate access control",
       );
-      fs.writeFileSync(peopleDetailPath, content, 'utf8');
-      logChange('pages/people/[id].tsx', 'Fixed people detail redirect');
+      fs.writeFileSync(peopleDetailPath, content, "utf8");
+      logChange("pages/people/[id].tsx", "Fixed people detail redirect");
       filesChanged++;
     }
   }
 
   // Fix settings pages
   const settingsPages = [
-    'pages/settings/general.tsx',
-    'pages/settings/index.tsx',
-    'pages/settings/notifications.tsx',
-    'pages/settings/users.tsx'
+    "pages/settings/general.tsx",
+    "pages/settings/index.tsx",
+    "pages/settings/notifications.tsx",
+    "pages/settings/users.tsx",
   ];
 
-  settingsPages.forEach(pagePath => {
+  settingsPages.forEach((pagePath) => {
     const fullPath = path.join(process.cwd(), pagePath);
     if (fs.existsSync(fullPath)) {
-      let content = fs.readFileSync(fullPath, 'utf8');
-      const redirectPattern = /router\.push\(['"]\/login\?redirect=[^'"]*['"]\);/g;
+      let content = fs.readFileSync(fullPath, "utf8");
+      const redirectPattern =
+        /router\.push\(['"]\/login\?redirect=[^'"]*['"]\);/g;
       if (content.match(redirectPattern)) {
-        content = content.replace(redirectPattern, '// Settings access with role-based permissions');
-        fs.writeFileSync(fullPath, content, 'utf8');
-        logChange(pagePath, 'Fixed settings page redirect');
+        content = content.replace(
+          redirectPattern,
+          "// Settings access with role-based permissions",
+        );
+        fs.writeFileSync(fullPath, content, "utf8");
+        logChange(pagePath, "Fixed settings page redirect");
         filesChanged++;
       }
     }
@@ -320,8 +382,11 @@ function fixSpecificPages() {
 
 function createGlobalAuthFallback() {
   // Create a global auth fallback component
-  const fallbackPath = path.join(process.cwd(), 'components/auth/AuthFallback.tsx');
-  
+  const fallbackPath = path.join(
+    process.cwd(),
+    "components/auth/AuthFallback.tsx",
+  );
+
   if (!fs.existsSync(fallbackPath)) {
     const fallbackContent = `import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -388,20 +453,23 @@ export default function AuthFallback({
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      
-      fs.writeFileSync(fallbackPath, fallbackContent, 'utf8');
-      logChange('components/auth/AuthFallback.tsx', 'Created global auth fallback component');
+
+      fs.writeFileSync(fallbackPath, fallbackContent, "utf8");
+      logChange(
+        "components/auth/AuthFallback.tsx",
+        "Created global auth fallback component",
+      );
       filesChanged++;
     } catch (error) {
-      console.error('Error creating auth fallback:', error.message);
+      console.error("Error creating auth fallback:", error.message);
     }
   }
 }
 
-console.log('🔧 Fixing all remaining login redirects...\n');
+console.log("🔧 Fixing all remaining login redirects...\n");
 
 // Process all fixes
-pagesToFix.forEach(pagePath => {
+pagesToFix.forEach((pagePath) => {
   const fullPath = path.join(process.cwd(), pagePath);
   fixPageRedirects(fullPath);
 });
@@ -410,23 +478,23 @@ fixSpecificPages();
 createGlobalAuthFallback();
 
 // Summary
-console.log('\n📊 Summary:');
+console.log("\n📊 Summary:");
 console.log(`📁 Files processed: ${filesProcessed}`);
 console.log(`✅ Files changed: ${filesChanged}`);
 
 if (changesLog.length > 0) {
-  console.log('\n📝 Changes made:');
-  changesLog.forEach(change => console.log(`   ${change}`));
+  console.log("\n📝 Changes made:");
+  changesLog.forEach((change) => console.log(`   ${change}`));
 } else {
-  console.log('\n✅ No changes needed - all files already fixed!');
+  console.log("\n✅ No changes needed - all files already fixed!");
 }
 
-console.log('\n🎯 All Remaining Login Redirects Fixed!');
-console.log('Benefits:');
-console.log('✅ Removed all hardcoded login redirects');
-console.log('✅ Added graceful fallback behavior everywhere');
-console.log('✅ Created global auth fallback component');
-console.log('✅ Improved user experience across all pages');
+console.log("\n🎯 All Remaining Login Redirects Fixed!");
+console.log("Benefits:");
+console.log("✅ Removed all hardcoded login redirects");
+console.log("✅ Added graceful fallback behavior everywhere");
+console.log("✅ Created global auth fallback component");
+console.log("✅ Improved user experience across all pages");
 
 // Create report
 const report = {
@@ -436,18 +504,18 @@ const report = {
   changes: changesLog,
   pagesFixed: pagesToFix,
   fixes: [
-    'Removed all hardcoded router.push login redirects',
-    'Added graceful authentication fallbacks',
-    'Created global AuthFallback component',
-    'Fixed useEffect blocks that forced redirects',
-    'Improved loading states across all pages'
-  ]
+    "Removed all hardcoded router.push login redirects",
+    "Added graceful authentication fallbacks",
+    "Created global AuthFallback component",
+    "Fixed useEffect blocks that forced redirects",
+    "Improved loading states across all pages",
+  ],
 };
 
-fs.writeFileSync('all-redirects-fixed.json', JSON.stringify(report, null, 2));
+fs.writeFileSync("all-redirects-fixed.json", JSON.stringify(report, null, 2));
 
-console.log('\n🚀 Ready for testing:');
-console.log('1. All pages now load without forced redirects');
-console.log('2. Authentication handled gracefully with fallbacks');
-console.log('3. Users can browse public content freely');
-console.log('4. Login prompts shown when appropriate, not forced'); 
+console.log("\n🚀 Ready for testing:");
+console.log("1. All pages now load without forced redirects");
+console.log("2. Authentication handled gracefully with fallbacks");
+console.log("3. Users can browse public content freely");
+console.log("4. Login prompts shown when appropriate, not forced");

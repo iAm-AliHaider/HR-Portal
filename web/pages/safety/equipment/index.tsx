@@ -1,25 +1,26 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { GetServerSideProps } from 'next';
+import { useEffect } from "react";
 
+import { useRouter } from "next/router";
+
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
-
 export default function SafetyEquipmentPage() {
   const router = useRouter();
-  
+
   useEffect(() => {
     // Redirect to the main safety page with the equipment tab pre-selected
-    router.replace('/safety?tab=equipment');
+    router.replace("/safety?tab=equipment");
   }, [router]);
-  
+
   return (
     <ModernDashboardLayout title="Equipment Inspections" subtitle="Loading...">
       <div className="flex items-center justify-center h-64">
@@ -27,4 +28,4 @@ export default function SafetyEquipmentPage() {
       </div>
     </ModernDashboardLayout>
   );
-} 
+}

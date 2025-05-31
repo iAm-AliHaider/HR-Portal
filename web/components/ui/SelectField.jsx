@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+
 import {
   FormControl,
   FormLabel,
   FormErrorMessage,
   Select,
-  Box
-} from '@chakra-ui/react';
+  Box,
+} from "@chakra-ui/react";
 
 /**
  * SelectField component with proper handling of select element validation
@@ -22,7 +23,7 @@ const SelectField = ({
   placeholder = "Select an option",
   ...rest
 }) => {
-  const [localValue, setLocalValue] = useState(value || '');
+  const [localValue, setLocalValue] = useState(value || "");
 
   // Keep local state in sync with parent value
   useEffect(() => {
@@ -65,4 +66,4 @@ const SelectField = ({
   );
 };
 
-export default SelectField; 
+export default SelectField;

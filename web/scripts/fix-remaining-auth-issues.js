@@ -5,8 +5,8 @@
  * - Add better error handling and fallbacks
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track all changes made
 let changesLog = [];
@@ -19,55 +19,51 @@ function logChange(file, action) {
 }
 
 function processJobsNewPage() {
-  const filePath = path.join(process.cwd(), 'pages/jobs/new.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/jobs/new.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ jobs/new.tsx not found');
+      console.log("❌ jobs/new.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Replace the old RequireRole import and usage
     let newContent = content
       .replace(
         /import RequireRole from '@\/components\/auth\/RequireRole';/g,
-        "import { ModernRequireRole } from '@/components/ModernRequireRole';"
+        "import { ModernRequireRole } from '@/components/ModernRequireRole';",
       )
       .replace(
         /<RequireRole roles=\{([^}]+)\}>/g,
-        '<ModernRequireRole allowed={$1} fallbackToPublic={true}>'
+        "<ModernRequireRole allowed={$1} fallbackToPublic={true}>",
       )
-      .replace(
-        /<\/RequireRole>/g,
-        '</ModernRequireRole>'
-      );
-    
+      .replace(/<\/RequireRole>/g, "</ModernRequireRole>");
+
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/jobs/new.tsx', 'Fixed RequireRole usage');
+      logChange("pages/jobs/new.tsx", "Fixed RequireRole usage");
     }
-    
   } catch (error) {
     console.error(`❌ Error processing jobs/new.tsx:`, error.message);
   }
 }
 
 function improveUseAuthHook() {
-  const filePath = path.join(process.cwd(), 'hooks/useAuth.ts');
-  
+  const filePath = path.join(process.cwd(), "hooks/useAuth.ts");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ useAuth.ts not found');
+      console.log("❌ useAuth.ts not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Add timeout to prevent hanging
     const improvedUseEffect = `
   useEffect(() => {
@@ -294,28 +290,31 @@ function improveUseAuthHook() {
       clearTimeout(timeout);
     };
   }, [isDevelopment, isDemoMode]);`;
-    
+
     // Replace the useEffect with improved version
-    const useEffectPattern = /useEffect\(\(\) => \{[\s\S]*?\}, \[isDevelopment, isDemoMode\]\);/;
-    
+    const useEffectPattern =
+      /useEffect\(\(\) => \{[\s\S]*?\}, \[isDevelopment, isDemoMode\]\);/;
+
     if (content.match(useEffectPattern)) {
       const newContent = content.replace(useEffectPattern, improvedUseEffect);
-      
+
       if (newContent !== content) {
-        fs.writeFileSync(filePath, newContent, 'utf8');
+        fs.writeFileSync(filePath, newContent, "utf8");
         filesChanged++;
-        logChange('hooks/useAuth.ts', 'Added timeout and better error handling');
+        logChange(
+          "hooks/useAuth.ts",
+          "Added timeout and better error handling",
+        );
       }
     }
-    
   } catch (error) {
     console.error(`❌ Error processing useAuth.ts:`, error.message);
   }
 }
 
 function createQuickAuthFixPage() {
-  const filePath = path.join(process.cwd(), 'pages/fix-auth.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/fix-auth.tsx");
+
   const content = `import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -410,15 +409,15 @@ export default function FixAuthPage() {
 }`;
 
   try {
-    fs.writeFileSync(filePath, content, 'utf8');
+    fs.writeFileSync(filePath, content, "utf8");
     filesChanged++;
-    logChange('pages/fix-auth.tsx', 'Created authentication fix page');
+    logChange("pages/fix-auth.tsx", "Created authentication fix page");
   } catch (error) {
     console.error(`❌ Error creating fix-auth.tsx:`, error.message);
   }
 }
 
-console.log('🔧 Fixing remaining authentication issues...\n');
+console.log("🔧 Fixing remaining authentication issues...\n");
 
 // Process all fixes
 processJobsNewPage();
@@ -426,23 +425,23 @@ improveUseAuthHook();
 createQuickAuthFixPage();
 
 // Summary
-console.log('\n📊 Summary:');
+console.log("\n📊 Summary:");
 console.log(`📁 Files processed: ${filesProcessed}`);
 console.log(`✅ Files changed: ${filesChanged}`);
 
 if (changesLog.length > 0) {
-  console.log('\n📝 Changes made:');
-  changesLog.forEach(change => console.log(`   ${change}`));
+  console.log("\n📝 Changes made:");
+  changesLog.forEach((change) => console.log(`   ${change}`));
 } else {
-  console.log('\n✅ No changes needed - all files already fixed!');
+  console.log("\n✅ No changes needed - all files already fixed!");
 }
 
-console.log('\n🎯 Remaining Auth Issues Fixed!');
-console.log('Benefits:');
-console.log('✅ Fixed jobs/new.tsx authentication');
-console.log('✅ Added timeout to prevent hanging');
-console.log('✅ Better error handling in useAuth');
-console.log('✅ Created fix-auth page for quick debugging');
+console.log("\n🎯 Remaining Auth Issues Fixed!");
+console.log("Benefits:");
+console.log("✅ Fixed jobs/new.tsx authentication");
+console.log("✅ Added timeout to prevent hanging");
+console.log("✅ Better error handling in useAuth");
+console.log("✅ Created fix-auth page for quick debugging");
 
 // Create report
 const report = {
@@ -451,17 +450,17 @@ const report = {
   filesChanged,
   changes: changesLog,
   fixes: [
-    'Fixed jobs/new.tsx RequireRole usage',
-    'Added timeouts to prevent auth hanging',
-    'Improved error handling in useAuth hook',
-    'Created quick auth fix page'
-  ]
+    "Fixed jobs/new.tsx RequireRole usage",
+    "Added timeouts to prevent auth hanging",
+    "Improved error handling in useAuth hook",
+    "Created quick auth fix page",
+  ],
 };
 
-fs.writeFileSync('remaining-auth-fixes.json', JSON.stringify(report, null, 2));
+fs.writeFileSync("remaining-auth-fixes.json", JSON.stringify(report, null, 2));
 
-console.log('\n🚀 Ready for testing:');
-console.log('1. Visit /fix-auth to debug authentication');
-console.log('2. Test /jobs/new page for role requirements');
-console.log('3. Verify no pages hang during loading');
-console.log('4. Check role persistence across navigation'); 
+console.log("\n🚀 Ready for testing:");
+console.log("1. Visit /fix-auth to debug authentication");
+console.log("2. Test /jobs/new page for role requirements");
+console.log("3. Verify no pages hang during loading");
+console.log("4. Check role persistence across navigation");

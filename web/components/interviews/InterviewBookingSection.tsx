@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+
+import { CalendarIcon, TimeIcon } from "@chakra-ui/icons";
 import {
   Box,
   FormControl,
@@ -16,11 +18,14 @@ import {
   Divider,
   Button,
   useToast,
-  Stack
-} from '@chakra-ui/react';
-import { CalendarIcon, TimeIcon } from '@chakra-ui/icons';
-import { MeetingRoom, Asset } from '../../../packages/types/hr';
-import { getAvailableRoomsForInterview, getAvailableAssetsForInterview } from '../../services/interviews';
+  Stack,
+} from "@chakra-ui/react";
+
+import { MeetingRoom, Asset } from "../../../packages/types/hr";
+import {
+  getAvailableRoomsForInterview,
+  getAvailableAssetsForInterview,
+} from "../../services/interviews";
 
 interface InterviewBookingSectionProps {
   interviewType: string;
@@ -41,18 +46,24 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
   selectedRoomId,
   selectedAssetIds = [],
   onRoomChange,
-  onAssetsChange
+  onAssetsChange,
 }) => {
   const toast = useToast();
-  const [availableRooms, setAvailableRooms] = useState<Array<{room: MeetingRoom, available: boolean}>>([]);
-  const [availableAssets, setAvailableAssets] = useState<Array<{asset: Asset, available: boolean}>>([]);
+  const [availableRooms, setAvailableRooms] = useState<
+    Array<{ room: MeetingRoom; available: boolean }>
+  >([]);
+  const [availableAssets, setAvailableAssets] = useState<
+    Array<{ asset: Asset; available: boolean }>
+  >([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
   const [isLoadingAssets, setIsLoadingAssets] = useState(false);
-  const [showBookingOptions, setShowBookingOptions] = useState(interviewType === 'in_person');
+  const [showBookingOptions, setShowBookingOptions] = useState(
+    interviewType === "in_person",
+  );
 
   useEffect(() => {
-    setShowBookingOptions(interviewType === 'in_person');
-    if (interviewType !== 'in_person') {
+    setShowBookingOptions(interviewType === "in_person");
+    if (interviewType !== "in_person") {
       onRoomChange(undefined);
       onAssetsChange([]);
     }
@@ -77,16 +88,16 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
         orgId,
         startTime.toISOString(),
         endTime.toISOString(),
-        2 // Minimum capacity for interviews
+        2, // Minimum capacity for interviews
       );
 
       setAvailableRooms(roomsData);
     } catch (error) {
-      console.error('Error loading available rooms:', error);
+      console.error("Error loading available rooms:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load available meeting rooms',
-        status: 'error',
+        title: "Error",
+        description: "Failed to load available meeting rooms",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -106,16 +117,16 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
       const assetsData = await getAvailableAssetsForInterview(
         orgId,
         startTime.toISOString(),
-        endTime.toISOString()
+        endTime.toISOString(),
       );
 
       setAvailableAssets(assetsData);
     } catch (error) {
-      console.error('Error loading available assets:', error);
+      console.error("Error loading available assets:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load available assets',
-        status: 'error',
+        title: "Error",
+        description: "Failed to load available assets",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -125,7 +136,7 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
   };
 
   const handleRoomSelection = (roomId: string) => {
-    onRoomChange(roomId === '' ? undefined : roomId);
+    onRoomChange(roomId === "" ? undefined : roomId);
   };
 
   const handleAssetSelection = (assetIds: string[]) => {
@@ -149,46 +160,58 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
         <Box>
           <HStack mb={3}>
             <CalendarIcon color="blue.500" />
-            <Text fontWeight="semibold" color="blue.600">Meeting Room Booking</Text>
+            <Text fontWeight="semibold" color="blue.600">
+              Meeting Room Booking
+            </Text>
           </HStack>
 
           {isLoadingRooms ? (
             <HStack>
               <Spinner size="sm" />
-              <Text fontSize="sm" color="gray.500">Loading available rooms...</Text>
+              <Text fontSize="sm" color="gray.500">
+                Loading available rooms...
+              </Text>
             </HStack>
           ) : (
             <FormControl>
-              <FormLabel fontSize="sm">Select Meeting Room (Optional)</FormLabel>
+              <FormLabel fontSize="sm">
+                Select Meeting Room (Optional)
+              </FormLabel>
               <Select
                 placeholder="No room booking required"
-                value={selectedRoomId || ''}
+                value={selectedRoomId || ""}
                 onChange={(e) => handleRoomSelection(e.target.value)}
                 size="md"
               >
                 {availableRooms.map(({ room, available }) => (
-                  <option
-                    key={room.id}
-                    value={room.id}
-                    disabled={!available}
-                  >
+                  <option key={room.id} value={room.id} disabled={!available}>
                     {room.name} - {room.location} (Capacity: {room.capacity})
-                    {!available && ' - Unavailable'}
+                    {!available && " - Unavailable"}
                   </option>
                 ))}
               </Select>
               {availableRooms.length === 0 && (
                 <Text fontSize="xs" color="orange.500" mt={1}>
-                  No meeting rooms found. Please check the scheduled time or contact admin.
+                  No meeting rooms found. Please check the scheduled time or
+                  contact admin.
                 </Text>
               )}
             </FormControl>
           )}
 
           {selectedRoomId && (
-            <Box mt={3} p={3} bg="blue.50" borderRadius="md" border="1px" borderColor="blue.200">
+            <Box
+              mt={3}
+              p={3}
+              bg="blue.50"
+              borderRadius="md"
+              border="1px"
+              borderColor="blue.200"
+            >
               {(() => {
-                const selectedRoom = availableRooms.find(r => r.room.id === selectedRoomId)?.room;
+                const selectedRoom = availableRooms.find(
+                  (r) => r.room.id === selectedRoomId,
+                )?.room;
                 if (!selectedRoom) return null;
 
                 return (
@@ -205,13 +228,16 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
                     <Text fontSize="sm" color="gray.600">
                       👥 Capacity: {selectedRoom.capacity} people
                     </Text>
-                    {selectedRoom.equipment && selectedRoom.equipment.length > 0 && (
-                      <Text fontSize="sm" color="gray.600">
-                        🔧 Equipment: {selectedRoom.equipment.join(', ')}
-                      </Text>
-                    )}
+                    {selectedRoom.equipment &&
+                      selectedRoom.equipment.length > 0 && (
+                        <Text fontSize="sm" color="gray.600">
+                          🔧 Equipment: {selectedRoom.equipment.join(", ")}
+                        </Text>
+                      )}
                     {selectedRoom.video_conference_enabled && (
-                      <Badge colorScheme="green" size="sm">Video Conference Enabled</Badge>
+                      <Badge colorScheme="green" size="sm">
+                        Video Conference Enabled
+                      </Badge>
                     )}
                   </VStack>
                 );
@@ -225,13 +251,17 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
         <Box>
           <HStack mb={3}>
             <TimeIcon color="green.500" />
-            <Text fontWeight="semibold" color="green.600">Equipment Booking</Text>
+            <Text fontWeight="semibold" color="green.600">
+              Equipment Booking
+            </Text>
           </HStack>
 
           {isLoadingAssets ? (
             <HStack>
               <Spinner size="sm" />
-              <Text fontSize="sm" color="gray.500">Loading available equipment...</Text>
+              <Text fontSize="sm" color="gray.500">
+                Loading available equipment...
+              </Text>
             </HStack>
           ) : (
             <FormControl>
@@ -248,13 +278,19 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
                         <VStack align="start" spacing={1} ml={2}>
                           <HStack>
                             <Text fontWeight="medium">{asset.name}</Text>
-                            <Badge colorScheme="gray" size="sm">{asset.category}</Badge>
+                            <Badge colorScheme="gray" size="sm">
+                              {asset.category}
+                            </Badge>
                           </HStack>
                           {asset.description && (
-                            <Text fontSize="xs" color="gray.500">{asset.description}</Text>
+                            <Text fontSize="xs" color="gray.500">
+                              {asset.description}
+                            </Text>
                           )}
                           {asset.location && (
-                            <Text fontSize="xs" color="gray.500">📍 Located at: {asset.location}</Text>
+                            <Text fontSize="xs" color="gray.500">
+                              📍 Located at: {asset.location}
+                            </Text>
                           )}
                         </VStack>
                       </Checkbox>
@@ -262,15 +298,29 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
                 </Stack>
               </CheckboxGroup>
 
-              {availableAssets.filter(({ available }) => available).length === 0 && (
+              {availableAssets.filter(({ available }) => available).length ===
+                0 && (
                 <Text fontSize="xs" color="gray.500" mt={1}>
                   No equipment available for booking at this time.
                 </Text>
               )}
 
-              {availableAssets.filter(({ available }) => !available).length > 0 && (
-                <Box mt={3} p={2} bg="orange.50" borderRadius="md" border="1px" borderColor="orange.200">
-                  <Text fontSize="sm" fontWeight="medium" color="orange.700" mb={1}>
+              {availableAssets.filter(({ available }) => !available).length >
+                0 && (
+                <Box
+                  mt={3}
+                  p={2}
+                  bg="orange.50"
+                  borderRadius="md"
+                  border="1px"
+                  borderColor="orange.200"
+                >
+                  <Text
+                    fontSize="sm"
+                    fontWeight="medium"
+                    color="orange.700"
+                    mb={1}
+                  >
                     Unavailable Equipment:
                   </Text>
                   {availableAssets
@@ -286,14 +336,25 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
           )}
 
           {selectedAssetIds.length > 0 && (
-            <Box mt={3} p={3} bg="green.50" borderRadius="md" border="1px" borderColor="green.200">
+            <Box
+              mt={3}
+              p={3}
+              bg="green.50"
+              borderRadius="md"
+              border="1px"
+              borderColor="green.200"
+            >
               <HStack mb={2}>
                 <Badge colorScheme="green">Selected Equipment</Badge>
-                <Text fontSize="sm" fontWeight="medium">{selectedAssetIds.length} item(s)</Text>
+                <Text fontSize="sm" fontWeight="medium">
+                  {selectedAssetIds.length} item(s)
+                </Text>
               </HStack>
               <VStack align="start" spacing={1}>
-                {selectedAssetIds.map(assetId => {
-                  const asset = availableAssets.find(a => a.asset.id === assetId)?.asset;
+                {selectedAssetIds.map((assetId) => {
+                  const asset = availableAssets.find(
+                    (a) => a.asset.id === assetId,
+                  )?.asset;
                   if (!asset) return null;
                   return (
                     <Text key={assetId} fontSize="sm" color="gray.600">
@@ -313,13 +374,15 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
               <strong>Booking Notes:</strong>
             </Text>
             <Text fontSize="xs">
-              • Room and equipment will be automatically booked when the interview is scheduled
+              • Room and equipment will be automatically booked when the
+              interview is scheduled
             </Text>
             <Text fontSize="xs">
               • You'll receive confirmation emails with booking details
             </Text>
             <Text fontSize="xs">
-              • Equipment must be checked out from the specified location before the interview
+              • Equipment must be checked out from the specified location before
+              the interview
             </Text>
           </VStack>
         </Alert>
@@ -328,4 +391,4 @@ const InterviewBookingSection: React.FC<InterviewBookingSectionProps> = ({
   );
 };
 
-export default InterviewBookingSection; 
+export default InterviewBookingSection;

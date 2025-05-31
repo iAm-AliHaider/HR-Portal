@@ -4,8 +4,8 @@
  * while maintaining all existing fixes and functionality
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track all changes made
 let changesLog = [];
@@ -20,54 +20,65 @@ function logChange(file, action) {
 function processFile(filePath) {
   try {
     filesProcessed++;
-    
+
     if (!fs.existsSync(filePath)) {
       return;
     }
-    
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Check if file uses SimpleDashboardLayout
-    if (!content.includes('SimpleDashboardLayout')) {
+    if (!content.includes("SimpleDashboardLayout")) {
       return;
     }
-    
+
     // Skip if already using ModernDashboardLayout
-    if (content.includes('ModernDashboardLayout')) {
-      logChange(filePath, 'Already using ModernDashboardLayout - skipped');
+    if (content.includes("ModernDashboardLayout")) {
+      logChange(filePath, "Already using ModernDashboardLayout - skipped");
       return;
     }
-    
+
     let newContent = content;
     let changed = false;
-    
+
     // Replace SimpleDashboardLayout imports
     const importPatterns = [
       /import SimpleDashboardLayout from ['"]['"]?[@\/\.].*?SimpleDashboardLayout['"]['"]?;?/g,
-      /import.*?SimpleDashboardLayout.*?from.*?['"]['"].*?SimpleDashboardLayout.*?['"]['"];?/g
+      /import.*?SimpleDashboardLayout.*?from.*?['"]['"].*?SimpleDashboardLayout.*?['"]['"];?/g,
     ];
-    
-    importPatterns.forEach(pattern => {
+
+    importPatterns.forEach((pattern) => {
       if (pattern.test(newContent)) {
-        newContent = newContent.replace(pattern, "import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';");
+        newContent = newContent.replace(
+          pattern,
+          "import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';",
+        );
         changed = true;
       }
     });
-    
+
     // Replace SimpleDashboardLayout usage
-    newContent = newContent.replace(/<SimpleDashboardLayout/g, '<ModernDashboardLayout');
-    newContent = newContent.replace(/<\/SimpleDashboardLayout>/g, '</ModernDashboardLayout>');
-    
+    newContent = newContent.replace(
+      /<SimpleDashboardLayout/g,
+      "<ModernDashboardLayout",
+    );
+    newContent = newContent.replace(
+      /<\/SimpleDashboardLayout>/g,
+      "</ModernDashboardLayout>",
+    );
+
     if (newContent !== content) {
       changed = true;
     }
-    
+
     if (changed) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange(filePath, 'Upgraded SimpleDashboardLayout → ModernDashboardLayout');
+      logChange(
+        filePath,
+        "Upgraded SimpleDashboardLayout → ModernDashboardLayout",
+      );
     }
-    
   } catch (error) {
     console.error(`❌ Error processing ${filePath}:`, error.message);
   }
@@ -76,15 +87,18 @@ function processFile(filePath) {
 function scanDirectory(dirPath, processFunc) {
   try {
     const items = fs.readdirSync(dirPath);
-    
-    items.forEach(item => {
+
+    items.forEach((item) => {
       const fullPath = path.join(dirPath, item);
       const stat = fs.statSync(fullPath);
-      
+
       if (stat.isDirectory()) {
         // Recursively scan subdirectories
         scanDirectory(fullPath, processFunc);
-      } else if (stat.isFile() && (item.endsWith('.tsx') || item.endsWith('.ts'))) {
+      } else if (
+        stat.isFile() &&
+        (item.endsWith(".tsx") || item.endsWith(".ts"))
+      ) {
         processFunc(fullPath);
       }
     });
@@ -93,15 +107,12 @@ function scanDirectory(dirPath, processFunc) {
   }
 }
 
-console.log('🚀 Upgrading to Modern UI System...\n');
+console.log("🚀 Upgrading to Modern UI System...\n");
 
 // Key directories to process
-const directoriesToProcess = [
-  'pages',
-  'components'
-];
+const directoriesToProcess = ["pages", "components"];
 
-directoriesToProcess.forEach(dir => {
+directoriesToProcess.forEach((dir) => {
   const fullPath = path.join(process.cwd(), dir);
   if (fs.existsSync(fullPath)) {
     console.log(`📁 Processing ${dir}/ directory...`);
@@ -349,35 +360,38 @@ export default function ModernUIShowcase() {
 }`;
 
 // Create the showcase page
-const showcasePagePath = path.join(process.cwd(), 'pages/modern-ui-showcase.tsx');
-fs.writeFileSync(showcasePagePath, showcasePageContent, 'utf8');
+const showcasePagePath = path.join(
+  process.cwd(),
+  "pages/modern-ui-showcase.tsx",
+);
+fs.writeFileSync(showcasePagePath, showcasePageContent, "utf8");
 
-console.log('✅ Created Modern UI Showcase page: /modern-ui-showcase');
+console.log("✅ Created Modern UI Showcase page: /modern-ui-showcase");
 
 // Summary
-console.log('\n📊 Summary:');
+console.log("\n📊 Summary:");
 console.log(`📁 Files processed: ${filesProcessed}`);
 console.log(`✅ Files upgraded: ${filesChanged}`);
 console.log(`🚫 Files with no changes: ${filesProcessed - filesChanged}`);
 
 if (changesLog.length > 0) {
-  console.log('\n📝 Changes made:');
-  changesLog.forEach(change => console.log(`   ${change}`));
+  console.log("\n📝 Changes made:");
+  changesLog.forEach((change) => console.log(`   ${change}`));
 } else {
-  console.log('\n✅ No changes needed - all files already using modern UI!');
+  console.log("\n✅ No changes needed - all files already using modern UI!");
 }
 
-console.log('\n🎯 Modern UI Upgrade Complete!');
-console.log('Features added:');
-console.log('✅ Beautiful sidebar navigation with icons');
-console.log('✅ Responsive design for mobile and desktop');
-console.log('✅ Expandable menu sections');
-console.log('✅ Global search functionality');
-console.log('✅ Notification center');
-console.log('✅ User profile section');
-console.log('✅ Modern color scheme and typography');
+console.log("\n🎯 Modern UI Upgrade Complete!");
+console.log("Features added:");
+console.log("✅ Beautiful sidebar navigation with icons");
+console.log("✅ Responsive design for mobile and desktop");
+console.log("✅ Expandable menu sections");
+console.log("✅ Global search functionality");
+console.log("✅ Notification center");
+console.log("✅ User profile section");
+console.log("✅ Modern color scheme and typography");
 
-console.log('\n📄 Report saved to: modern-ui-upgrade-report.json');
+console.log("\n📄 Report saved to: modern-ui-upgrade-report.json");
 
 // Create a report file
 const report = {
@@ -386,20 +400,23 @@ const report = {
   filesChanged,
   changes: changesLog,
   features: [
-    'Beautiful sidebar navigation with icons',
-    'Responsive design for mobile and desktop',
-    'Expandable menu sections',
-    'Global search functionality',
-    'Notification center',
-    'User profile section',
-    'Modern color scheme and typography'
-  ]
+    "Beautiful sidebar navigation with icons",
+    "Responsive design for mobile and desktop",
+    "Expandable menu sections",
+    "Global search functionality",
+    "Notification center",
+    "User profile section",
+    "Modern color scheme and typography",
+  ],
 };
 
-fs.writeFileSync('modern-ui-upgrade-report.json', JSON.stringify(report, null, 2));
+fs.writeFileSync(
+  "modern-ui-upgrade-report.json",
+  JSON.stringify(report, null, 2),
+);
 
-console.log('\n🚀 Ready for testing:');
-console.log('1. Visit /modern-ui-showcase to see the new features');
-console.log('2. Test navigation and responsiveness');
-console.log('3. Verify all existing functionality still works');
-console.log('4. Deploy when ready!'); 
+console.log("\n🚀 Ready for testing:");
+console.log("1. Visit /modern-ui-showcase to see the new features");
+console.log("2. Test navigation and responsiveness");
+console.log("3. Verify all existing functionality still works");
+console.log("4. Deploy when ready!");

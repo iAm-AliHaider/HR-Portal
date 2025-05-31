@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import React, { createContext, useContext, useEffect, useState } from "react";
+
+import { supabase } from "@/lib/supabase/client";
 
 interface AuthContextType {
   initialized: boolean;
@@ -11,18 +12,20 @@ const AuthContext = createContext<AuthContextType>({ initialized: false });
 let globalAuthListener: any = null;
 let isAuthInitialized = false;
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [initialized, setInitialized] = useState(false);
-  
+
   useEffect(() => {
     // Only initialize once globally
     if (isAuthInitialized) {
       setInitialized(true);
       return;
     }
-    
+
     isAuthInitialized = true;
-    
+
     // Set up global auth listener
     const initializeAuth = async () => {
       try {
@@ -30,22 +33,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (globalAuthListener) {
           globalAuthListener.unsubscribe();
         }
-        
+
         // Create single global listener
-        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-          console.log('Global auth state change:', event, !!session?.user);
-        });
-        
+        const { data: listener } = supabase.auth.onAuthStateChange(
+          (event, session) => {
+            console.log("Global auth state change:", event, !!session?.user);
+          },
+        );
+
         globalAuthListener = listener;
         setInitialized(true);
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error("Auth initialization error:", error);
         setInitialized(true); // Still mark as initialized to prevent blocking
       }
     };
-    
+
     initializeAuth();
-    
+
     // Cleanup on unmount
     return () => {
       if (globalAuthListener) {
@@ -55,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
   }, []);
-  
+
   return (
     <AuthContext.Provider value={{ initialized }}>
       {children}

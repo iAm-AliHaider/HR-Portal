@@ -1,16 +1,19 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { GetServerSideProps } from 'next';
+import { useEffect } from "react";
+
+import { useRouter } from "next/router";
+
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
 
 export default function BookingsIndexPage() {
   const router = useRouter();
-  
+
   useEffect(() => {
     // Redirect to the equipment booking page
-    router.replace('/facilities/equipment');
+    router.replace("/facilities/equipment");
   }, [router]);
-  
+
   return (
     <ModernDashboardLayout title="Equipment Booking" subtitle="Loading...">
       <div className="flex items-center justify-center h-64">
@@ -27,4 +30,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       timestamp: new Date().toISOString(),
     },
   };
-}; 
+};

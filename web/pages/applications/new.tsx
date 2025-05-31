@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
+import { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
 import {
   Box,
   Heading,
@@ -21,22 +23,22 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  Divider
-} from '@chakra-ui/react';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { Job } from '../../../packages/types';
-import { getJobs } from '../../services/jobs';
-import { createApplication } from '../../services/applications';
-import { GetServerSideProps } from 'next';
+  Divider,
+} from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+
+import { Job } from "../../../packages/types";
+import { createApplication } from "../../services/applications";
+import { getJobs } from "../../services/jobs";
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
-
 
 export default function NewApplicationPage() {
   const router = useRouter();
@@ -44,49 +46,49 @@ export default function NewApplicationPage() {
   const { job_id } = router.query;
 
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [selectedJobId, setSelectedJobId] = useState(job_id as string || '');
+  const [selectedJobId, setSelectedJobId] = useState((job_id as string) || "");
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    coverLetter: '',
-    resumeUrl: '',
-    linkedinUrl: '',
-    portfolioUrl: '',
-    yearsOfExperience: '',
-    availableStartDate: '',
-    expectedSalary: '',
-    workLocation: 'hybrid'
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    coverLetter: "",
+    resumeUrl: "",
+    linkedinUrl: "",
+    portfolioUrl: "",
+    yearsOfExperience: "",
+    availableStartDate: "",
+    expectedSalary: "",
+    workLocation: "hybrid",
   });
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         setIsLoading(true);
-        const jobsData = await getJobs('org1');
-        const activeJobs = jobsData.filter(job => job.status === 'published');
+        const jobsData = await getJobs("org1");
+        const activeJobs = jobsData.filter((job) => job.status === "published");
         setJobs(activeJobs);
 
         // If job_id is provided in query, select it
         if (job_id) {
-          const job = activeJobs.find(j => j.id === job_id);
+          const job = activeJobs.find((j) => j.id === job_id);
           if (job) {
             setSelectedJob(job);
             setSelectedJobId(job.id);
           }
         }
       } catch (error) {
-        console.error('Error fetching jobs:', error);
+        console.error("Error fetching jobs:", error);
         toast({
-          title: 'Error',
-          description: 'Failed to load available jobs.',
-          status: 'error',
+          title: "Error",
+          description: "Failed to load available jobs.",
+          status: "error",
           duration: 5000,
           isClosable: true,
         });
@@ -100,26 +102,26 @@ export default function NewApplicationPage() {
 
   useEffect(() => {
     if (selectedJobId) {
-      const job = jobs.find(j => j.id === selectedJobId);
+      const job = jobs.find((j) => j.id === selectedJobId);
       setSelectedJob(job || null);
     }
   }, [selectedJobId, jobs]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedJobId) {
       toast({
-        title: 'Error',
-        description: 'Please select a job to apply for.',
-        status: 'error',
+        title: "Error",
+        description: "Please select a job to apply for.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -128,9 +130,9 @@ export default function NewApplicationPage() {
 
     if (!formData.firstName || !formData.lastName || !formData.email) {
       toast({
-        title: 'Error',
-        description: 'Please fill in all required fields.',
-        status: 'error',
+        title: "Error",
+        description: "Please fill in all required fields.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -141,12 +143,12 @@ export default function NewApplicationPage() {
       setIsSubmitting(true);
 
       const applicationData = {
-        org_id: 'org1', // Default org ID for now
+        org_id: "org1", // Default org ID for now
         job_id: selectedJobId,
-        user_id: 'candidate1', // In a real app, this would be from auth
+        user_id: "candidate1", // In a real app, this would be from auth
         cv_url: formData.resumeUrl,
         cover_letter_url: formData.coverLetter, // In real app, would upload and get URL
-        status: 'new' as const,
+        status: "new" as const,
         application_date: new Date().toISOString(),
         last_activity_date: new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -156,34 +158,36 @@ export default function NewApplicationPage() {
           last_name: formData.lastName,
           email: formData.email,
           phone: formData.phone,
-          years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : 0,
+          years_of_experience: formData.yearsOfExperience
+            ? parseInt(formData.yearsOfExperience)
+            : 0,
           linkedin_url: formData.linkedinUrl,
           portfolio_url: formData.portfolioUrl,
           available_start_date: formData.availableStartDate,
           expected_salary: formData.expectedSalary,
-          work_location_preference: formData.workLocation
-        }
+          work_location_preference: formData.workLocation,
+        },
       };
 
       const newApplication = await createApplication(applicationData);
 
       toast({
-        title: 'Application submitted successfully!',
-        description: 'We will review your application and get back to you soon.',
-        status: 'success',
+        title: "Application submitted successfully!",
+        description:
+          "We will review your application and get back to you soon.",
+        status: "success",
         duration: 5000,
         isClosable: true,
       });
 
       // Redirect to applications list or application detail
       router.push(`/applications/${newApplication.id}`);
-
     } catch (error) {
-      console.error('Error submitting application:', error);
+      console.error("Error submitting application:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to submit application. Please try again.',
-        status: 'error',
+        title: "Error",
+        description: "Failed to submit application. Please try again.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -195,7 +199,12 @@ export default function NewApplicationPage() {
   if (isLoading) {
     return (
       <ModernDashboardLayout>
-        <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="200px"
+        >
           <Spinner size="lg" />
         </Box>
       </ModernDashboardLayout>
@@ -213,9 +222,12 @@ export default function NewApplicationPage() {
         <Box maxWidth="800px" mx="auto" p={6}>
           <VStack spacing={6} align="stretch">
             <Box>
-              <Heading size="lg" mb={2}>Submit New Application</Heading>
+              <Heading size="lg" mb={2}>
+                Submit New Application
+              </Heading>
               <Text color="gray.600">
-                Fill out the form below to apply for a position with our company.
+                Fill out the form below to apply for a position with our
+                company.
               </Text>
             </Box>
 
@@ -224,7 +236,8 @@ export default function NewApplicationPage() {
                 <AlertIcon />
                 <AlertTitle>No Active Positions</AlertTitle>
                 <AlertDescription>
-                  There are currently no active job openings available for applications.
+                  There are currently no active job openings available for
+                  applications.
                 </AlertDescription>
               </Alert>
             )}
@@ -254,13 +267,16 @@ export default function NewApplicationPage() {
                         <Alert status="info">
                           <AlertIcon />
                           <Box>
-                            <AlertTitle>Position: {selectedJob.title}</AlertTitle>
+                            <AlertTitle>
+                              Position: {selectedJob.title}
+                            </AlertTitle>
                             <AlertDescription>
                               {selectedJob.description}
                               <br />
-                              <strong>Department:</strong> {selectedJob.dept_id} | 
-                              <strong> Location:</strong> {selectedJob.location} | 
-                              <strong> Type:</strong> {selectedJob.job_type}
+                              <strong>Department:</strong> {selectedJob.dept_id}{" "}
+                              |<strong> Location:</strong>{" "}
+                              {selectedJob.location} |<strong> Type:</strong>{" "}
+                              {selectedJob.job_type}
                             </AlertDescription>
                           </Box>
                         </Alert>
@@ -270,13 +286,15 @@ export default function NewApplicationPage() {
 
                       {/* Personal Information */}
                       <Heading size="md">Personal Information</Heading>
-                      
+
                       <HStack spacing={4}>
                         <FormControl isRequired>
                           <FormLabel>First Name</FormLabel>
                           <Input
                             value={formData.firstName}
-                            onChange={(e) => handleInputChange('firstName', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("firstName", e.target.value)
+                            }
                             placeholder="Enter your first name"
                           />
                         </FormControl>
@@ -284,7 +302,9 @@ export default function NewApplicationPage() {
                           <FormLabel>Last Name</FormLabel>
                           <Input
                             value={formData.lastName}
-                            onChange={(e) => handleInputChange('lastName', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("lastName", e.target.value)
+                            }
                             placeholder="Enter your last name"
                           />
                         </FormControl>
@@ -296,7 +316,9 @@ export default function NewApplicationPage() {
                           <Input
                             type="email"
                             value={formData.email}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("email", e.target.value)
+                            }
                             placeholder="your.email@example.com"
                           />
                         </FormControl>
@@ -305,7 +327,9 @@ export default function NewApplicationPage() {
                           <Input
                             type="tel"
                             value={formData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("phone", e.target.value)
+                            }
                             placeholder="+1 (555) 123-4567"
                           />
                         </FormControl>
@@ -320,7 +344,12 @@ export default function NewApplicationPage() {
                         <FormLabel>Years of Experience</FormLabel>
                         <Select
                           value={formData.yearsOfExperience}
-                          onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "yearsOfExperience",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Select years of experience"
                         >
                           <option value="0">Less than 1 year</option>
@@ -337,14 +366,24 @@ export default function NewApplicationPage() {
                           <Input
                             type="date"
                             value={formData.availableStartDate}
-                            onChange={(e) => handleInputChange('availableStartDate', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "availableStartDate",
+                                e.target.value,
+                              )
+                            }
                           />
                         </FormControl>
                         <FormControl>
                           <FormLabel>Expected Salary</FormLabel>
                           <Input
                             value={formData.expectedSalary}
-                            onChange={(e) => handleInputChange('expectedSalary', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "expectedSalary",
+                                e.target.value,
+                              )
+                            }
                             placeholder="e.g. $75,000 - $85,000"
                           />
                         </FormControl>
@@ -354,7 +393,9 @@ export default function NewApplicationPage() {
                         <FormLabel>Work Location Preference</FormLabel>
                         <Select
                           value={formData.workLocation}
-                          onChange={(e) => handleInputChange('workLocation', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("workLocation", e.target.value)
+                          }
                         >
                           <option value="remote">Remote</option>
                           <option value="onsite">On-site</option>
@@ -372,7 +413,9 @@ export default function NewApplicationPage() {
                         <Input
                           type="url"
                           value={formData.resumeUrl}
-                          onChange={(e) => handleInputChange('resumeUrl', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("resumeUrl", e.target.value)
+                          }
                           placeholder="https://drive.google.com/your-resume"
                         />
                       </FormControl>
@@ -383,7 +426,9 @@ export default function NewApplicationPage() {
                           <Input
                             type="url"
                             value={formData.linkedinUrl}
-                            onChange={(e) => handleInputChange('linkedinUrl', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("linkedinUrl", e.target.value)
+                            }
                             placeholder="https://linkedin.com/in/yourprofile"
                           />
                         </FormControl>
@@ -392,7 +437,9 @@ export default function NewApplicationPage() {
                           <Input
                             type="url"
                             value={formData.portfolioUrl}
-                            onChange={(e) => handleInputChange('portfolioUrl', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("portfolioUrl", e.target.value)
+                            }
                             placeholder="https://yourportfolio.com"
                           />
                         </FormControl>
@@ -402,7 +449,9 @@ export default function NewApplicationPage() {
                         <FormLabel>Cover Letter</FormLabel>
                         <Textarea
                           value={formData.coverLetter}
-                          onChange={(e) => handleInputChange('coverLetter', e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("coverLetter", e.target.value)
+                          }
                           placeholder="Tell us why you're interested in this position and what makes you a great fit..."
                           rows={6}
                         />
@@ -413,7 +462,7 @@ export default function NewApplicationPage() {
                       <HStack spacing={4} justify="flex-end">
                         <Button
                           variant="outline"
-                          onClick={() => router.push('/applications')}
+                          onClick={() => router.push("/applications")}
                           isDisabled={isSubmitting}
                         >
                           Cancel
@@ -437,4 +486,4 @@ export default function NewApplicationPage() {
       </ModernDashboardLayout>
     </>
   );
-} 
+}

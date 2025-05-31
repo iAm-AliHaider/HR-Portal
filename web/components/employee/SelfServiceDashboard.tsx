@@ -1,8 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { Button } from '../ui/button';
-import { Badge } from '@chakra-ui/react';
-import { Calendar, FileText, Clock, User, BookOpen, DollarSign, Settings, Bell, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+
+import { Badge } from "@chakra-ui/react";
+import {
+  Calendar,
+  FileText,
+  Clock,
+  User,
+  BookOpen,
+  DollarSign,
+  Settings,
+  Bell,
+  TrendingUp,
+} from "lucide-react";
+
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 
 interface QuickAction {
   id: string;
@@ -10,15 +22,15 @@ interface QuickAction {
   description: string;
   icon: React.ReactNode;
   href: string;
-  priority: 'high' | 'medium' | 'low';
-  category: 'leave' | 'documents' | 'learning' | 'finance' | 'profile';
+  priority: "high" | "medium" | "low";
+  category: "leave" | "documents" | "learning" | "finance" | "profile";
 }
 
 interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   timestamp: string;
   read: boolean;
   actionUrl?: string;
@@ -40,94 +52,94 @@ const SelfServiceDashboard: React.FC = () => {
     completedCourses: 5,
     upcomingDeadlines: 3,
     documentsToReview: 1,
-    goalProgress: 75
+    goalProgress: 75,
   });
 
   const [notifications, setNotifications] = useState<Notification[]>([
     {
-      id: '1',
-      title: 'Leave Request Approved',
-      message: 'Your vacation leave for June 15-19 has been approved',
-      type: 'success',
-      timestamp: '2024-01-15T10:30:00Z',
+      id: "1",
+      title: "Leave Request Approved",
+      message: "Your vacation leave for June 15-19 has been approved",
+      type: "success",
+      timestamp: "2024-01-15T10:30:00Z",
       read: false,
-      actionUrl: '/leave/requests'
+      actionUrl: "/leave/requests",
     },
     {
-      id: '2',
-      title: 'New Course Available',
-      message: 'Advanced React Development course is now available',
-      type: 'info',
-      timestamp: '2024-01-14T14:20:00Z',
+      id: "2",
+      title: "New Course Available",
+      message: "Advanced React Development course is now available",
+      type: "info",
+      timestamp: "2024-01-14T14:20:00Z",
       read: false,
-      actionUrl: '/learning'
+      actionUrl: "/learning",
     },
     {
-      id: '3',
-      title: 'Goal Review Due',
-      message: 'Your Q1 goals review is due in 3 days',
-      type: 'warning',
-      timestamp: '2024-01-13T09:15:00Z',
+      id: "3",
+      title: "Goal Review Due",
+      message: "Your Q1 goals review is due in 3 days",
+      type: "warning",
+      timestamp: "2024-01-13T09:15:00Z",
       read: false,
-      actionUrl: '/goals'
-    }
+      actionUrl: "/goals",
+    },
   ]);
 
   const quickActions: QuickAction[] = [
     {
-      id: 'request-leave',
-      title: 'Request Leave',
-      description: 'Submit a new leave request',
+      id: "request-leave",
+      title: "Request Leave",
+      description: "Submit a new leave request",
       icon: <Calendar className="h-5 w-5" />,
-      href: '/leave/request',
-      priority: 'high',
-      category: 'leave'
+      href: "/leave/request",
+      priority: "high",
+      category: "leave",
     },
     {
-      id: 'submit-expense',
-      title: 'Submit Expense',
-      description: 'Report business expenses',
+      id: "submit-expense",
+      title: "Submit Expense",
+      description: "Report business expenses",
       icon: <DollarSign className="h-5 w-5" />,
-      href: '/expenses/new',
-      priority: 'high',
-      category: 'finance'
+      href: "/expenses/new",
+      priority: "high",
+      category: "finance",
     },
     {
-      id: 'view-payslips',
-      title: 'View Payslips',
-      description: 'Access your salary statements',
+      id: "view-payslips",
+      title: "View Payslips",
+      description: "Access your salary statements",
       icon: <FileText className="h-5 w-5" />,
-      href: '/payslips',
-      priority: 'medium',
-      category: 'finance'
+      href: "/payslips",
+      priority: "medium",
+      category: "finance",
     },
     {
-      id: 'update-profile',
-      title: 'Update Profile',
-      description: 'Edit personal information',
+      id: "update-profile",
+      title: "Update Profile",
+      description: "Edit personal information",
       icon: <User className="h-5 w-5" />,
-      href: '/profile',
-      priority: 'medium',
-      category: 'profile'
+      href: "/profile",
+      priority: "medium",
+      category: "profile",
     },
     {
-      id: 'browse-courses',
-      title: 'Browse Courses',
-      description: 'Explore learning opportunities',
+      id: "browse-courses",
+      title: "Browse Courses",
+      description: "Explore learning opportunities",
       icon: <BookOpen className="h-5 w-5" />,
-      href: '/learning',
-      priority: 'medium',
-      category: 'learning'
+      href: "/learning",
+      priority: "medium",
+      category: "learning",
     },
     {
-      id: 'view-documents',
-      title: 'My Documents',
-      description: 'Access employment documents',
+      id: "view-documents",
+      title: "My Documents",
+      description: "Access employment documents",
       icon: <FileText className="h-5 w-5" />,
-      href: '/documents',
-      priority: 'low',
-      category: 'documents'
-    }
+      href: "/documents",
+      priority: "low",
+      category: "documents",
+    },
   ];
 
   const formatTimestamp = (timestamp: string) => {
@@ -137,28 +149,32 @@ const SelfServiceDashboard: React.FC = () => {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffHours < 1) return 'Just now';
+    if (diffHours < 1) return "Just now";
     if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return 'Yesterday';
+    if (diffDays === 1) return "Yesterday";
     return `${diffDays}d ago`;
   };
 
   const markNotificationAsRead = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
+    setNotifications((prev) =>
+      prev.map((notification) =>
         notification.id === notificationId
           ? { ...notification, read: true }
-          : notification
-      )
+          : notification,
+      ),
     );
   };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'success': return 'text-green-600 bg-green-50 border-green-200';
-      case 'warning': return 'text-amber-600 bg-amber-50 border-amber-200';
-      case 'error': return 'text-red-600 bg-red-50 border-red-200';
-      default: return 'text-blue-600 bg-blue-50 border-blue-200';
+      case "success":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "warning":
+        return "text-amber-600 bg-amber-50 border-amber-200";
+      case "error":
+        return "text-red-600 bg-red-50 border-red-200";
+      default:
+        return "text-blue-600 bg-blue-50 border-blue-200";
     }
   };
 
@@ -167,7 +183,9 @@ const SelfServiceDashboard: React.FC = () => {
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
         <h1 className="text-2xl font-bold mb-2">Welcome back!</h1>
-        <p className="text-blue-100">Here's what's happening with your work today.</p>
+        <p className="text-blue-100">
+          Here's what's happening with your work today.
+        </p>
       </div>
 
       {/* Stats Overview */}
@@ -177,7 +195,9 @@ const SelfServiceDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Leave Balance</p>
-                <p className="text-2xl font-bold text-green-600">{stats.leaveBalance}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.leaveBalance}
+                </p>
                 <p className="text-xs text-gray-500">days remaining</p>
               </div>
               <Calendar className="h-8 w-8 text-green-600" />
@@ -190,7 +210,9 @@ const SelfServiceDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pending Requests</p>
-                <p className="text-2xl font-bold text-amber-600">{stats.pendingRequests}</p>
+                <p className="text-2xl font-bold text-amber-600">
+                  {stats.pendingRequests}
+                </p>
                 <p className="text-xs text-gray-500">awaiting approval</p>
               </div>
               <Clock className="h-8 w-8 text-amber-600" />
@@ -203,7 +225,9 @@ const SelfServiceDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Courses Completed</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.completedCourses}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {stats.completedCourses}
+                </p>
                 <p className="text-xs text-gray-500">this quarter</p>
               </div>
               <BookOpen className="h-8 w-8 text-blue-600" />
@@ -216,7 +240,9 @@ const SelfServiceDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Goal Progress</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.goalProgress}%</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {stats.goalProgress}%
+                </p>
                 <p className="text-xs text-gray-500">of Q1 goals</p>
               </div>
               <TrendingUp className="h-8 w-8 text-purple-600" />
@@ -253,7 +279,7 @@ const SelfServiceDashboard: React.FC = () => {
                         <p className="text-sm text-gray-500 mt-1">
                           {action.description}
                         </p>
-                        {action.priority === 'high' && (
+                        {action.priority === "high" && (
                           <Badge variant="destructive" className="mt-2">
                             Priority
                           </Badge>
@@ -282,18 +308,26 @@ const SelfServiceDashboard: React.FC = () => {
                   <div
                     key={notification.id}
                     className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                      notification.read ? 'bg-gray-50' : getNotificationColor(notification.type)
+                      notification.read
+                        ? "bg-gray-50"
+                        : getNotificationColor(notification.type)
                     }`}
                     onClick={() => markNotificationAsRead(notification.id)}
                   >
                     <div className="flex justify-between items-start mb-1">
-                      <h4 className="text-sm font-medium">{notification.title}</h4>
+                      <h4 className="text-sm font-medium">
+                        {notification.title}
+                      </h4>
                       {!notification.read && (
                         <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{notification.message}</p>
-                    <p className="text-xs text-gray-500">{formatTimestamp(notification.timestamp)}</p>
+                    <p className="text-xs text-gray-600 mb-2">
+                      {notification.message}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatTimestamp(notification.timestamp)}
+                    </p>
                   </div>
                 ))}
                 {notifications.length > 5 && (
@@ -356,7 +390,9 @@ const SelfServiceDashboard: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">Certification Renewal</p>
-                  <p className="text-xs text-gray-500">AWS Solutions Architect</p>
+                  <p className="text-xs text-gray-500">
+                    AWS Solutions Architect
+                  </p>
                 </div>
                 <Badge variant="outline">2 weeks</Badge>
               </div>
@@ -375,4 +411,4 @@ const SelfServiceDashboard: React.FC = () => {
   );
 };
 
-export default SelfServiceDashboard; 
+export default SelfServiceDashboard;

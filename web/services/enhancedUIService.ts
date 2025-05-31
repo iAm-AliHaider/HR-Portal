@@ -1,10 +1,10 @@
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from "@/lib/supabase/client";
 
 // Enhanced UI/UX interfaces
 export interface ThemeConfig {
   id: string;
   name: string;
-  type: 'light' | 'dark' | 'system' | 'high_contrast' | 'custom';
+  type: "light" | "dark" | "system" | "high_contrast" | "custom";
   primary_color: string;
   secondary_color: string;
   accent_color: string;
@@ -29,9 +29,9 @@ export interface FontSizes {
   base: string;
   lg: string;
   xl: string;
-  '2xl': string;
-  '3xl': string;
-  '4xl': string;
+  "2xl": string;
+  "3xl": string;
+  "4xl": string;
 }
 
 export interface ShadowConfig {
@@ -78,14 +78,14 @@ export interface UserPreferences {
   language: string;
   timezone: string;
   date_format: string;
-  time_format: '12h' | '24h';
+  time_format: "12h" | "24h";
   currency: string;
   number_format: string;
   sidebar_collapsed: boolean;
   dashboard_layout: DashboardLayout;
   notification_preferences: NotificationPreferences;
   accessibility_settings: AccessibilitySettings;
-  performance_mode: 'high' | 'balanced' | 'battery_saver';
+  performance_mode: "high" | "balanced" | "battery_saver";
   created_at: string;
   updated_at: string;
 }
@@ -101,7 +101,14 @@ export interface DashboardLayout {
 
 export interface DashboardWidget {
   id: string;
-  type: 'chart' | 'metric' | 'list' | 'calendar' | 'notifications' | 'quick_actions' | 'ai_insights';
+  type:
+    | "chart"
+    | "metric"
+    | "list"
+    | "calendar"
+    | "notifications"
+    | "quick_actions"
+    | "ai_insights";
   title: string;
   position: { x: number; y: number; w: number; h: number };
   config: Record<string, any>;
@@ -125,7 +132,7 @@ export interface NotificationPreferences {
   categories: {
     [key: string]: {
       enabled: boolean;
-      priority: 'low' | 'medium' | 'high';
+      priority: "low" | "medium" | "high";
       channels: string[];
     };
   };
@@ -138,7 +145,7 @@ export interface ResponsiveConfig {
     md: number;
     lg: number;
     xl: number;
-    '2xl': number;
+    "2xl": number;
   };
   container_max_widths: {
     sm: string;
@@ -264,8 +271,8 @@ export interface TooltipConfig {
   enabled: boolean;
   delay_show: number;
   delay_hide: number;
-  placement: 'top' | 'bottom' | 'left' | 'right' | 'auto';
-  theme: 'dark' | 'light';
+  placement: "top" | "bottom" | "left" | "right" | "auto";
+  theme: "dark" | "light";
   max_width: number;
 }
 
@@ -324,91 +331,91 @@ export interface PerformanceMetrics {
 // Mock data for enhanced UI features
 const mockThemes: ThemeConfig[] = [
   {
-    id: 'theme_light',
-    name: 'Light Theme',
-    type: 'light',
-    primary_color: '#3b82f6',
-    secondary_color: '#64748b',
-    accent_color: '#f59e0b',
-    background_color: '#ffffff',
-    surface_color: '#f8fafc',
-    text_color: '#1e293b',
+    id: "theme_light",
+    name: "Light Theme",
+    type: "light",
+    primary_color: "#3b82f6",
+    secondary_color: "#64748b",
+    accent_color: "#f59e0b",
+    background_color: "#ffffff",
+    surface_color: "#f8fafc",
+    text_color: "#1e293b",
     border_radius: 8,
     spacing_unit: 4,
-    font_family: 'Inter, sans-serif',
+    font_family: "Inter, sans-serif",
     font_sizes: {
-      xs: '0.75rem',
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
-      '2xl': '1.5rem',
-      '3xl': '1.875rem',
-      '4xl': '2.25rem'
+      xs: "0.75rem",
+      sm: "0.875rem",
+      base: "1rem",
+      lg: "1.125rem",
+      xl: "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "1.875rem",
+      "4xl": "2.25rem",
     },
     shadows: {
-      sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-      base: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-      md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-      lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-      xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+      sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+      base: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+      md: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+      lg: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+      xl: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
     },
     animations: {
-      duration_fast: '150ms',
-      duration_normal: '300ms',
-      duration_slow: '500ms',
-      easing_default: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      easing_in: 'cubic-bezier(0.4, 0, 1, 1)',
-      easing_out: 'cubic-bezier(0, 0, 0.2, 1)',
-      reduce_motion: false
+      duration_fast: "150ms",
+      duration_normal: "300ms",
+      duration_slow: "500ms",
+      easing_default: "cubic-bezier(0.4, 0, 0.2, 1)",
+      easing_in: "cubic-bezier(0.4, 0, 1, 1)",
+      easing_out: "cubic-bezier(0, 0, 0.2, 1)",
+      reduce_motion: false,
     },
     is_default: true,
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-01-20T14:30:00Z'
+    created_at: "2024-01-15T10:00:00Z",
+    updated_at: "2024-01-20T14:30:00Z",
   },
   {
-    id: 'theme_dark',
-    name: 'Dark Theme',
-    type: 'dark',
-    primary_color: '#3b82f6',
-    secondary_color: '#64748b',
-    accent_color: '#f59e0b',
-    background_color: '#0f172a',
-    surface_color: '#1e293b',
-    text_color: '#f8fafc',
+    id: "theme_dark",
+    name: "Dark Theme",
+    type: "dark",
+    primary_color: "#3b82f6",
+    secondary_color: "#64748b",
+    accent_color: "#f59e0b",
+    background_color: "#0f172a",
+    surface_color: "#1e293b",
+    text_color: "#f8fafc",
     border_radius: 8,
     spacing_unit: 4,
-    font_family: 'Inter, sans-serif',
+    font_family: "Inter, sans-serif",
     font_sizes: {
-      xs: '0.75rem',
-      sm: '0.875rem',
-      base: '1rem',
-      lg: '1.125rem',
-      xl: '1.25rem',
-      '2xl': '1.5rem',
-      '3xl': '1.875rem',
-      '4xl': '2.25rem'
+      xs: "0.75rem",
+      sm: "0.875rem",
+      base: "1rem",
+      lg: "1.125rem",
+      xl: "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "1.875rem",
+      "4xl": "2.25rem",
     },
     shadows: {
-      sm: '0 1px 2px 0 rgb(0 0 0 / 0.3)',
-      base: '0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4)',
-      md: '0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4)',
-      lg: '0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4)',
-      xl: '0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4)'
+      sm: "0 1px 2px 0 rgb(0 0 0 / 0.3)",
+      base: "0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4)",
+      md: "0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4)",
+      lg: "0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4)",
+      xl: "0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4)",
     },
     animations: {
-      duration_fast: '150ms',
-      duration_normal: '300ms',
-      duration_slow: '500ms',
-      easing_default: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      easing_in: 'cubic-bezier(0.4, 0, 1, 1)',
-      easing_out: 'cubic-bezier(0, 0, 0.2, 1)',
-      reduce_motion: false
+      duration_fast: "150ms",
+      duration_normal: "300ms",
+      duration_slow: "500ms",
+      easing_default: "cubic-bezier(0.4, 0, 0.2, 1)",
+      easing_in: "cubic-bezier(0.4, 0, 1, 1)",
+      easing_out: "cubic-bezier(0, 0, 0.2, 1)",
+      reduce_motion: false,
     },
     is_default: false,
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-01-20T14:30:00Z'
-  }
+    created_at: "2024-01-15T10:00:00Z",
+    updated_at: "2024-01-20T14:30:00Z",
+  },
 ];
 
 const mockResponsiveConfig: ResponsiveConfig = {
@@ -418,16 +425,16 @@ const mockResponsiveConfig: ResponsiveConfig = {
     md: 768,
     lg: 1024,
     xl: 1280,
-    '2xl': 1536
+    "2xl": 1536,
   },
   container_max_widths: {
-    sm: '640px',
-    md: '768px',
-    lg: '1024px',
-    xl: '1280px'
+    sm: "640px",
+    md: "768px",
+    lg: "1024px",
+    xl: "1280px",
   },
   grid_columns: 12,
-  grid_gutter: '1rem'
+  grid_gutter: "1rem",
 };
 
 export class EnhancedUIService {
@@ -435,72 +442,77 @@ export class EnhancedUIService {
   static async getThemes(): Promise<ThemeConfig[]> {
     try {
       const { data, error } = await supabase
-        .from('themes')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("themes")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.log('Database query failed, using mock themes');
+        console.log("Database query failed, using mock themes");
         return mockThemes;
       }
 
       return data || mockThemes;
     } catch (error) {
-      console.error('Error fetching themes:', error);
+      console.error("Error fetching themes:", error);
       return mockThemes;
     }
   }
 
-  static async createTheme(themeConfig: Omit<ThemeConfig, 'id' | 'created_at' | 'updated_at'>): Promise<ThemeConfig> {
+  static async createTheme(
+    themeConfig: Omit<ThemeConfig, "id" | "created_at" | "updated_at">,
+  ): Promise<ThemeConfig> {
     try {
       const newTheme: ThemeConfig = {
         ...themeConfig,
         id: `theme_${Date.now()}`,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
-        .from('themes')
+        .from("themes")
         .insert([newTheme])
         .select()
         .single();
 
       if (error) {
-        console.log('Database insert failed, returning mock theme');
+        console.log("Database insert failed, returning mock theme");
         return newTheme;
       }
 
       return data;
     } catch (error) {
-      console.error('Error creating theme:', error);
+      console.error("Error creating theme:", error);
       throw error;
     }
   }
 
-  static async updateTheme(themeId: string, updates: Partial<ThemeConfig>): Promise<ThemeConfig> {
+  static async updateTheme(
+    themeId: string,
+    updates: Partial<ThemeConfig>,
+  ): Promise<ThemeConfig> {
     try {
       const updatedTheme = {
         ...updates,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
-        .from('themes')
+        .from("themes")
         .update(updatedTheme)
-        .eq('id', themeId)
+        .eq("id", themeId)
         .select()
         .single();
 
       if (error) {
-        console.log('Database update failed, returning mock success');
-        const mockTheme = mockThemes.find(t => t.id === themeId);
+        console.log("Database update failed, returning mock success");
+        const mockTheme = mockThemes.find((t) => t.id === themeId);
         return { ...mockTheme!, ...updatedTheme };
       }
 
       return data;
     } catch (error) {
-      console.error('Error updating theme:', error);
+      console.error("Error updating theme:", error);
       throw error;
     }
   }
@@ -509,93 +521,105 @@ export class EnhancedUIService {
   static async getUserPreferences(userId: string): Promise<UserPreferences> {
     try {
       const { data, error } = await supabase
-        .from('user_preferences')
-        .select(`
+        .from("user_preferences")
+        .select(
+          `
           *,
           accessibility_settings(*)
-        `)
-        .eq('user_id', userId)
+        `,
+        )
+        .eq("user_id", userId)
         .single();
 
       if (error) {
-        console.log('Database query failed, returning default preferences');
+        console.log("Database query failed, returning default preferences");
         return this.getDefaultPreferences(userId);
       }
 
       return data;
     } catch (error) {
-      console.error('Error fetching user preferences:', error);
+      console.error("Error fetching user preferences:", error);
       return this.getDefaultPreferences(userId);
     }
   }
 
-  static async updateUserPreferences(userId: string, preferences: Partial<UserPreferences>): Promise<UserPreferences> {
+  static async updateUserPreferences(
+    userId: string,
+    preferences: Partial<UserPreferences>,
+  ): Promise<UserPreferences> {
     try {
       const updates = {
         ...preferences,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
-        .from('user_preferences')
+        .from("user_preferences")
         .upsert([{ user_id: userId, ...updates }])
         .select()
         .single();
 
       if (error) {
-        console.log('Database upsert failed, returning mock success');
+        console.log("Database upsert failed, returning mock success");
         return { ...this.getDefaultPreferences(userId), ...updates };
       }
 
       return data;
     } catch (error) {
-      console.error('Error updating user preferences:', error);
+      console.error("Error updating user preferences:", error);
       throw error;
     }
   }
 
   // Accessibility features
-  static async getAccessibilitySettings(userId: string): Promise<AccessibilitySettings> {
+  static async getAccessibilitySettings(
+    userId: string,
+  ): Promise<AccessibilitySettings> {
     try {
       const { data, error } = await supabase
-        .from('accessibility_settings')
-        .select('*')
-        .eq('user_id', userId)
+        .from("accessibility_settings")
+        .select("*")
+        .eq("user_id", userId)
         .single();
 
       if (error) {
-        console.log('Database query failed, returning default accessibility settings');
+        console.log(
+          "Database query failed, returning default accessibility settings",
+        );
         return this.getDefaultAccessibilitySettings(userId);
       }
 
       return data;
     } catch (error) {
-      console.error('Error fetching accessibility settings:', error);
+      console.error("Error fetching accessibility settings:", error);
       return this.getDefaultAccessibilitySettings(userId);
     }
   }
 
-  static async updateAccessibilitySettings(userId: string, settings: Partial<AccessibilitySettings>): Promise<AccessibilitySettings> {
+  static async updateAccessibilitySettings(
+    userId: string,
+    settings: Partial<AccessibilitySettings>,
+  ): Promise<AccessibilitySettings> {
     try {
       const updates = {
         ...settings,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
-        .from('accessibility_settings')
+        .from("accessibility_settings")
         .upsert([{ user_id: userId, ...updates }])
         .select()
         .single();
 
       if (error) {
-        console.log('Database upsert failed, returning mock success');
+        console.log("Database upsert failed, returning mock success");
         return { ...this.getDefaultAccessibilitySettings(userId), ...updates };
       }
 
       return data;
     } catch (error) {
-      console.error('Error updating accessibility settings:', error);
+      console.error("Error updating accessibility settings:", error);
       throw error;
     }
   }
@@ -606,365 +630,388 @@ export class EnhancedUIService {
     return {
       buttons: {
         primary: {
-          className: 'bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg px-4 py-2 transition-colors',
+          className:
+            "bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg px-4 py-2 transition-colors",
           styles: {
-            backgroundColor: '#2563eb',
-            color: '#ffffff',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 1rem',
-            fontWeight: '500'
+            backgroundColor: "#2563eb",
+            color: "#ffffff",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 1rem",
+            fontWeight: "500",
           },
           hover_styles: {
-            backgroundColor: '#1d4ed8'
+            backgroundColor: "#1d4ed8",
           },
           focus_styles: {
-            outline: '2px solid #3b82f6',
-            outlineOffset: '2px'
-          }
+            outline: "2px solid #3b82f6",
+            outlineOffset: "2px",
+          },
         },
         secondary: {
-          className: 'bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium rounded-lg px-4 py-2 transition-colors',
+          className:
+            "bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium rounded-lg px-4 py-2 transition-colors",
           styles: {
-            backgroundColor: '#f3f4f6',
-            color: '#111827',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 1rem',
-            fontWeight: '500'
-          }
+            backgroundColor: "#f3f4f6",
+            color: "#111827",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 1rem",
+            fontWeight: "500",
+          },
         },
         outline: {
-          className: 'border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg px-4 py-2 transition-colors',
+          className:
+            "border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg px-4 py-2 transition-colors",
           styles: {
-            border: '1px solid #d1d5db',
-            backgroundColor: 'transparent',
-            color: '#374151',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 1rem',
-            fontWeight: '500'
-          }
+            border: "1px solid #d1d5db",
+            backgroundColor: "transparent",
+            color: "#374151",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 1rem",
+            fontWeight: "500",
+          },
         },
         ghost: {
-          className: 'hover:bg-gray-100 text-gray-600 font-medium rounded-lg px-4 py-2 transition-colors',
+          className:
+            "hover:bg-gray-100 text-gray-600 font-medium rounded-lg px-4 py-2 transition-colors",
           styles: {
-            backgroundColor: 'transparent',
-            color: '#4b5563',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 1rem',
-            fontWeight: '500'
-          }
+            backgroundColor: "transparent",
+            color: "#4b5563",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 1rem",
+            fontWeight: "500",
+          },
         },
         destructive: {
-          className: 'bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg px-4 py-2 transition-colors',
+          className:
+            "bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg px-4 py-2 transition-colors",
           styles: {
-            backgroundColor: '#dc2626',
-            color: '#ffffff',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 1rem',
-            fontWeight: '500'
-          }
+            backgroundColor: "#dc2626",
+            color: "#ffffff",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 1rem",
+            fontWeight: "500",
+          },
         },
         sizes: {
           sm: {
-            className: 'px-3 py-1.5 text-sm',
-            styles: { padding: '0.375rem 0.75rem', fontSize: '0.875rem' }
+            className: "px-3 py-1.5 text-sm",
+            styles: { padding: "0.375rem 0.75rem", fontSize: "0.875rem" },
           },
           md: {
-            className: 'px-4 py-2 text-base',
-            styles: { padding: '0.5rem 1rem', fontSize: '1rem' }
+            className: "px-4 py-2 text-base",
+            styles: { padding: "0.5rem 1rem", fontSize: "1rem" },
           },
           lg: {
-            className: 'px-6 py-3 text-lg',
-            styles: { padding: '0.75rem 1.5rem', fontSize: '1.125rem' }
+            className: "px-6 py-3 text-lg",
+            styles: { padding: "0.75rem 1.5rem", fontSize: "1.125rem" },
           },
           xl: {
-            className: 'px-8 py-4 text-xl',
-            styles: { padding: '1rem 2rem', fontSize: '1.25rem' }
-          }
-        }
+            className: "px-8 py-4 text-xl",
+            styles: { padding: "1rem 2rem", fontSize: "1.25rem" },
+          },
+        },
       },
       inputs: {
         default: {
-          className: 'border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+          className:
+            "border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent",
           styles: {
-            border: '1px solid #d1d5db',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 0.75rem'
+            border: "1px solid #d1d5db",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 0.75rem",
           },
           focus_styles: {
-            outline: 'none',
-            ringWidth: '2px',
-            ringColor: '#3b82f6',
-            borderColor: 'transparent'
-          }
+            outline: "none",
+            ringWidth: "2px",
+            ringColor: "#3b82f6",
+            borderColor: "transparent",
+          },
         },
         filled: {
-          className: 'bg-gray-100 border-transparent rounded-lg px-3 py-2 focus:bg-white focus:ring-2 focus:ring-blue-500',
+          className:
+            "bg-gray-100 border-transparent rounded-lg px-3 py-2 focus:bg-white focus:ring-2 focus:ring-blue-500",
           styles: {
-            backgroundColor: '#f3f4f6',
-            border: '1px solid transparent',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 0.75rem'
-          }
+            backgroundColor: "#f3f4f6",
+            border: "1px solid transparent",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 0.75rem",
+          },
         },
         outlined: {
-          className: 'border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500',
+          className:
+            "border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500",
           styles: {
-            border: '2px solid #d1d5db',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 0.75rem'
-          }
+            border: "2px solid #d1d5db",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 0.75rem",
+          },
         },
         underlined: {
-          className: 'border-0 border-b-2 border-gray-300 rounded-none px-0 py-2 focus:border-blue-500',
+          className:
+            "border-0 border-b-2 border-gray-300 rounded-none px-0 py-2 focus:border-blue-500",
           styles: {
-            border: 'none',
-            borderBottom: '2px solid #d1d5db',
-            borderRadius: '0',
-            padding: '0.5rem 0'
-          }
+            border: "none",
+            borderBottom: "2px solid #d1d5db",
+            borderRadius: "0",
+            padding: "0.5rem 0",
+          },
         },
         error: {
-          className: 'border-red-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500',
+          className:
+            "border-red-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500",
           styles: {
-            border: '1px solid #ef4444',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 0.75rem'
-          }
+            border: "1px solid #ef4444",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 0.75rem",
+          },
         },
         success: {
-          className: 'border-green-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500',
+          className:
+            "border-green-500 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500",
           styles: {
-            border: '1px solid #22c55e',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 0.75rem'
-          }
+            border: "1px solid #22c55e",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 0.75rem",
+          },
         },
         disabled: {
-          className: 'bg-gray-100 border-gray-200 text-gray-400 rounded-lg px-3 py-2 cursor-not-allowed',
+          className:
+            "bg-gray-100 border-gray-200 text-gray-400 rounded-lg px-3 py-2 cursor-not-allowed",
           styles: {
-            backgroundColor: '#f3f4f6',
-            border: '1px solid #e5e7eb',
-            color: '#9ca3af',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 0.75rem',
-            cursor: 'not-allowed'
-          }
-        }
+            backgroundColor: "#f3f4f6",
+            border: "1px solid #e5e7eb",
+            color: "#9ca3af",
+            borderRadius: "0.5rem",
+            padding: "0.5rem 0.75rem",
+            cursor: "not-allowed",
+          },
+        },
       },
       cards: {
         elevated: {
-          className: 'bg-white rounded-lg shadow-lg p-6',
+          className: "bg-white rounded-lg shadow-lg p-6",
           styles: {
-            backgroundColor: '#ffffff',
-            borderRadius: '0.5rem',
-            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-            padding: '1.5rem'
-          }
+            backgroundColor: "#ffffff",
+            borderRadius: "0.5rem",
+            boxShadow:
+              "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+            padding: "1.5rem",
+          },
         },
         outlined: {
-          className: 'bg-white border border-gray-200 rounded-lg p-6',
+          className: "bg-white border border-gray-200 rounded-lg p-6",
           styles: {
-            backgroundColor: '#ffffff',
-            border: '1px solid #e5e7eb',
-            borderRadius: '0.5rem',
-            padding: '1.5rem'
-          }
+            backgroundColor: "#ffffff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "0.5rem",
+            padding: "1.5rem",
+          },
         },
         filled: {
-          className: 'bg-gray-50 rounded-lg p-6',
+          className: "bg-gray-50 rounded-lg p-6",
           styles: {
-            backgroundColor: '#f9fafb',
-            borderRadius: '0.5rem',
-            padding: '1.5rem'
-          }
+            backgroundColor: "#f9fafb",
+            borderRadius: "0.5rem",
+            padding: "1.5rem",
+          },
         },
         interactive: {
-          className: 'bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer p-6',
+          className:
+            "bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer p-6",
           styles: {
-            backgroundColor: '#ffffff',
-            borderRadius: '0.5rem',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-            padding: '1.5rem',
-            cursor: 'pointer'
+            backgroundColor: "#ffffff",
+            borderRadius: "0.5rem",
+            boxShadow:
+              "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+            padding: "1.5rem",
+            cursor: "pointer",
           },
           hover_styles: {
-            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
-          }
-        }
+            boxShadow:
+              "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+          },
+        },
       },
       modals: {
         default: {
-          className: 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50',
+          className:
+            "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50",
           styles: {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
-            zIndex: '50',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)'
-          }
+            position: "fixed",
+            top: "0",
+            left: "0",
+            right: "0",
+            bottom: "0",
+            zIndex: "50",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          },
         },
         full_screen: {
-          className: 'fixed inset-0 z-50 bg-white',
+          className: "fixed inset-0 z-50 bg-white",
           styles: {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
-            zIndex: '50',
-            backgroundColor: '#ffffff'
-          }
+            position: "fixed",
+            top: "0",
+            left: "0",
+            right: "0",
+            bottom: "0",
+            zIndex: "50",
+            backgroundColor: "#ffffff",
+          },
         },
         drawer: {
-          className: 'fixed top-0 right-0 h-full w-96 z-50 bg-white shadow-xl',
+          className: "fixed top-0 right-0 h-full w-96 z-50 bg-white shadow-xl",
           styles: {
-            position: 'fixed',
-            top: '0',
-            right: '0',
-            height: '100%',
-            width: '24rem',
-            zIndex: '50',
-            backgroundColor: '#ffffff',
-            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
-          }
+            position: "fixed",
+            top: "0",
+            right: "0",
+            height: "100%",
+            width: "24rem",
+            zIndex: "50",
+            backgroundColor: "#ffffff",
+            boxShadow:
+              "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+          },
         },
         bottom_sheet: {
-          className: 'fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-lg',
+          className: "fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-lg",
           styles: {
-            position: 'fixed',
-            bottom: '0',
-            left: '0',
-            right: '0',
-            zIndex: '50',
-            backgroundColor: '#ffffff',
-            borderTopLeftRadius: '0.5rem',
-            borderTopRightRadius: '0.5rem'
-          }
-        }
+            position: "fixed",
+            bottom: "0",
+            left: "0",
+            right: "0",
+            zIndex: "50",
+            backgroundColor: "#ffffff",
+            borderTopLeftRadius: "0.5rem",
+            borderTopRightRadius: "0.5rem",
+          },
+        },
       },
       tables: {
         default: {
-          className: 'w-full border-collapse',
+          className: "w-full border-collapse",
           styles: {
-            width: '100%',
-            borderCollapse: 'collapse'
-          }
+            width: "100%",
+            borderCollapse: "collapse",
+          },
         },
         striped: {
-          className: 'w-full border-collapse [&_tbody_tr:nth-child(odd)]:bg-gray-50',
+          className:
+            "w-full border-collapse [&_tbody_tr:nth-child(odd)]:bg-gray-50",
           styles: {
-            width: '100%',
-            borderCollapse: 'collapse'
-          }
+            width: "100%",
+            borderCollapse: "collapse",
+          },
         },
         hoverable: {
-          className: 'w-full border-collapse [&_tbody_tr]:hover:bg-gray-50',
+          className: "w-full border-collapse [&_tbody_tr]:hover:bg-gray-50",
           styles: {
-            width: '100%',
-            borderCollapse: 'collapse'
-          }
+            width: "100%",
+            borderCollapse: "collapse",
+          },
         },
         bordered: {
-          className: 'w-full border border-gray-200 [&_td]:border [&_th]:border',
+          className:
+            "w-full border border-gray-200 [&_td]:border [&_th]:border",
           styles: {
-            width: '100%',
-            border: '1px solid #e5e7eb'
-          }
+            width: "100%",
+            border: "1px solid #e5e7eb",
+          },
         },
         compact: {
-          className: 'w-full border-collapse [&_td]:py-1 [&_th]:py-1',
+          className: "w-full border-collapse [&_td]:py-1 [&_th]:py-1",
           styles: {
-            width: '100%',
-            borderCollapse: 'collapse'
-          }
-        }
+            width: "100%",
+            borderCollapse: "collapse",
+          },
+        },
       },
       charts: {
         line: {
-          className: 'w-full h-64',
-          styles: { width: '100%', height: '16rem' }
+          className: "w-full h-64",
+          styles: { width: "100%", height: "16rem" },
         },
         bar: {
-          className: 'w-full h-64',
-          styles: { width: '100%', height: '16rem' }
+          className: "w-full h-64",
+          styles: { width: "100%", height: "16rem" },
         },
         pie: {
-          className: 'w-full h-64',
-          styles: { width: '100%', height: '16rem' }
+          className: "w-full h-64",
+          styles: { width: "100%", height: "16rem" },
         },
         donut: {
-          className: 'w-full h-64',
-          styles: { width: '100%', height: '16rem' }
+          className: "w-full h-64",
+          styles: { width: "100%", height: "16rem" },
         },
         area: {
-          className: 'w-full h-64',
-          styles: { width: '100%', height: '16rem' }
+          className: "w-full h-64",
+          styles: { width: "100%", height: "16rem" },
         },
         scatter: {
-          className: 'w-full h-64',
-          styles: { width: '100%', height: '16rem' }
-        }
+          className: "w-full h-64",
+          styles: { width: "100%", height: "16rem" },
+        },
       },
       navigation: {
         sidebar: {
-          className: 'fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r',
+          className:
+            "fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r",
           styles: {
-            position: 'fixed',
-            left: '0',
-            top: '0',
-            height: '100%',
-            width: '16rem',
-            backgroundColor: '#ffffff',
-            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-            borderRight: '1px solid #e5e7eb'
-          }
+            position: "fixed",
+            left: "0",
+            top: "0",
+            height: "100%",
+            width: "16rem",
+            backgroundColor: "#ffffff",
+            boxShadow:
+              "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+            borderRight: "1px solid #e5e7eb",
+          },
         },
         topbar: {
-          className: 'fixed top-0 left-0 right-0 h-16 bg-white shadow-sm border-b z-40',
+          className:
+            "fixed top-0 left-0 right-0 h-16 bg-white shadow-sm border-b z-40",
           styles: {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            right: '0',
-            height: '4rem',
-            backgroundColor: '#ffffff',
-            boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-            borderBottom: '1px solid #e5e7eb',
-            zIndex: '40'
-          }
+            position: "fixed",
+            top: "0",
+            left: "0",
+            right: "0",
+            height: "4rem",
+            backgroundColor: "#ffffff",
+            boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+            borderBottom: "1px solid #e5e7eb",
+            zIndex: "40",
+          },
         },
         breadcrumbs: {
-          className: 'flex items-center space-x-2 text-sm text-gray-600',
+          className: "flex items-center space-x-2 text-sm text-gray-600",
           styles: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.875rem',
-            color: '#4b5563'
-          }
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            fontSize: "0.875rem",
+            color: "#4b5563",
+          },
         },
         tabs: {
-          className: 'flex border-b border-gray-200',
+          className: "flex border-b border-gray-200",
           styles: {
-            display: 'flex',
-            borderBottom: '1px solid #e5e7eb'
-          }
+            display: "flex",
+            borderBottom: "1px solid #e5e7eb",
+          },
         },
         pagination: {
-          className: 'flex items-center justify-between',
+          className: "flex items-center justify-between",
           styles: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }
-        }
-      }
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          },
+        },
+      },
     };
   }
 
@@ -981,11 +1028,11 @@ export class EnhancedUIService {
       bundle_size: 245,
       memory_usage: 45.2,
       api_response_times: {
-        '/api/employees': 120,
-        '/api/workflows': 85,
-        '/api/analytics': 340,
-        '/api/reports': 220
-      }
+        "/api/employees": 120,
+        "/api/workflows": 85,
+        "/api/analytics": 340,
+        "/api/reports": 220,
+      },
     };
   }
 
@@ -998,91 +1045,91 @@ export class EnhancedUIService {
         double_tap_enabled: true,
         long_press_enabled: true,
         swipe_threshold: 50,
-        zoom_sensitivity: 0.1
+        zoom_sensitivity: 0.1,
       },
       shortcuts: [
         {
-          id: 'shortcut_search',
-          key_combination: 'Ctrl+K',
-          action: 'open_search',
-          description: 'Open global search',
-          context: 'global',
-          enabled: true
+          id: "shortcut_search",
+          key_combination: "Ctrl+K",
+          action: "open_search",
+          description: "Open global search",
+          context: "global",
+          enabled: true,
         },
         {
-          id: 'shortcut_new_employee',
-          key_combination: 'Ctrl+Shift+E',
-          action: 'create_employee',
-          description: 'Create new employee',
-          context: 'people',
-          enabled: true
+          id: "shortcut_new_employee",
+          key_combination: "Ctrl+Shift+E",
+          action: "create_employee",
+          description: "Create new employee",
+          context: "people",
+          enabled: true,
         },
         {
-          id: 'shortcut_dashboard',
-          key_combination: 'Ctrl+D',
-          action: 'navigate_dashboard',
-          description: 'Go to dashboard',
-          context: 'global',
-          enabled: true
-        }
+          id: "shortcut_dashboard",
+          key_combination: "Ctrl+D",
+          action: "navigate_dashboard",
+          description: "Go to dashboard",
+          context: "global",
+          enabled: true,
+        },
       ],
       tooltips: {
         enabled: true,
         delay_show: 500,
         delay_hide: 100,
-        placement: 'auto',
-        theme: 'dark',
-        max_width: 300
+        placement: "auto",
+        theme: "dark",
+        max_width: 300,
       },
       contextMenus: [
         {
-          id: 'employee_context',
-          target_selector: '.employee-row',
+          id: "employee_context",
+          target_selector: ".employee-row",
           enabled: true,
           items: [
             {
-              id: 'view_employee',
-              label: 'View Details',
-              icon: 'eye',
-              action: 'view_employee',
-              shortcut: 'Enter'
+              id: "view_employee",
+              label: "View Details",
+              icon: "eye",
+              action: "view_employee",
+              shortcut: "Enter",
             },
             {
-              id: 'edit_employee',
-              label: 'Edit Employee',
-              icon: 'edit',
-              action: 'edit_employee',
-              shortcut: 'Ctrl+E'
+              id: "edit_employee",
+              label: "Edit Employee",
+              icon: "edit",
+              action: "edit_employee",
+              shortcut: "Ctrl+E",
             },
-            { id: 'separator_1', label: '', separator: true },
+            { id: "separator_1", label: "", separator: true },
             {
-              id: 'deactivate_employee',
-              label: 'Deactivate',
-              icon: 'user-x',
-              action: 'deactivate_employee'
-            }
-          ]
-        }
+              id: "deactivate_employee",
+              label: "Deactivate",
+              icon: "user-x",
+              action: "deactivate_employee",
+            },
+          ],
+        },
       ],
       dragAndDrop: {
         enabled: true,
         drag_threshold: 5,
-        drop_zones: ['.kanban-column', '.dashboard-grid'],
+        drop_zones: [".kanban-column", ".dashboard-grid"],
         visual_feedback: true,
-        ghost_opacity: 0.5
+        ghost_opacity: 0.5,
       },
       virtualScrolling: {
         enabled: true,
         item_height: 50,
         buffer_size: 10,
-        overscan: 5
+        overscan: 5,
       },
       lazyLoading: {
         enabled: true,
         threshold: 0.1,
-        root_margin: '50px',
-        placeholder_component: 'skeleton'
-      }
+        root_margin: "50px",
+        placeholder_component: "skeleton",
+      },
     };
   }
 
@@ -1096,13 +1143,13 @@ export class EnhancedUIService {
     return {
       id: `pref_${userId}`,
       user_id: userId,
-      theme_id: 'theme_light',
-      language: 'en',
-      timezone: 'America/New_York',
-      date_format: 'MM/DD/YYYY',
-      time_format: '12h',
-      currency: 'USD',
-      number_format: 'en-US',
+      theme_id: "theme_light",
+      language: "en",
+      timezone: "America/New_York",
+      date_format: "MM/DD/YYYY",
+      time_format: "12h",
+      currency: "USD",
+      number_format: "en-US",
       sidebar_collapsed: false,
       dashboard_layout: {
         widgets: [],
@@ -1110,7 +1157,7 @@ export class EnhancedUIService {
         auto_refresh: true,
         refresh_interval: 300,
         show_welcome: true,
-        compact_mode: false
+        compact_mode: false,
       },
       notification_preferences: {
         email_enabled: true,
@@ -1120,31 +1167,33 @@ export class EnhancedUIService {
         vibration_enabled: false,
         quiet_hours: {
           enabled: false,
-          start: '22:00',
-          end: '08:00',
-          timezone: 'America/New_York'
+          start: "22:00",
+          end: "08:00",
+          timezone: "America/New_York",
         },
         categories: {
           workflow: {
             enabled: true,
-            priority: 'high',
-            channels: ['email', 'push']
+            priority: "high",
+            channels: ["email", "push"],
           },
           system: {
             enabled: true,
-            priority: 'medium',
-            channels: ['push']
-          }
-        }
+            priority: "medium",
+            channels: ["push"],
+          },
+        },
       },
       accessibility_settings: this.getDefaultAccessibilitySettings(userId),
-      performance_mode: 'balanced',
+      performance_mode: "balanced",
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
   }
 
-  private static getDefaultAccessibilitySettings(userId: string): AccessibilitySettings {
+  private static getDefaultAccessibilitySettings(
+    userId: string,
+  ): AccessibilitySettings {
     return {
       id: `acc_${userId}`,
       user_id: userId,
@@ -1161,7 +1210,7 @@ export class EnhancedUIService {
       tab_order_customization: false,
       voice_commands: false,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
   }
-} 
+}

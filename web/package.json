@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next out node_modules/.cache",
+    "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -55,6 +61,12 @@
   "devDependencies": {
     "eslint": "^8.57.0",
     "eslint-config-next": "^13.4.19",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "prettier": "^3.2.5",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "supabase": "^2.23.4"
   }
 }

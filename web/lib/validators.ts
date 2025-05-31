@@ -16,7 +16,7 @@ export const validateEmail = (email: string): boolean => {
 export const validateUrl = (url: string): boolean => {
   try {
     const parsedUrl = new URL(url);
-    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
   } catch (e) {
     return false;
   }
@@ -39,7 +39,9 @@ export const validatePhone = (phone: string): boolean => {
  * @param password - Password to validate
  * @returns Object with validation results
  */
-export const validatePassword = (password: string): {
+export const validatePassword = (
+  password: string,
+): {
   isValid: boolean;
   hasMinLength: boolean;
   hasUppercase: boolean;
@@ -52,16 +54,17 @@ export const validatePassword = (password: string): {
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
-  
-  const isValid = minLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
-  
+
+  const isValid =
+    minLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
+
   return {
     isValid,
     hasMinLength: minLength,
     hasUppercase,
     hasLowercase,
     hasNumber,
-    hasSpecialChar
+    hasSpecialChar,
   };
 };
 
@@ -72,7 +75,7 @@ export const validatePassword = (password: string): {
  */
 export const isRequired = (value: any): boolean => {
   if (value === null || value === undefined) return false;
-  if (typeof value === 'string') return value.trim() !== '';
+  if (typeof value === "string") return value.trim() !== "";
   return true;
 };
 
@@ -113,7 +116,7 @@ export const isNumeric = (value: string): boolean => {
 export const isValidDate = (date: string): boolean => {
   const regex = /^\d{4}-\d{2}-\d{2}$/;
   if (!regex.test(date)) return false;
-  
+
   const parsedDate = new Date(date);
   return !isNaN(parsedDate.getTime());
-}; 
+};

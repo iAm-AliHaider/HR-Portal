@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { CalendarService, CalendarEvent } from '../services/calendar';
+import { useState, useEffect } from "react";
+import { CalendarService, CalendarEvent } from "../services/calendar";
 
 export const useCalendar = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -14,7 +14,7 @@ export const useCalendar = () => {
       const data = await CalendarService.getEvents();
       setEvents(data);
     } catch (err) {
-      setError('Failed to fetch events');
+      setError("Failed to fetch events");
       console.error(err);
     } finally {
       setLoading(false);
@@ -29,7 +29,7 @@ export const useCalendar = () => {
       const data = await CalendarService.getEventsByDateRange(start, end);
       setEvents(data);
     } catch (err) {
-      setError('Failed to fetch events for date range');
+      setError("Failed to fetch events for date range");
       console.error(err);
     } finally {
       setLoading(false);
@@ -37,17 +37,17 @@ export const useCalendar = () => {
   };
 
   // Add a new event
-  const addEvent = async (event: Omit<CalendarEvent, 'id'>) => {
+  const addEvent = async (event: Omit<CalendarEvent, "id">) => {
     setLoading(true);
     setError(null);
     try {
       const newEvent = await CalendarService.createEvent(event);
       if (newEvent) {
-        setEvents(prev => [...prev, newEvent]);
+        setEvents((prev) => [...prev, newEvent]);
       }
       return newEvent;
     } catch (err) {
-      setError('Failed to add event');
+      setError("Failed to add event");
       console.error(err);
       return null;
     } finally {
@@ -62,11 +62,13 @@ export const useCalendar = () => {
     try {
       const updatedEvent = await CalendarService.updateEvent(event);
       if (updatedEvent) {
-        setEvents(prev => prev.map(e => e.id === event.id ? updatedEvent : e));
+        setEvents((prev) =>
+          prev.map((e) => (e.id === event.id ? updatedEvent : e)),
+        );
       }
       return updatedEvent;
     } catch (err) {
-      setError('Failed to update event');
+      setError("Failed to update event");
       console.error(err);
       return null;
     } finally {
@@ -81,11 +83,11 @@ export const useCalendar = () => {
     try {
       const success = await CalendarService.deleteEvent(id);
       if (success) {
-        setEvents(prev => prev.filter(e => e.id !== id));
+        setEvents((prev) => prev.filter((e) => e.id !== id));
       }
       return success;
     } catch (err) {
-      setError('Failed to delete event');
+      setError("Failed to delete event");
       console.error(err);
       return false;
     } finally {
@@ -106,6 +108,6 @@ export const useCalendar = () => {
     fetchEventsByDateRange,
     addEvent,
     updateEvent,
-    deleteEvent
+    deleteEvent,
   };
-}; 
+};

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import Modal from '../ui/Modal';
+import React, { useState } from "react";
+
+import Modal from "../ui/Modal";
 
 interface LeaveRequestModalProps {
   isOpen: boolean;
@@ -19,23 +20,27 @@ interface LeaveRequestData {
 const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
   isOpen,
   onClose,
-  onSubmit
+  onSubmit,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<LeaveRequestData>({
-    leaveType: '',
-    startDate: '',
-    endDate: '',
-    reason: '',
-    emergencyContact: '',
-    workCoverage: ''
+    leaveType: "",
+    startDate: "",
+    endDate: "",
+    reason: "",
+    emergencyContact: "",
+    workCoverage: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -45,55 +50,53 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (onSubmit) {
         onSubmit(formData);
       }
-      
+
       // Reset form
       setFormData({
-        leaveType: '',
-        startDate: '',
-        endDate: '',
-        reason: '',
-        emergencyContact: '',
-        workCoverage: ''
+        leaveType: "",
+        startDate: "",
+        endDate: "",
+        reason: "",
+        emergencyContact: "",
+        workCoverage: "",
       });
-      
+
       onClose();
-      alert('Leave request submitted successfully!');
+      alert("Leave request submitted successfully!");
     } catch (error) {
-      console.error('Error submitting leave request:', error);
-      alert('Failed to submit leave request. Please try again.');
+      console.error("Error submitting leave request:", error);
+      alert("Failed to submit leave request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const leaveTypes = [
-    { value: 'annual', label: 'Annual Leave' },
-    { value: 'sick', label: 'Sick Leave' },
-    { value: 'personal', label: 'Personal Leave' },
-    { value: 'maternity', label: 'Maternity Leave' },
-    { value: 'paternity', label: 'Paternity Leave' },
-    { value: 'emergency', label: 'Emergency Leave' },
-    { value: 'unpaid', label: 'Unpaid Leave' },
-    { value: 'other', label: 'Other' }
+    { value: "annual", label: "Annual Leave" },
+    { value: "sick", label: "Sick Leave" },
+    { value: "personal", label: "Personal Leave" },
+    { value: "maternity", label: "Maternity Leave" },
+    { value: "paternity", label: "Paternity Leave" },
+    { value: "emergency", label: "Emergency Leave" },
+    { value: "unpaid", label: "Unpaid Leave" },
+    { value: "other", label: "Other" },
   ];
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Request Leave"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Request Leave" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Leave Type and Dates */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="leaveType" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="leaveType"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Leave Type *
             </label>
             <select
@@ -105,7 +108,7 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
               required
             >
               <option value="">Select leave type</option>
-              {leaveTypes.map(type => (
+              {leaveTypes.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>
@@ -114,7 +117,10 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
           </div>
 
           <div>
-            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="startDate"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Start Date *
             </label>
             <input
@@ -129,7 +135,10 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
           </div>
 
           <div>
-            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="endDate"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               End Date *
             </label>
             <input
@@ -147,7 +156,10 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
 
         {/* Reason */}
         <div>
-          <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="reason"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Reason for Leave *
           </label>
           <textarea
@@ -164,7 +176,10 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
 
         {/* Emergency Contact */}
         <div>
-          <label htmlFor="emergencyContact" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="emergencyContact"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Emergency Contact Information
           </label>
           <input
@@ -180,7 +195,10 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
 
         {/* Work Coverage */}
         <div>
-          <label htmlFor="workCoverage" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="workCoverage"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Work Coverage Arrangements
           </label>
           <textarea
@@ -197,15 +215,29 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
         {/* Info Box */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex">
-            <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 text-blue-400 mt-0.5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <div className="text-sm text-blue-700">
               <p className="font-medium mb-1">Before submitting:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>Ensure you have sufficient leave balance</li>
-                <li>Submit requests at least 2 weeks in advance when possible</li>
-                <li>Your manager will review and respond within 3 business days</li>
+                <li>
+                  Submit requests at least 2 weeks in advance when possible
+                </li>
+                <li>
+                  Your manager will review and respond within 3 business days
+                </li>
               </ul>
             </div>
           </div>
@@ -231,7 +263,7 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
                 Submitting...
               </div>
             ) : (
-              'Submit Request'
+              "Submit Request"
             )}
           </button>
         </div>
@@ -240,4 +272,4 @@ const LeaveRequestModal: React.FC<LeaveRequestModalProps> = ({
   );
 };
 
-export default LeaveRequestModal; 
+export default LeaveRequestModal;

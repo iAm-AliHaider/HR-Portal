@@ -1,24 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { useAuth } from '../../hooks/useAuth';
-import { useRouter } from 'next/router';
-import { supabase } from '../../lib/supabase/client';
-import { 
-  PlusIcon, 
-  Download, 
-  Search, 
-  Filter, 
-  UserPlus, 
-  Mail, 
-  Trash, 
-  Lock, 
-  Edit, 
-  User, 
+import React, { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import {
+  PlusIcon,
+  Download,
+  Search,
+  Filter,
+  UserPlus,
+  Mail,
+  Trash,
+  Lock,
+  Edit,
+  User,
   Users,
   Briefcase,
-  DownloadCloud
-} from 'lucide-react';
-import { PageLayout, StatsCard, DataTable, TableHeader, TableHeaderCell, TableCell, SearchFilterBar, UserAvatar, StatusBadge } from '@/components/layout/PageLayout';
+  DownloadCloud,
+} from "lucide-react";
+
+import {
+  PageLayout,
+  StatsCard,
+  DataTable,
+  TableHeader,
+  TableHeaderCell,
+  TableCell,
+  SearchFilterBar,
+  UserAvatar,
+  StatusBadge,
+} from "@/components/layout/PageLayout";
+
+import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../lib/supabase/client";
 
 interface AuthUser {
   id: string;
@@ -50,7 +64,7 @@ interface User {
   email: string;
   role: string;
   department: string;
-  status: 'active' | 'inactive' | 'pending';
+  status: "active" | "inactive" | "pending";
   lastLogin?: string;
   createdAt: string;
 }
@@ -60,15 +74,15 @@ export default function UserManagementPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Ensure admin access
   useEffect(() => {
-    if (role !== 'admin') {
-      router.push('/dashboard');
+    if (role !== "admin") {
+      router.push("/dashboard");
     }
   }, [role, router]);
 
@@ -81,88 +95,88 @@ export default function UserManagementPage() {
         // For demo, using mock data
         const mockUsers: User[] = [
           {
-            id: '1',
-            name: 'John Doe',
-            email: 'john.doe@company.com',
-            role: 'admin',
-            department: 'Executive',
-            status: 'active',
-            lastLogin: '2023-05-30T15:24:33Z',
-            createdAt: '2023-01-01T09:00:00Z'
+            id: "1",
+            name: "John Doe",
+            email: "john.doe@company.com",
+            role: "admin",
+            department: "Executive",
+            status: "active",
+            lastLogin: "2023-05-30T15:24:33Z",
+            createdAt: "2023-01-01T09:00:00Z",
           },
           {
-            id: '2',
-            name: 'Jane Smith',
-            email: 'jane.smith@company.com',
-            role: 'manager',
-            department: 'HR',
-            status: 'active',
-            lastLogin: '2023-05-29T10:15:00Z',
-            createdAt: '2023-01-15T09:00:00Z'
+            id: "2",
+            name: "Jane Smith",
+            email: "jane.smith@company.com",
+            role: "manager",
+            department: "HR",
+            status: "active",
+            lastLogin: "2023-05-29T10:15:00Z",
+            createdAt: "2023-01-15T09:00:00Z",
           },
           {
-            id: '3',
-            name: 'Robert Johnson',
-            email: 'robert.johnson@company.com',
-            role: 'employee',
-            department: 'Engineering',
-            status: 'inactive',
-            lastLogin: '2023-05-01T08:30:00Z',
-            createdAt: '2023-02-01T09:00:00Z'
+            id: "3",
+            name: "Robert Johnson",
+            email: "robert.johnson@company.com",
+            role: "employee",
+            department: "Engineering",
+            status: "inactive",
+            lastLogin: "2023-05-01T08:30:00Z",
+            createdAt: "2023-02-01T09:00:00Z",
           },
           {
-            id: '4',
-            name: 'Alice Brown',
-            email: 'alice.brown@company.com',
-            role: 'employee',
-            department: 'Marketing',
-            status: 'pending',
-            createdAt: '2023-05-25T09:00:00Z'
+            id: "4",
+            name: "Alice Brown",
+            email: "alice.brown@company.com",
+            role: "employee",
+            department: "Marketing",
+            status: "pending",
+            createdAt: "2023-05-25T09:00:00Z",
           },
           {
-            id: '5',
-            name: 'Michael Wilson',
-            email: 'michael.wilson@company.com',
-            role: 'manager',
-            department: 'Sales',
-            status: 'active',
-            lastLogin: '2023-05-30T09:45:00Z',
-            createdAt: '2023-03-01T09:00:00Z'
+            id: "5",
+            name: "Michael Wilson",
+            email: "michael.wilson@company.com",
+            role: "manager",
+            department: "Sales",
+            status: "active",
+            lastLogin: "2023-05-30T09:45:00Z",
+            createdAt: "2023-03-01T09:00:00Z",
           },
           {
-            id: '6',
-            name: 'Emily Davis',
-            email: 'emily.davis@company.com',
-            role: 'employee',
-            department: 'Customer Support',
-            status: 'active',
-            lastLogin: '2023-05-29T16:20:00Z',
-            createdAt: '2023-03-15T09:00:00Z'
+            id: "6",
+            name: "Emily Davis",
+            email: "emily.davis@company.com",
+            role: "employee",
+            department: "Customer Support",
+            status: "active",
+            lastLogin: "2023-05-29T16:20:00Z",
+            createdAt: "2023-03-15T09:00:00Z",
           },
           {
-            id: '7',
-            name: 'David Martinez',
-            email: 'david.martinez@company.com',
-            role: 'employee',
-            department: 'Engineering',
-            status: 'active',
-            lastLogin: '2023-05-30T11:10:00Z',
-            createdAt: '2023-04-01T09:00:00Z'
+            id: "7",
+            name: "David Martinez",
+            email: "david.martinez@company.com",
+            role: "employee",
+            department: "Engineering",
+            status: "active",
+            lastLogin: "2023-05-30T11:10:00Z",
+            createdAt: "2023-04-01T09:00:00Z",
           },
           {
-            id: '8',
-            name: 'Sarah Taylor',
-            email: 'sarah.taylor@company.com',
-            role: 'employee',
-            department: 'Finance',
-            status: 'pending',
-            createdAt: '2023-05-28T09:00:00Z'
-          }
+            id: "8",
+            name: "Sarah Taylor",
+            email: "sarah.taylor@company.com",
+            role: "employee",
+            department: "Finance",
+            status: "pending",
+            createdAt: "2023-05-28T09:00:00Z",
+          },
         ];
-        
+
         setUsers(mockUsers);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error("Error fetching users:", error);
       } finally {
         setLoading(false);
       }
@@ -172,15 +186,16 @@ export default function UserManagementPage() {
   }, []);
 
   // Filter users based on search term and filters
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.department.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
-    
+
+    const matchesRole = filterRole === "all" || user.role === filterRole;
+    const matchesStatus =
+      filterStatus === "all" || user.status === filterStatus;
+
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -196,19 +211,19 @@ export default function UserManagementPage() {
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Never';
-    
+    if (!dateString) return "Never";
+
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
-  if (role !== 'admin') {
+  if (role !== "admin") {
     return <div>Access denied. Admin privileges required.</div>;
   }
 
@@ -228,7 +243,8 @@ export default function UserManagementPage() {
       }}
       secondaryButton={{
         label: "Export Users",
-        onClick: () => alert("Export users functionality would be implemented here"),
+        onClick: () =>
+          alert("Export users functionality would be implemented here"),
         icon: <DownloadCloud className="h-4 w-4" strokeWidth={1.5} />,
       }}
     >
@@ -242,19 +258,19 @@ export default function UserManagementPage() {
         />
         <StatsCard
           title="Active Users"
-          value={users.filter(u => u.status === 'active').length}
+          value={users.filter((u) => u.status === "active").length}
           description="Currently active"
           icon={<User className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatsCard
           title="Pending Users"
-          value={users.filter(u => u.status === 'pending').length}
+          value={users.filter((u) => u.status === "pending").length}
           description="Awaiting activation"
           icon={<UserPlus className="h-5 w-5" strokeWidth={1.5} />}
         />
         <StatsCard
           title="Inactive Users"
-          value={users.filter(u => u.status === 'inactive').length}
+          value={users.filter((u) => u.status === "inactive").length}
           description="Deactivated accounts"
           icon={<User className="h-5 w-5" strokeWidth={1.5} />}
         />
@@ -274,7 +290,7 @@ export default function UserManagementPage() {
             className="w-full pl-10 pr-4 py-2 border border-zinc-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
           />
         </div>
-        
+
         <div className="w-full md:w-48">
           <select
             value={filterRole}
@@ -287,7 +303,7 @@ export default function UserManagementPage() {
             <option value="employee">Employee</option>
           </select>
         </div>
-        
+
         <div className="w-full md:w-48">
           <select
             value={filterStatus}
@@ -328,23 +344,27 @@ export default function UserManagementPage() {
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-zinc-50">
                   <TableCell>
-                    <UserAvatar
-                      name={user.name}
-                      email={user.email}
-                    />
+                    <UserAvatar name={user.name} email={user.email} />
                   </TableCell>
                   <TableCell>
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-sm ${
-                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                      user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
-                      'bg-zinc-100 text-zinc-800'
-                    }`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-sm ${
+                        user.role === "admin"
+                          ? "bg-purple-100 text-purple-800"
+                          : user.role === "manager"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-zinc-100 text-zinc-800"
+                      }`}
+                    >
                       {user.role}
                     </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center">
-                      <Briefcase className="h-4 w-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                      <Briefcase
+                        className="h-4 w-4 mr-2 text-zinc-400"
+                        strokeWidth={1.5}
+                      />
                       {user.department}
                     </div>
                   </TableCell>
@@ -357,28 +377,30 @@ export default function UserManagementPage() {
                   <TableCell>
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => handleUserAction(user.id, 'edit')}
+                        onClick={() => handleUserAction(user.id, "edit")}
                         className="text-zinc-500 hover:text-zinc-900"
                         title="Edit User"
                       >
                         <Edit className="h-5 w-5" strokeWidth={1.5} />
                       </button>
                       <button
-                        onClick={() => handleUserAction(user.id, 'reset-password')}
+                        onClick={() =>
+                          handleUserAction(user.id, "reset-password")
+                        }
                         className="text-zinc-500 hover:text-zinc-900"
                         title="Reset Password"
                       >
                         <Lock className="h-5 w-5" strokeWidth={1.5} />
                       </button>
                       <button
-                        onClick={() => handleUserAction(user.id, 'email')}
+                        onClick={() => handleUserAction(user.id, "email")}
                         className="text-zinc-500 hover:text-zinc-900"
                         title="Send Email"
                       >
                         <Mail className="h-5 w-5" strokeWidth={1.5} />
                       </button>
                       <button
-                        onClick={() => handleUserAction(user.id, 'delete')}
+                        onClick={() => handleUserAction(user.id, "delete")}
                         className="text-zinc-500 hover:text-red-600"
                         title="Delete User"
                       >
@@ -394,4 +416,4 @@ export default function UserManagementPage() {
       </div>
     </PageLayout>
   );
-} 
+}

@@ -1,5 +1,6 @@
-import React from 'react';
-import Head from 'next/head';
+import React from "react";
+
+import Head from "next/head";
 
 export default function TestPage() {
   return (
@@ -8,7 +9,9 @@ export default function TestPage() {
         <title>Test Page</title>
       </Head>
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-        <h1 className="text-2xl font-bold text-center mb-6">Test Page Working</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Test Page Working
+        </h1>
         <p className="text-gray-700 mb-4">
           If you can see this page, the basic routing is working correctly.
         </p>
@@ -20,4 +23,4 @@ export default function TestPage() {
       </div>
     </div>
   );
-} 
+}

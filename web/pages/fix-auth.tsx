@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+
+import { useRouter } from "next/router";
+
+import { CheckCircle, AlertTriangle, RefreshCw } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function FixAuthPage() {
   const router = useRouter();
@@ -12,21 +15,21 @@ export default function FixAuthPage() {
 
   const applyFixes = () => {
     const newFixes = [];
-    
+
     // Clear localStorage auth data
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('mockUserEmail');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userRole');
-      newFixes.push('Cleared localStorage auth data');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("mockUserEmail");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userRole");
+      newFixes.push("Cleared localStorage auth data");
     }
-    
+
     // Set demo user
-    localStorage.setItem('mockUserEmail', 'admin@company.com');
-    newFixes.push('Set demo admin user');
-    
+    localStorage.setItem("mockUserEmail", "admin@company.com");
+    newFixes.push("Set demo admin user");
+
     setFixes(newFixes);
-    
+
     // Reload page after 2 seconds
     setTimeout(() => {
       window.location.reload();
@@ -46,16 +49,18 @@ export default function FixAuthPage() {
           <div className="text-sm text-gray-600">
             <p className="mb-2">Current Status:</p>
             <ul className="space-y-1">
-              <li>• Loading: {loading ? 'Yes' : 'No'}</li>
-              <li>• User: {user ? user.email : 'None'}</li>
-              <li>• Role: {role || 'None'}</li>
-              <li>• Error: {error || 'None'}</li>
+              <li>• Loading: {loading ? "Yes" : "No"}</li>
+              <li>• User: {user ? user.email : "None"}</li>
+              <li>• Role: {role || "None"}</li>
+              <li>• Error: {error || "None"}</li>
             </ul>
           </div>
-          
+
           {fixes.length > 0 && (
             <div className="border rounded-lg p-3 bg-green-50">
-              <h4 className="font-medium text-green-800 mb-2">Fixes Applied:</h4>
+              <h4 className="font-medium text-green-800 mb-2">
+                Fixes Applied:
+              </h4>
               <ul className="text-sm space-y-1">
                 {fixes.map((fix, index) => (
                   <li key={index} className="flex items-center space-x-2">
@@ -66,9 +71,9 @@ export default function FixAuthPage() {
               </ul>
             </div>
           )}
-          
+
           <div className="space-y-2">
-            <Button 
+            <Button
               onClick={applyFixes}
               className="w-full"
               disabled={fixes.length > 0}
@@ -76,9 +81,9 @@ export default function FixAuthPage() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Fix Authentication Issues
             </Button>
-            
-            <Button 
-              onClick={() => router.push('/dashboard')}
+
+            <Button
+              onClick={() => router.push("/dashboard")}
               variant="outline"
               className="w-full"
             >

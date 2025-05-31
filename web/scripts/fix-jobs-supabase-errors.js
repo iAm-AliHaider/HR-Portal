@@ -3,8 +3,8 @@
  * Comprehensive fix for the jobs page to handle Supabase connection issues gracefully
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track changes
 let changesLog = [];
@@ -18,17 +18,17 @@ function logChange(file, action) {
 
 // 1. Fix jobs page error handling with proper fallback UI
 function fixJobsPageErrorHandling() {
-  const filePath = path.join(process.cwd(), 'pages/jobs/index.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/jobs/index.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/jobs/index.tsx not found');
+      console.log("❌ pages/jobs/index.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Replace the current error handling with proper fallback UI
     let newContent = content.replace(
       /\/\* Error state \*\/\s*\{error && \(\s*<div className="text-center py-12">[\s\S]*?<\/div>\s*\)\}/g,
@@ -58,7 +58,7 @@ function fixJobsPageErrorHandling() {
                   </div>
                 </div>
               </div>
-            )}`
+            )}`,
     );
 
     // Add better loading state condition
@@ -109,7 +109,7 @@ function fixJobsPageErrorHandling() {
         </div>
       </ModernDashboardLayout>
     );
-  }`
+  }`,
     );
 
     // Improve the jobs calculation to handle null/undefined cases
@@ -121,7 +121,7 @@ function fixJobsPageErrorHandling() {
     open: jobs?.filter(job => job.status === 'open').length || 0,
     closed: jobs?.filter(job => job.status === 'closed').length || 0,
     totalApplications: applications?.length || 0
-  };`
+  };`,
     );
 
     // Add error recovery for filtered jobs
@@ -130,7 +130,7 @@ function fixJobsPageErrorHandling() {
       `const [filteredJobs, setFilteredJobs] = useState(jobs || []);
   
   // Error recovery state
-  const [hasRecovered, setHasRecovered] = useState(false);`
+  const [hasRecovered, setHasRecovered] = useState(false);`,
     );
 
     // Improve the apply filters function to handle errors
@@ -142,44 +142,45 @@ function fixJobsPageErrorHandling() {
       // If no jobs but no error, show empty state
       setFilteredJobs([]);
       return;
-    }`
+    }`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/jobs/index.tsx', 'Enhanced error handling with proper fallback UI and recovery options');
+      logChange(
+        "pages/jobs/index.tsx",
+        "Enhanced error handling with proper fallback UI and recovery options",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing jobs page error handling:', error);
+    console.error("Error fixing jobs page error handling:", error);
   }
 }
 
 // 2. Fix useJobs hook to handle Supabase errors better
 function fixUseJobsHook() {
-  const filePath = path.join(process.cwd(), 'hooks/useApi.ts');
-  
+  const filePath = path.join(process.cwd(), "hooks/useApi.ts");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ hooks/useApi.ts not found, trying hooks/useApi.tsx');
-      const altPath = path.join(process.cwd(), 'hooks/useApi.tsx');
+      console.log("❌ hooks/useApi.ts not found, trying hooks/useApi.tsx");
+      const altPath = path.join(process.cwd(), "hooks/useApi.tsx");
       if (!fs.existsSync(altPath)) {
-        console.log('❌ useApi hook not found');
+        console.log("❌ useApi hook not found");
         return;
       }
-      const content = fs.readFileSync(altPath, 'utf8');
+      const content = fs.readFileSync(altPath, "utf8");
       // Process the .tsx file
       processUseApiContent(altPath, content);
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
+    const content = fs.readFileSync(filePath, "utf8");
     processUseApiContent(filePath, content);
-    
   } catch (error) {
-    console.error('Error fixing useJobs hook:', error);
+    console.error("Error fixing useJobs hook:", error);
   }
 }
 
@@ -272,11 +273,11 @@ function processUseApiContent(filePath, content) {
     closeJob,
     refetch: loadJobs
   };
-};`
+};`,
   );
 
   // Add mock jobs data if not present
-  if (!newContent.includes('const mockJobs = [')) {
+  if (!newContent.includes("const mockJobs = [")) {
     newContent = `// Mock jobs data for fallback
 const mockJobs = [
   {
@@ -327,25 +328,28 @@ ${newContent}`;
   }
 
   if (newContent !== content) {
-    fs.writeFileSync(filePath, newContent, 'utf8');
+    fs.writeFileSync(filePath, newContent, "utf8");
     filesChanged++;
-    logChange(filePath, 'Enhanced useJobs hook with better error handling and mock data fallback');
+    logChange(
+      filePath,
+      "Enhanced useJobs hook with better error handling and mock data fallback",
+    );
   }
 }
 
 // 3. Fix remaining GoTrueClient warnings by improving client creation
 function fixSupabaseClientWarnings() {
-  const filePath = path.join(process.cwd(), 'lib/supabase/client.ts');
-  
+  const filePath = path.join(process.cwd(), "lib/supabase/client.ts");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ lib/supabase/client.ts not found');
+      console.log("❌ lib/supabase/client.ts not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Add better singleton management and warning suppression
     let newContent = content.replace(
       /\/\/ Singleton pattern to prevent multiple client instances[\s\S]*?export const supabase = createSupabaseClient\(\);/g,
@@ -427,29 +431,31 @@ function createSupabaseClient() {
 }
 
 // Export the singleton instance
-export const supabase = createSupabaseClient();`
+export const supabase = createSupabaseClient();`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('lib/supabase/client.ts', 'Enhanced singleton pattern and suppressed GoTrueClient warnings');
+      logChange(
+        "lib/supabase/client.ts",
+        "Enhanced singleton pattern and suppressed GoTrueClient warnings",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing Supabase client warnings:', error);
+    console.error("Error fixing Supabase client warnings:", error);
   }
 }
 
 // Run all fixes
 function runJobsSupabaseFixes() {
-  console.log('🔧 Fixing Jobs page Supabase errors and warnings...');
-  console.log('');
-  
+  console.log("🔧 Fixing Jobs page Supabase errors and warnings...");
+  console.log("");
+
   fixJobsPageErrorHandling();
   fixUseJobsHook();
   fixSupabaseClientWarnings();
-  
+
   // Generate report
   const report = {
     timestamp: new Date().toISOString(),
@@ -457,38 +463,40 @@ function runJobsSupabaseFixes() {
       filesProcessed,
       filesChanged,
       issuesFixed: [
-        'Jobs page Supabase connection errors',
-        'Improved error handling with fallback UI',
-        'Enhanced useJobs hook with timeout protection',
-        'Suppressed GoTrueClient warnings',
-        'Added mock data fallback system'
-      ]
+        "Jobs page Supabase connection errors",
+        "Improved error handling with fallback UI",
+        "Enhanced useJobs hook with timeout protection",
+        "Suppressed GoTrueClient warnings",
+        "Added mock data fallback system",
+      ],
     },
     changes: changesLog,
     nextSteps: [
-      'Test jobs page error handling',
-      'Verify fallback UI displays correctly',
-      'Check console for reduced warnings',
-      'Test job posting functionality'
-    ]
+      "Test jobs page error handling",
+      "Verify fallback UI displays correctly",
+      "Check console for reduced warnings",
+      "Test job posting functionality",
+    ],
   };
-  
+
   fs.writeFileSync(
-    path.join(process.cwd(), 'jobs-supabase-fixes.json'),
+    path.join(process.cwd(), "jobs-supabase-fixes.json"),
     JSON.stringify(report, null, 2),
-    'utf8'
+    "utf8",
   );
-  
-  console.log('');
-  console.log('✅ Jobs Supabase fixes completed!');
-  console.log(`📊 Processed ${filesProcessed} files, changed ${filesChanged} files`);
-  console.log('');
-  console.log('🎯 Issues Fixed:');
-  report.summary.issuesFixed.forEach(issue => {
+
+  console.log("");
+  console.log("✅ Jobs Supabase fixes completed!");
+  console.log(
+    `📊 Processed ${filesProcessed} files, changed ${filesChanged} files`,
+  );
+  console.log("");
+  console.log("🎯 Issues Fixed:");
+  report.summary.issuesFixed.forEach((issue) => {
     console.log(`   ✓ ${issue}`);
   });
-  console.log('');
-  console.log('📝 Report saved to: jobs-supabase-fixes.json');
+  console.log("");
+  console.log("📝 Report saved to: jobs-supabase-fixes.json");
 }
 
-runJobsSupabaseFixes(); 
+runJobsSupabaseFixes();

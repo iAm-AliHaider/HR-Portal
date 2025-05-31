@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 // Supabase client configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 // Create a single supabase client for the entire app
 export let supabase: ReturnType<typeof createClient>;
@@ -14,7 +14,7 @@ try {
   } else {
     // Create a mock client when credentials are not available
     // This prevents the app from crashing when env vars aren't set
-    console.warn('Supabase URL or key not provided. Using mock client.');
+    console.warn("Supabase URL or key not provided. Using mock client.");
     supabase = {
       from: () => ({
         select: () => ({ data: [], error: null }),
@@ -31,14 +31,19 @@ try {
         single: () => ({ data: null, error: null }),
       }),
       auth: {
-        signIn: () => Promise.resolve({ user: null, session: null, error: null }),
+        signIn: () =>
+          Promise.resolve({ user: null, session: null, error: null }),
         signOut: () => Promise.resolve({ error: null }),
-        onAuthStateChange: () => ({ data: null, error: null, unsubscribe: () => {} }),
+        onAuthStateChange: () => ({
+          data: null,
+          error: null,
+          unsubscribe: () => {},
+        }),
       },
     } as any;
   }
 } catch (error) {
-  console.error('Error initializing Supabase client:', error);
+  console.error("Error initializing Supabase client:", error);
   // Fallback to mock client
   supabase = {
     from: () => ({
@@ -50,6 +55,6 @@ try {
 
 // Helper function for error handling
 export const handleSupabaseError = (error: any) => {
-  console.error('Supabase error:', error);
-  return { error: error.message || 'An unexpected error occurred' };
-}; 
+  console.error("Supabase error:", error);
+  return { error: error.message || "An unexpected error occurred" };
+};

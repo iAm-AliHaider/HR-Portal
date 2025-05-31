@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 /**
  * Hook that provides SSR-safe utilities
@@ -12,15 +12,18 @@ export const useSSR = () => {
     setIsLoaded(true);
   }, []);
 
-  const safeWindow = typeof window !== 'undefined' ? window : undefined;
-  const safeDocument = typeof document !== 'undefined' ? document : undefined;
-  const safeLocalStorage = typeof window !== 'undefined' && window.localStorage ? window.localStorage : undefined;
+  const safeWindow = typeof window !== "undefined" ? window : undefined;
+  const safeDocument = typeof document !== "undefined" ? document : undefined;
+  const safeLocalStorage =
+    typeof window !== "undefined" && window.localStorage
+      ? window.localStorage
+      : undefined;
 
   return {
     isClient,
     isServer: !isClient,
     isLoaded,
-    canUseDOM: typeof window !== 'undefined',
+    canUseDOM: typeof window !== "undefined",
     window: safeWindow,
     document: safeDocument,
     localStorage: safeLocalStorage,
@@ -30,9 +33,12 @@ export const useSSR = () => {
 /**
  * Hook that only executes on client-side
  */
-export const useClientEffect = (effect: React.EffectCallback, deps?: React.DependencyList) => {
+export const useClientEffect = (
+  effect: React.EffectCallback,
+  deps?: React.DependencyList,
+) => {
   const { isClient } = useSSR();
-  
+
   useEffect(() => {
     if (isClient) {
       return effect();
@@ -53,7 +59,7 @@ export const useSafeLocalStorage = (key: string, initialValue: any = null) => {
         const item = localStorage.getItem(key);
         setValue(item ? JSON.parse(item) : initialValue);
       } catch (error) {
-        console.warn('Error reading from localStorage:', error);
+        console.warn("Error reading from localStorage:", error);
         setValue(initialValue);
       }
     }
@@ -66,9 +72,9 @@ export const useSafeLocalStorage = (key: string, initialValue: any = null) => {
         localStorage.setItem(key, JSON.stringify(newValue));
       }
     } catch (error) {
-      console.warn('Error writing to localStorage:', error);
+      console.warn("Error writing to localStorage:", error);
     }
   };
 
   return [value, setStoredValue];
-}; 
+};

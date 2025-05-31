@@ -51,22 +51,22 @@ LOG_LEVEL=info
 // Environment validation
 export const validateEnvironment = () => {
   const requiredVars = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'SMTP_HOST',
-    'SMTP_USER',
-    'SMTP_PASS',
-    'EMAIL_FROM'
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SMTP_HOST",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "EMAIL_FROM",
   ];
 
-  const missing = requiredVars.filter(varName => !process.env[varName]);
-  
+  const missing = requiredVars.filter((varName) => !process.env[varName]);
+
   if (missing.length > 0) {
-    console.warn('Missing environment variables:', missing);
+    console.warn("Missing environment variables:", missing);
     return false;
   }
-  
+
   return true;
 };
 
-export default environmentTemplate; 
+export default environmentTemplate;

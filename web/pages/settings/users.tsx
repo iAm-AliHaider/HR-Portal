@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { useRouter } from 'next/router';
-import { useAuth } from '../../hooks/useAuth';
-import { shouldBypassAuth } from '@/lib/auth';
-import { GetServerSideProps } from 'next';
+import React, { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+import { shouldBypassAuth } from "@/lib/auth";
+
+import { useAuth } from "../../hooks/useAuth";
 
 interface User {
   id: string;
@@ -12,7 +16,7 @@ interface User {
   email: string;
   role: string;
   department: string;
-  status: 'active' | 'inactive' | 'pending';
+  status: "active" | "inactive" | "pending";
   lastLogin: string;
   createdAt: string;
 }
@@ -23,13 +27,13 @@ const UserManagementPage = () => {
   const allowAccess = shouldBypassAuth(router.query);
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   // Ensure user has access to this page
   useEffect(() => {
-    if (!allowAccess && !['admin', 'manager'].includes(role)) {
+    if (!allowAccess && !["admin", "manager"].includes(role)) {
       // Redirect removed - using graceful fallback instead
     }
   }, [allowAccess, role, router]);
@@ -41,49 +45,49 @@ const UserManagementPage = () => {
         // Mock data - replace with actual API call
         const mockUsers: User[] = [
           {
-            id: '1',
-            name: 'John Doe',
-            email: 'john.doe@company.com',
-            role: 'employee',
-            department: 'Engineering',
-            status: 'active',
-            lastLogin: '2024-01-15T10:30:00Z',
-            createdAt: '2023-01-15T09:00:00Z'
+            id: "1",
+            name: "John Doe",
+            email: "john.doe@company.com",
+            role: "employee",
+            department: "Engineering",
+            status: "active",
+            lastLogin: "2024-01-15T10:30:00Z",
+            createdAt: "2023-01-15T09:00:00Z",
           },
           {
-            id: '2',
-            name: 'Jane Smith',
-            email: 'jane.smith@company.com',
-            role: 'manager',
-            department: 'HR',
-            status: 'active',
-            lastLogin: '2024-01-15T14:20:00Z',
-            createdAt: '2023-02-01T09:00:00Z'
+            id: "2",
+            name: "Jane Smith",
+            email: "jane.smith@company.com",
+            role: "manager",
+            department: "HR",
+            status: "active",
+            lastLogin: "2024-01-15T14:20:00Z",
+            createdAt: "2023-02-01T09:00:00Z",
           },
           {
-            id: '3',
-            name: 'Bob Johnson',
-            email: 'bob.johnson@company.com',
-            role: 'admin',
-            department: 'IT',
-            status: 'active',
-            lastLogin: '2024-01-15T16:45:00Z',
-            createdAt: '2023-01-01T09:00:00Z'
+            id: "3",
+            name: "Bob Johnson",
+            email: "bob.johnson@company.com",
+            role: "admin",
+            department: "IT",
+            status: "active",
+            lastLogin: "2024-01-15T16:45:00Z",
+            createdAt: "2023-01-01T09:00:00Z",
           },
           {
-            id: '4',
-            name: 'Alice Brown',
-            email: 'alice.brown@company.com',
-            role: 'employee',
-            department: 'Marketing',
-            status: 'pending',
-            lastLogin: '',
-            createdAt: '2024-01-10T09:00:00Z'
-          }
+            id: "4",
+            name: "Alice Brown",
+            email: "alice.brown@company.com",
+            role: "employee",
+            department: "Marketing",
+            status: "pending",
+            lastLogin: "",
+            createdAt: "2024-01-10T09:00:00Z",
+          },
         ];
         setUsers(mockUsers);
       } catch (error) {
-        console.error('Error loading users:', error);
+        console.error("Error loading users:", error);
       } finally {
         setIsLoading(false);
       }
@@ -92,11 +96,13 @@ const UserManagementPage = () => {
     loadUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === "all" || user.role === filterRole;
+    const matchesStatus =
+      filterStatus === "all" || user.status === filterStatus;
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -105,7 +111,7 @@ const UserManagementPage = () => {
     alert(`${action} user with ID: ${userId}`);
   };
 
-  if (!allowAccess && !['admin', 'manager'].includes(role)) {
+  if (!allowAccess && !["admin", "manager"].includes(role)) {
     return (
       <div className="p-4 md:p-6 flex items-center justify-center h-[calc(100vh-200px)]">
         <div className="text-center">
@@ -120,15 +126,22 @@ const UserManagementPage = () => {
     <>
       <Head>
         <title>User Management - HR Management</title>
-        <meta name="description" content="Manage user accounts and permissions" />
+        <meta
+          name="description"
+          content="Manage user accounts and permissions"
+        />
       </Head>
-      
+
       <div className="p-4 md:p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600">Manage user accounts and access permissions</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              User Management
+            </h1>
+            <p className="text-gray-600">
+              Manage user accounts and access permissions
+            </p>
           </div>
           <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
             Add New User
@@ -188,19 +201,19 @@ const UserManagementPage = () => {
           <div className="bg-white rounded-lg shadow-md p-4">
             <h3 className="text-sm font-medium text-gray-500">Active</h3>
             <p className="text-2xl font-bold text-green-600">
-              {users.filter(u => u.status === 'active').length}
+              {users.filter((u) => u.status === "active").length}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-4">
             <h3 className="text-sm font-medium text-gray-500">Pending</h3>
             <p className="text-2xl font-bold text-orange-600">
-              {users.filter(u => u.status === 'pending').length}
+              {users.filter((u) => u.status === "pending").length}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-4">
             <h3 className="text-sm font-medium text-gray-500">Inactive</h3>
             <p className="text-2xl font-bold text-red-600">
-              {users.filter(u => u.status === 'inactive').length}
+              {users.filter((u) => u.status === "inactive").length}
             </p>
           </div>
         </div>
@@ -243,22 +256,33 @@ const UserManagementPage = () => {
                           <div className="flex-shrink-0 h-10 w-10">
                             <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                               <span className="text-sm font-medium text-gray-700">
-                                {user.name.split(' ').map(n => n[0]).join('')}
+                                {user.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
                               </span>
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {user.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {user.email}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                          user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-800"
+                              : user.role === "manager"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
                           {user.role}
                         </span>
                       </td>
@@ -266,30 +290,49 @@ const UserManagementPage = () => {
                         {user.department}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          user.status === 'active' ? 'bg-green-100 text-green-800' :
-                          user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.status === "active"
+                              ? "bg-green-100 text-green-800"
+                              : user.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {user.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
+                        {user.lastLogin
+                          ? new Date(user.lastLogin).toLocaleDateString()
+                          : "Never"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => handleUserAction(user.id, 'edit')}
+                            onClick={() => handleUserAction(user.id, "edit")}
                             className="text-blue-600 hover:text-blue-900"
                           >
                             Edit
                           </button>
                           <button
-                            onClick={() => handleUserAction(user.id, user.status === 'active' ? 'deactivate' : 'activate')}
-                            className={user.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
+                            onClick={() =>
+                              handleUserAction(
+                                user.id,
+                                user.status === "active"
+                                  ? "deactivate"
+                                  : "activate",
+                              )
+                            }
+                            className={
+                              user.status === "active"
+                                ? "text-red-600 hover:text-red-900"
+                                : "text-green-600 hover:text-green-900"
+                            }
                           >
-                            {user.status === 'active' ? 'Deactivate' : 'Activate'}
+                            {user.status === "active"
+                              ? "Deactivate"
+                              : "Activate"}
                           </button>
                         </div>
                       </td>
@@ -305,13 +348,11 @@ const UserManagementPage = () => {
   );
 };
 
-
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
-
-export default UserManagementPage; 
+export default UserManagementPage;

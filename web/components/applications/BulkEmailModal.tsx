@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+
+import { EmailIcon, AddIcon, InfoIcon } from "@chakra-ui/icons";
 import {
   Modal,
   ModalOverlay,
@@ -30,10 +32,10 @@ import {
   TagLabel,
   TagCloseButton,
   IconButton,
-  Tooltip
-} from '@chakra-ui/react';
-import { EmailIcon, AddIcon, InfoIcon } from '@chakra-ui/icons';
-import { Application, User } from '../../../packages/types';
+  Tooltip,
+} from "@chakra-ui/react";
+
+import { Application, User } from "../../../packages/types";
 
 interface BulkEmailModalProps {
   isOpen: boolean;
@@ -46,31 +48,31 @@ const BulkEmailModal: React.FC<BulkEmailModalProps> = ({
   isOpen,
   onClose,
   applications,
-  onSendEmails
+  onSendEmails,
 }) => {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
-    template: '',
-    subject: '',
-    message: '',
+    template: "",
+    subject: "",
+    message: "",
     sendToCandidate: true,
     sendCcToTeam: false,
     ccEmails: [] as string[],
     personalizeMessage: true,
     scheduleDelivery: false,
-    deliveryDate: '',
-    deliveryTime: '09:00'
+    deliveryDate: "",
+    deliveryTime: "09:00",
   });
 
   // Email templates
   const emailTemplates = [
     {
-      id: 'application_received',
-      name: 'Application Received',
-      subject: 'Thank you for your application - {position}',
+      id: "application_received",
+      name: "Application Received",
+      subject: "Thank you for your application - {position}",
       message: `Dear {candidate_name},
 
 Thank you for your interest in the {position} role at our company. We have received your application and our team is currently reviewing it.
@@ -80,12 +82,12 @@ We appreciate the time you took to apply and will keep you updated on the status
 If you have any questions in the meantime, please don't hesitate to reach out.
 
 Best regards,
-{company_name} Recruiting Team`
+{company_name} Recruiting Team`,
     },
     {
-      id: 'interview_invitation',
-      name: 'Interview Invitation',
-      subject: 'Interview Invitation - {position}',
+      id: "interview_invitation",
+      name: "Interview Invitation",
+      subject: "Interview Invitation - {position}",
       message: `Dear {candidate_name},
 
 We are pleased to inform you that after reviewing your application for the {position} role, we would like to invite you for an interview.
@@ -95,12 +97,12 @@ We will be in touch shortly to schedule a convenient time for both parties. Plea
 We look forward to speaking with you and learning more about your background and experience.
 
 Best regards,
-{company_name} Recruiting Team`
+{company_name} Recruiting Team`,
     },
     {
-      id: 'application_update',
-      name: 'Application Status Update',
-      subject: 'Update on your application - {position}',
+      id: "application_update",
+      name: "Application Status Update",
+      subject: "Update on your application - {position}",
       message: `Dear {candidate_name},
 
 We wanted to provide you with an update on your application for the {position} role.
@@ -110,12 +112,12 @@ Your application is currently being reviewed by our hiring team, and we expect t
 Thank you for your continued interest in joining our team.
 
 Best regards,
-{company_name} Recruiting Team`
+{company_name} Recruiting Team`,
     },
     {
-      id: 'rejection_polite',
-      name: 'Application Not Selected',
-      subject: 'Update on your application - {position}',
+      id: "rejection_polite",
+      name: "Application Not Selected",
+      subject: "Update on your application - {position}",
       message: `Dear {candidate_name},
 
 Thank you for your interest in the {position} role at our company and for taking the time to go through our interview process.
@@ -127,12 +129,12 @@ This was a difficult decision as we were impressed by your background and qualif
 We wish you the best of luck in your job search.
 
 Best regards,
-{company_name} Recruiting Team`
+{company_name} Recruiting Team`,
     },
     {
-      id: 'offer_congratulations',
-      name: 'Job Offer',
-      subject: 'Congratulations! Job Offer - {position}',
+      id: "offer_congratulations",
+      name: "Job Offer",
+      subject: "Congratulations! Job Offer - {position}",
       message: `Dear {candidate_name},
 
 Congratulations! We are delighted to extend an offer for the {position} role at our company.
@@ -144,58 +146,58 @@ Please expect a formal offer letter with all the details including compensation,
 We look forward to having you join our team!
 
 Best regards,
-{company_name} Recruiting Team`
-    }
+{company_name} Recruiting Team`,
+    },
   ];
 
   const handleTemplateChange = (templateId: string) => {
-    const template = emailTemplates.find(t => t.id === templateId);
+    const template = emailTemplates.find((t) => t.id === templateId);
     if (template) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         template: templateId,
         subject: template.subject,
-        message: template.message
+        message: template.message,
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        template: '',
-        subject: '',
-        message: ''
+        template: "",
+        subject: "",
+        message: "",
       }));
     }
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const addCcEmail = (email: string) => {
     if (email && !formData.ccEmails.includes(email)) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        ccEmails: [...prev.ccEmails, email]
+        ccEmails: [...prev.ccEmails, email],
       }));
     }
   };
 
   const removeCcEmail = (email: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      ccEmails: prev.ccEmails.filter(e => e !== email)
+      ccEmails: prev.ccEmails.filter((e) => e !== email),
     }));
   };
 
   const handleSubmit = async () => {
     if (!formData.subject || !formData.message) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fill in both subject and message fields.',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please fill in both subject and message fields.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -203,7 +205,7 @@ Best regards,
     }
 
     setIsLoading(true);
-    
+
     try {
       const emailData = {
         template: formData.template,
@@ -217,30 +219,30 @@ Best regards,
         deliveryDate: formData.deliveryDate,
         deliveryTime: formData.deliveryTime,
         recipientCount: applications.length,
-        applications: applications.map(app => ({
+        applications: applications.map((app) => ({
           id: app.id,
-          candidateName: app.candidate?.full_name || 'Candidate',
-          candidateEmail: app.candidate?.email || '',
-          position: 'Position' // Would come from job data
-        }))
+          candidateName: app.candidate?.full_name || "Candidate",
+          candidateEmail: app.candidate?.email || "",
+          position: "Position", // Would come from job data
+        })),
       };
 
       await onSendEmails(emailData);
-      
+
       toast({
-        title: 'Emails Sent',
+        title: "Emails Sent",
         description: `Successfully sent emails to ${applications.length} candidates`,
-        status: 'success',
+        status: "success",
         duration: 5000,
         isClosable: true,
       });
-      
+
       onClose();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to send emails. Please try again.',
-        status: 'error',
+        title: "Error",
+        description: "Failed to send emails. Please try again.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -256,9 +258,9 @@ Best regards,
 
     const firstApp = applications[0];
     return formData.message
-      .replace(/{candidate_name}/g, firstApp.candidate?.full_name || 'John Doe')
-      .replace(/{position}/g, 'Sample Position')
-      .replace(/{company_name}/g, 'Your Company');
+      .replace(/{candidate_name}/g, firstApp.candidate?.full_name || "John Doe")
+      .replace(/{position}/g, "Sample Position")
+      .replace(/{company_name}/g, "Your Company");
   };
 
   return (
@@ -273,17 +275,23 @@ Best regards,
           </HStack>
         </ModalHeader>
         <ModalCloseButton />
-        
+
         <ModalBody>
           <VStack spacing={4} align="stretch">
             {/* Recipients Preview */}
             <Box p={4} bg="gray.50" borderRadius="md">
-              <Text fontWeight="bold" mb={2}>Recipients ({applications.length})</Text>
+              <Text fontWeight="bold" mb={2}>
+                Recipients ({applications.length})
+              </Text>
               <Wrap>
                 {applications.slice(0, 5).map((app) => (
                   <WrapItem key={app.id}>
                     <HStack spacing={2}>
-                      <Avatar size="xs" name={app.candidate?.full_name} src={app.candidate?.avatar_url} />
+                      <Avatar
+                        size="xs"
+                        name={app.candidate?.full_name}
+                        src={app.candidate?.avatar_url}
+                      />
                       <Text fontSize="sm">{app.candidate?.full_name}</Text>
                     </HStack>
                   </WrapItem>
@@ -321,7 +329,7 @@ Best regards,
               <FormLabel>Subject</FormLabel>
               <Input
                 value={formData.subject}
-                onChange={(e) => handleInputChange('subject', e.target.value)}
+                onChange={(e) => handleInputChange("subject", e.target.value)}
                 placeholder="Email subject line"
               />
             </FormControl>
@@ -331,17 +339,18 @@ Best regards,
               <FormLabel>Message</FormLabel>
               <Textarea
                 value={formData.message}
-                onChange={(e) => handleInputChange('message', e.target.value)}
+                onChange={(e) => handleInputChange("message", e.target.value)}
                 placeholder="Email message content"
                 rows={10}
               />
-              
+
               {formData.personalizeMessage && (
                 <Alert status="info" size="sm" mt={2}>
                   <AlertIcon />
                   <Box>
                     <Text fontSize="xs">
-                      <strong>Available variables:</strong> {'{candidate_name}'}, {'{position}'}, {'{company_name}'}
+                      <strong>Available variables:</strong> {"{candidate_name}"}
+                      , {"{position}"}, {"{company_name}"}
                     </Text>
                   </Box>
                 </Alert>
@@ -352,14 +361,18 @@ Best regards,
             <VStack spacing={3} align="stretch">
               <Checkbox
                 isChecked={formData.personalizeMessage}
-                onChange={(e) => handleInputChange('personalizeMessage', e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange("personalizeMessage", e.target.checked)
+                }
               >
                 Personalize messages with candidate names and position details
               </Checkbox>
 
               <Checkbox
                 isChecked={formData.sendCcToTeam}
-                onChange={(e) => handleInputChange('sendCcToTeam', e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange("sendCcToTeam", e.target.checked)
+                }
               >
                 CC team members on emails
               </Checkbox>
@@ -371,9 +384,9 @@ Best regards,
                     <Input
                       placeholder="Enter email address"
                       onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === "Enter") {
                           addCcEmail((e.target as HTMLInputElement).value);
-                          (e.target as HTMLInputElement).value = '';
+                          (e.target as HTMLInputElement).value = "";
                         }
                       }}
                     />
@@ -390,7 +403,9 @@ Best regards,
                       <WrapItem key={email}>
                         <Tag size="sm" colorScheme="blue" variant="subtle">
                           <TagLabel>{email}</TagLabel>
-                          <TagCloseButton onClick={() => removeCcEmail(email)} />
+                          <TagCloseButton
+                            onClick={() => removeCcEmail(email)}
+                          />
                         </Tag>
                       </WrapItem>
                     ))}
@@ -400,7 +415,9 @@ Best regards,
 
               <Checkbox
                 isChecked={formData.scheduleDelivery}
-                onChange={(e) => handleInputChange('scheduleDelivery', e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange("scheduleDelivery", e.target.checked)
+                }
               >
                 Schedule delivery for later
               </Checkbox>
@@ -412,7 +429,9 @@ Best regards,
                     <Input
                       type="date"
                       value={formData.deliveryDate}
-                      onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("deliveryDate", e.target.value)
+                      }
                     />
                   </FormControl>
                   <FormControl>
@@ -420,7 +439,9 @@ Best regards,
                     <Input
                       type="time"
                       value={formData.deliveryTime}
-                      onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("deliveryTime", e.target.value)
+                      }
                     />
                   </FormControl>
                 </HStack>
@@ -432,10 +453,20 @@ Best regards,
               <>
                 <Divider />
                 <Box>
-                  <Text fontWeight="bold" mb={2}>Preview (Personalized)</Text>
+                  <Text fontWeight="bold" mb={2}>
+                    Preview (Personalized)
+                  </Text>
                   <Box p={3} bg="gray.50" borderRadius="md" fontSize="sm">
-                    <Text fontWeight="bold" mb={2}>Subject: {formData.subject.replace(/{position}/g, 'Sample Position')}</Text>
-                    <Text whiteSpace="pre-wrap">{getPersonalizedPreview()}</Text>
+                    <Text fontWeight="bold" mb={2}>
+                      Subject:{" "}
+                      {formData.subject.replace(
+                        /{position}/g,
+                        "Sample Position",
+                      )}
+                    </Text>
+                    <Text whiteSpace="pre-wrap">
+                      {getPersonalizedPreview()}
+                    </Text>
                   </Box>
                 </Box>
               </>
@@ -453,7 +484,8 @@ Best regards,
             isLoading={isLoading}
             leftIcon={<EmailIcon />}
           >
-            {formData.scheduleDelivery ? 'Schedule' : 'Send'} Emails ({applications.length})
+            {formData.scheduleDelivery ? "Schedule" : "Send"} Emails (
+            {applications.length})
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -461,4 +493,4 @@ Best regards,
   );
 };
 
-export default BulkEmailModal; 
+export default BulkEmailModal;

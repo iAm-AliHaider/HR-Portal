@@ -3,8 +3,8 @@
  * Fix double sidebar/header in employee profile and access denied in offboarding
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track changes
 let changesLog = [];
@@ -18,17 +18,17 @@ function logChange(file, action) {
 
 // 1. Fix employee profile double sidebar/header issue
 function fixEmployeeProfileLayout() {
-  const filePath = path.join(process.cwd(), 'pages/employee/profile.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/employee/profile.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/employee/profile.tsx not found');
+      console.log("❌ pages/employee/profile.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Remove the ModernDashboardLayout wrapper since it's likely being called from a parent
     let newContent = content.replace(
       /return \(\s*<ModernDashboardLayout[^>]*>[^]*?<\/ModernDashboardLayout>\s*\);/gs,
@@ -214,33 +214,35 @@ function fixEmployeeProfileLayout() {
         </div>
       </div>
     </>
-  );`
+  );`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/employee/profile.tsx', 'Removed ModernDashboardLayout wrapper to fix double sidebar/header issue');
+      logChange(
+        "pages/employee/profile.tsx",
+        "Removed ModernDashboardLayout wrapper to fix double sidebar/header issue",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing employee profile layout:', error);
+    console.error("Error fixing employee profile layout:", error);
   }
 }
 
 // 2. Fix offboarding access denied issue
 function fixOffboardingAccess() {
-  const filePath = path.join(process.cwd(), 'pages/offboarding.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/offboarding.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/offboarding.tsx not found');
+      console.log("❌ pages/offboarding.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Make offboarding accessible with better authentication logic
     let newContent = content.replace(
       /if \(!allowAccess && !user\) \{\s*return \(\s*<ModernDashboardLayout>[\s\S]*?<\/ModernDashboardLayout>\s*\);\s*\}/g,
@@ -266,7 +268,7 @@ function fixOffboardingAccess() {
         </div>
       </ModernDashboardLayout>
     );
-  }`
+  }`,
     );
 
     // Also improve the useEffect to be less restrictive
@@ -281,63 +283,67 @@ function fixOffboardingAccess() {
       setOffboardingCases([]);
       setIsLoading(false);
     }
-  }, [user, allowAccess]);`
+  }, [user, allowAccess]);`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/offboarding.tsx', 'Fixed access denied issue with better authentication logic');
+      logChange(
+        "pages/offboarding.tsx",
+        "Fixed access denied issue with better authentication logic",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing offboarding access:', error);
+    console.error("Error fixing offboarding access:", error);
   }
 }
 
 // 3. Check if app.tsx has layout wrapper that might be causing double sidebar
 function checkAppLayout() {
-  const filePath = path.join(process.cwd(), 'pages/_app.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/_app.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/_app.tsx not found');
+      console.log("❌ pages/_app.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Check if _app.tsx has ModernDashboardLayout wrapper
-    if (content.includes('ModernDashboardLayout')) {
+    if (content.includes("ModernDashboardLayout")) {
       // Remove the layout wrapper from _app.tsx if it exists
       let newContent = content.replace(
         /<ModernDashboardLayout[^>]*>[\s\S]*?<\/ModernDashboardLayout>/g,
-        '<Component {...pageProps} />'
+        "<Component {...pageProps} />",
       );
-      
+
       if (newContent !== content) {
-        fs.writeFileSync(filePath, newContent, 'utf8');
+        fs.writeFileSync(filePath, newContent, "utf8");
         filesChanged++;
-        logChange('pages/_app.tsx', 'Removed ModernDashboardLayout wrapper to prevent double layout');
+        logChange(
+          "pages/_app.tsx",
+          "Removed ModernDashboardLayout wrapper to prevent double layout",
+        );
       }
     }
-    
   } catch (error) {
-    console.error('Error checking app layout:', error);
+    console.error("Error checking app layout:", error);
   }
 }
 
 // 4. Create a layout wrapper component for employee pages
 function createEmployeeLayoutWrapper() {
-  const componentDir = path.join(process.cwd(), 'components/layout');
-  const filePath = path.join(componentDir, 'EmployeePageWrapper.tsx');
-  
+  const componentDir = path.join(process.cwd(), "components/layout");
+  const filePath = path.join(componentDir, "EmployeePageWrapper.tsx");
+
   try {
     if (!fs.existsSync(componentDir)) {
       fs.mkdirSync(componentDir, { recursive: true });
     }
-    
+
     const component = `import React from 'react';
 import ModernDashboardLayout from './ModernDashboardLayout';
 
@@ -374,26 +380,28 @@ export const EmployeePageWrapper: React.FC<EmployeePageWrapperProps> = ({
 };
 
 export default EmployeePageWrapper;`;
-    
-    fs.writeFileSync(filePath, component, 'utf8');
+
+    fs.writeFileSync(filePath, component, "utf8");
     filesChanged++;
-    logChange('components/layout/EmployeePageWrapper.tsx', 'Created smart layout wrapper to prevent double layouts');
-    
+    logChange(
+      "components/layout/EmployeePageWrapper.tsx",
+      "Created smart layout wrapper to prevent double layouts",
+    );
   } catch (error) {
-    console.error('Error creating employee layout wrapper:', error);
+    console.error("Error creating employee layout wrapper:", error);
   }
 }
 
 // Run all fixes
 function runLayoutAndAccessFixes() {
-  console.log('🔧 Fixing layout and access issues...');
-  console.log('');
-  
+  console.log("🔧 Fixing layout and access issues...");
+  console.log("");
+
   fixEmployeeProfileLayout();
   fixOffboardingAccess();
   checkAppLayout();
   createEmployeeLayoutWrapper();
-  
+
   // Generate report
   const report = {
     timestamp: new Date().toISOString(),
@@ -401,37 +409,39 @@ function runLayoutAndAccessFixes() {
       filesProcessed,
       filesChanged,
       issuesFixed: [
-        'Employee profile double sidebar/header',
-        'Offboarding access denied issue',
-        'Layout wrapper conflicts',
-        'Smart layout component created'
-      ]
+        "Employee profile double sidebar/header",
+        "Offboarding access denied issue",
+        "Layout wrapper conflicts",
+        "Smart layout component created",
+      ],
     },
     changes: changesLog,
     nextSteps: [
-      'Test employee profile page for single layout',
-      'Verify offboarding page accessibility',
-      'Check other pages for layout conflicts',
-      'Monitor console for layout errors'
-    ]
+      "Test employee profile page for single layout",
+      "Verify offboarding page accessibility",
+      "Check other pages for layout conflicts",
+      "Monitor console for layout errors",
+    ],
   };
-  
+
   fs.writeFileSync(
-    path.join(process.cwd(), 'layout-access-fixes.json'),
+    path.join(process.cwd(), "layout-access-fixes.json"),
     JSON.stringify(report, null, 2),
-    'utf8'
+    "utf8",
   );
-  
-  console.log('');
-  console.log('✅ Layout and access fixes completed!');
-  console.log(`📊 Processed ${filesProcessed} files, changed ${filesChanged} files`);
-  console.log('');
-  console.log('🎯 Issues Fixed:');
-  report.summary.issuesFixed.forEach(issue => {
+
+  console.log("");
+  console.log("✅ Layout and access fixes completed!");
+  console.log(
+    `📊 Processed ${filesProcessed} files, changed ${filesChanged} files`,
+  );
+  console.log("");
+  console.log("🎯 Issues Fixed:");
+  report.summary.issuesFixed.forEach((issue) => {
     console.log(`   ✓ ${issue}`);
   });
-  console.log('');
-  console.log('📝 Report saved to: layout-access-fixes.json');
+  console.log("");
+  console.log("📝 Report saved to: layout-access-fixes.json");
 }
 
-runLayoutAndAccessFixes(); 
+runLayoutAndAccessFixes();

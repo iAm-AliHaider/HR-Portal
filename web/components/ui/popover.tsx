@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import React from 'react';
+import React from "react";
+
 import {
   Popover as ChakraPopover,
   PopoverTrigger as ChakraPopoverTrigger,
@@ -12,32 +13,25 @@ import {
   PopoverCloseButton,
   PopoverAnchor as ChakraPopoverAnchor,
   PopoverProps as ChakraPopoverProps,
-  PopoverContentProps as ChakraPopoverContentProps
-} from '@chakra-ui/react';
+  PopoverContentProps as ChakraPopoverContentProps,
+} from "@chakra-ui/react";
 
 // Popover Container
 export interface PopoverProps extends ChakraPopoverProps {}
 
 const Popover = ({ children, ...props }: PopoverProps) => {
-  return (
-    <ChakraPopover {...props}>
-      {children}
-    </ChakraPopover>
-  );
+  return <ChakraPopover {...props}>{children}</ChakraPopover>;
 };
 
 // Popover Trigger
 const PopoverTrigger = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <ChakraPopoverTrigger>
-      {children}
-    </ChakraPopoverTrigger>
-  );
+  return <ChakraPopoverTrigger>{children}</ChakraPopoverTrigger>;
 };
 
 // Popover Content
-export interface PopoverContentProps extends Omit<ChakraPopoverContentProps, 'children'> {
-  align?: 'start' | 'center' | 'end';
+export interface PopoverContentProps
+  extends Omit<ChakraPopoverContentProps, "children"> {
+  align?: "start" | "center" | "end";
   sideOffset?: number;
   children?: React.ReactNode;
 }
@@ -50,7 +44,7 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
         {children}
       </ChakraPopoverContent>
     );
-  }
+  },
 );
 
 // Popover Anchor
@@ -60,15 +54,15 @@ Popover.displayName = "Popover";
 PopoverTrigger.displayName = "PopoverTrigger";
 PopoverContent.displayName = "PopoverContent";
 
-export { 
-  Popover, 
-  PopoverTrigger, 
-  PopoverContent, 
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
   PopoverAnchor,
   // Also export Chakra components for advanced usage
   PopoverHeader,
   PopoverBody,
   PopoverFooter,
   PopoverArrow,
-  PopoverCloseButton
+  PopoverCloseButton,
 };

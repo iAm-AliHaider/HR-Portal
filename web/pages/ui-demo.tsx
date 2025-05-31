@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { ModernRequireRole } from '@/components/ModernRequireRole';
-import { 
-  CheckCircle, 
-  Users, 
-  Briefcase, 
-  Calendar, 
-  Settings, 
+import React, { useState } from "react";
+
+import Head from "next/head";
+import Link from "next/link";
+
+import {
+  CheckCircle,
+  Users,
+  Briefcase,
+  Calendar,
+  Settings,
   BarChart3,
   Building,
   Shield,
@@ -26,82 +24,128 @@ import {
   Zap,
   Smartphone,
   Monitor,
-  Tablet
-} from 'lucide-react';
+  Tablet,
+} from "lucide-react";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+import { ModernRequireRole } from "@/components/ModernRequireRole";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const features = [
   {
-    title: 'Beautiful Sidebar Navigation',
-    description: 'Modern sidebar with icons, expandable sections, and smooth animations',
+    title: "Beautiful Sidebar Navigation",
+    description:
+      "Modern sidebar with icons, expandable sections, and smooth animations",
     icon: Menu,
-    color: 'blue',
-    status: 'implemented'
+    color: "blue",
+    status: "implemented",
   },
   {
-    title: 'Responsive Design',
-    description: 'Optimized for desktop, tablet, and mobile devices',
+    title: "Responsive Design",
+    description: "Optimized for desktop, tablet, and mobile devices",
     icon: Smartphone,
-    color: 'green',
-    status: 'implemented'
+    color: "green",
+    status: "implemented",
   },
   {
-    title: 'Global Search',
-    description: 'Instant search functionality across the entire application',
+    title: "Global Search",
+    description: "Instant search functionality across the entire application",
     icon: Search,
-    color: 'purple',
-    status: 'implemented'
+    color: "purple",
+    status: "implemented",
   },
   {
-    title: 'Notification Center',
-    description: 'Real-time notifications with visual indicators',
+    title: "Notification Center",
+    description: "Real-time notifications with visual indicators",
     icon: Bell,
-    color: 'yellow',
-    status: 'implemented'
+    color: "yellow",
+    status: "implemented",
   },
   {
-    title: 'Smart Authentication',
-    description: 'Secure authentication with role-based access control',
+    title: "Smart Authentication",
+    description: "Secure authentication with role-based access control",
     icon: Shield,
-    color: 'red',
-    status: 'implemented'
+    color: "red",
+    status: "implemented",
   },
   {
-    title: 'Modern Components',
-    description: 'Beautiful, consistent UI components throughout',
+    title: "Modern Components",
+    description: "Beautiful, consistent UI components throughout",
     icon: Zap,
-    color: 'indigo',
-    status: 'implemented'
-  }
+    color: "indigo",
+    status: "implemented",
+  },
 ];
 
 const pageExamples = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home, description: 'Overview of HR metrics and activities' },
-  { name: 'People', href: '/people', icon: Users, description: 'Employee management and directory' },
-  { name: 'Jobs', href: '/jobs', icon: Briefcase, description: 'Job postings and recruitment (Public)' },
-  { name: 'Leave', href: '/leave', icon: Calendar, description: 'Leave management and approvals' },
-  { name: 'Training', href: '/training', icon: GraduationCap, description: 'Learning and development' },
-  { name: 'Reports', href: '/reports', icon: BarChart3, description: 'Analytics and insights' },
-  { name: 'Facilities', href: '/facilities', icon: Building, description: 'Office and resource management' },
-  { name: 'Settings', href: '/settings', icon: Settings, description: 'Application configuration' }
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: Home,
+    description: "Overview of HR metrics and activities",
+  },
+  {
+    name: "People",
+    href: "/people",
+    icon: Users,
+    description: "Employee management and directory",
+  },
+  {
+    name: "Jobs",
+    href: "/jobs",
+    icon: Briefcase,
+    description: "Job postings and recruitment (Public)",
+  },
+  {
+    name: "Leave",
+    href: "/leave",
+    icon: Calendar,
+    description: "Leave management and approvals",
+  },
+  {
+    name: "Training",
+    href: "/training",
+    icon: GraduationCap,
+    description: "Learning and development",
+  },
+  {
+    name: "Reports",
+    href: "/reports",
+    icon: BarChart3,
+    description: "Analytics and insights",
+  },
+  {
+    name: "Facilities",
+    href: "/facilities",
+    icon: Building,
+    description: "Office and resource management",
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: Settings,
+    description: "Application configuration",
+  },
 ];
 
 const deviceBreakpoints = [
-  { name: 'Mobile', icon: Smartphone, size: 'sm', description: '< 768px' },
-  { name: 'Tablet', icon: Tablet, size: 'md', description: '768px - 1024px' },
-  { name: 'Desktop', icon: Monitor, size: 'lg', description: '> 1024px' }
+  { name: "Mobile", icon: Smartphone, size: "sm", description: "< 768px" },
+  { name: "Tablet", icon: Tablet, size: "md", description: "768px - 1024px" },
+  { name: "Desktop", icon: Monitor, size: "lg", description: "> 1024px" },
 ];
 
 export default function UIDemo() {
-  const [selectedDemo, setSelectedDemo] = useState<string>('overview');
+  const [selectedDemo, setSelectedDemo] = useState<string>("overview");
 
-  const DemoCard = ({ 
-    title, 
-    children, 
-    className = '' 
-  }: { 
-    title: string; 
-    children: React.ReactNode; 
-    className?: string; 
+  const DemoCard = ({
+    title,
+    children,
+    className = "",
+  }: {
+    title: string;
+    children: React.ReactNode;
+    className?: string;
   }) => (
     <Card className={`hover:shadow-lg transition-shadow ${className}`}>
       <CardHeader>
@@ -120,15 +164,13 @@ export default function UIDemo() {
         <title>UI Demo | HR Portal</title>
         <meta name="description" content="Modern UI system demonstration" />
       </Head>
-      
-      <ModernDashboardLayout 
-        title="Modern UI System Demo" 
+
+      <ModernDashboardLayout
+        title="Modern UI System Demo"
         subtitle="Experience the complete modern HR Portal interface"
         actions={
           <div className="flex space-x-2">
-            <Button variant="outline">
-              View Code
-            </Button>
+            <Button variant="outline">View Code</Button>
             <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
               Deploy Changes
             </Button>
@@ -144,9 +186,12 @@ export default function UIDemo() {
                   <CheckCircle className="h-10 w-10 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">🎉 Modern UI System Complete!</h3>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    🎉 Modern UI System Complete!
+                  </h3>
                   <p className="text-gray-700 mt-1">
-                    All 86 pages upgraded • Component fetch errors eliminated • Beautiful design implemented
+                    All 86 pages upgraded • Component fetch errors eliminated •
+                    Beautiful design implemented
                   </p>
                 </div>
               </div>
@@ -159,11 +204,17 @@ export default function UIDemo() {
 
           {/* Demo Navigation */}
           <div className="flex flex-wrap gap-2 mb-6">
-            {['overview', 'navigation', 'responsive', 'authentication', 'components'].map((demo) => (
+            {[
+              "overview",
+              "navigation",
+              "responsive",
+              "authentication",
+              "components",
+            ].map((demo) => (
               <Button
                 key={demo}
                 onClick={() => setSelectedDemo(demo)}
-                variant={selectedDemo === demo ? 'default' : 'outline'}
+                variant={selectedDemo === demo ? "default" : "outline"}
                 size="sm"
                 className="capitalize"
               >
@@ -173,19 +224,30 @@ export default function UIDemo() {
           </div>
 
           {/* Overview Demo */}
-          {selectedDemo === 'overview' && (
+          {selectedDemo === "overview" && (
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {features.map((feature, index) => (
-                  <Card key={index} className="hover:shadow-lg transition-shadow">
+                  <Card
+                    key={index}
+                    className="hover:shadow-lg transition-shadow"
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">
-                        <div className={`p-3 rounded-full bg-${feature.color}-50`}>
-                          <feature.icon className={`h-6 w-6 text-${feature.color}-600`} />
+                        <div
+                          className={`p-3 rounded-full bg-${feature.color}-50`}
+                        >
+                          <feature.icon
+                            className={`h-6 w-6 text-${feature.color}-600`}
+                          />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                          <p className="text-sm text-gray-600 mb-3">{feature.description}</p>
+                          <h3 className="font-semibold text-gray-900 mb-2">
+                            {feature.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-3">
+                            {feature.description}
+                          </p>
                           <div className="flex items-center space-x-2">
                             <CheckCircle className="h-4 w-4 text-green-600" />
                             <span className="text-xs font-medium text-green-600 uppercase">
@@ -206,8 +268,12 @@ export default function UIDemo() {
                       <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                         <page.icon className="h-5 w-5 text-blue-600" />
                         <div>
-                          <div className="font-medium text-gray-900">{page.name}</div>
-                          <div className="text-sm text-gray-500">{page.description}</div>
+                          <div className="font-medium text-gray-900">
+                            {page.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {page.description}
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -218,7 +284,7 @@ export default function UIDemo() {
           )}
 
           {/* Navigation Demo */}
-          {selectedDemo === 'navigation' && (
+          {selectedDemo === "navigation" && (
             <div className="space-y-6">
               <DemoCard title="Sidebar Navigation Features">
                 <div className="space-y-4">
@@ -261,15 +327,22 @@ export default function UIDemo() {
           )}
 
           {/* Responsive Demo */}
-          {selectedDemo === 'responsive' && (
+          {selectedDemo === "responsive" && (
             <div className="space-y-6">
               <DemoCard title="Responsive Breakpoints">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {deviceBreakpoints.map((device, index) => (
-                    <div key={index} className="text-center p-4 border border-gray-200 rounded-lg">
+                    <div
+                      key={index}
+                      className="text-center p-4 border border-gray-200 rounded-lg"
+                    >
                       <device.icon className="h-8 w-8 mx-auto mb-3 text-gray-600" />
-                      <h3 className="font-semibold text-gray-900">{device.name}</h3>
-                      <p className="text-sm text-gray-500">{device.description}</p>
+                      <h3 className="font-semibold text-gray-900">
+                        {device.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {device.description}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -295,7 +368,7 @@ export default function UIDemo() {
           )}
 
           {/* Authentication Demo */}
-          {selectedDemo === 'authentication' && (
+          {selectedDemo === "authentication" && (
             <div className="space-y-6">
               <DemoCard title="Authentication Features">
                 <div className="space-y-4">
@@ -346,7 +419,7 @@ export default function UIDemo() {
           )}
 
           {/* Components Demo */}
-          {selectedDemo === 'components' && (
+          {selectedDemo === "components" && (
             <div className="space-y-6">
               <DemoCard title="UI Components">
                 <div className="space-y-6">
@@ -387,10 +460,23 @@ export default function UIDemo() {
 
               <DemoCard title="Color Palette">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {['blue', 'green', 'purple', 'red', 'yellow', 'indigo', 'gray', 'pink'].map((color) => (
+                  {[
+                    "blue",
+                    "green",
+                    "purple",
+                    "red",
+                    "yellow",
+                    "indigo",
+                    "gray",
+                    "pink",
+                  ].map((color) => (
                     <div key={color} className="text-center">
-                      <div className={`w-16 h-16 bg-${color}-500 rounded-lg mx-auto mb-2`}></div>
-                      <span className="text-sm font-medium capitalize">{color}</span>
+                      <div
+                        className={`w-16 h-16 bg-${color}-500 rounded-lg mx-auto mb-2`}
+                      ></div>
+                      <span className="text-sm font-medium capitalize">
+                        {color}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -406,15 +492,21 @@ export default function UIDemo() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">86</div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    86
+                  </div>
                   <div className="text-sm text-blue-800">Pages Upgraded</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">0</div>
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    0
+                  </div>
                   <div className="text-sm text-green-800">Component Errors</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600 mb-2">100%</div>
+                  <div className="text-3xl font-bold text-purple-600 mb-2">
+                    100%
+                  </div>
                   <div className="text-sm text-purple-800">Modern UI</div>
                 </div>
               </div>
@@ -424,4 +516,4 @@ export default function UIDemo() {
       </ModernDashboardLayout>
     </>
   );
-} 
+}

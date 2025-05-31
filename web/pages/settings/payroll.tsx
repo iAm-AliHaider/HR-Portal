@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Settings, 
-  DollarSign, 
-  Calculator, 
-  Shield, 
-  FileText, 
+import React, { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import {
+  Settings,
+  DollarSign,
+  Calculator,
+  Shield,
+  FileText,
   Users,
   Clock,
   CheckCircle,
@@ -21,8 +19,13 @@ import {
   Save,
   RefreshCw,
   Download,
-  Upload
-} from 'lucide-react';
+  Upload,
+} from "lucide-react";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface PayrollSettings {
   company_info: {
@@ -37,7 +40,7 @@ interface PayrollSettings {
     federal_tax: {
       enabled: boolean;
       rate_structure: string;
-      brackets: Array<{min: number; max: number; rate: number}>;
+      brackets: Array<{ min: number; max: number; rate: number }>;
     };
     state_tax: {
       enabled: boolean;
@@ -93,7 +96,7 @@ interface PayrollSettings {
 
 export default function PayrollSettingsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
   const [settings, setSettings] = useState<PayrollSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -103,14 +106,14 @@ export default function PayrollSettingsPage() {
 
   // Form states
   const [newDeduction, setNewDeduction] = useState({
-    name: '',
-    type: 'pre_tax',
-    category: 'benefit',
-    default_amount: '',
-    default_percentage: '',
-    frequency: 'monthly',
-    employer_contribution: '',
-    enabled: true
+    name: "",
+    type: "pre_tax",
+    category: "benefit",
+    default_amount: "",
+    default_percentage: "",
+    frequency: "monthly",
+    employer_contribution: "",
+    enabled: true,
   });
 
   useEffect(() => {
@@ -120,13 +123,13 @@ export default function PayrollSettingsPage() {
   const loadPayrollSettings = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/payroll?type=settings');
+      const response = await fetch("/api/payroll?type=settings");
       if (response.ok) {
         const result = await response.json();
         setSettings(result.data);
       }
     } catch (error) {
-      console.error('Error loading payroll settings:', error);
+      console.error("Error loading payroll settings:", error);
     } finally {
       setIsLoading(false);
     }
@@ -135,23 +138,23 @@ export default function PayrollSettingsPage() {
   const saveSettings = async () => {
     try {
       setIsSaving(true);
-      const response = await fetch('/api/payroll?type=settings', {
-        method: 'PUT',
+      const response = await fetch("/api/payroll?type=settings", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(settings),
       });
 
       if (response.ok) {
-        alert('Payroll settings saved successfully!');
+        alert("Payroll settings saved successfully!");
         setEditMode(false);
       } else {
-        throw new Error('Failed to save settings');
+        throw new Error("Failed to save settings");
       }
     } catch (error) {
-      console.error('Error saving settings:', error);
-      alert('Failed to save settings. Please try again.');
+      console.error("Error saving settings:", error);
+      alert("Failed to save settings. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -165,27 +168,33 @@ export default function PayrollSettingsPage() {
       name: newDeduction.name,
       type: newDeduction.type,
       category: newDeduction.category,
-      default_amount: newDeduction.default_amount ? parseFloat(newDeduction.default_amount) : undefined,
-      default_percentage: newDeduction.default_percentage ? parseFloat(newDeduction.default_percentage) : undefined,
+      default_amount: newDeduction.default_amount
+        ? parseFloat(newDeduction.default_amount)
+        : undefined,
+      default_percentage: newDeduction.default_percentage
+        ? parseFloat(newDeduction.default_percentage)
+        : undefined,
       frequency: newDeduction.frequency,
-      employer_contribution: newDeduction.employer_contribution ? parseFloat(newDeduction.employer_contribution) : 0,
-      enabled: newDeduction.enabled
+      employer_contribution: newDeduction.employer_contribution
+        ? parseFloat(newDeduction.employer_contribution)
+        : 0,
+      enabled: newDeduction.enabled,
     };
 
     setSettings({
       ...settings,
-      deduction_types: [...settings.deduction_types, deduction]
+      deduction_types: [...settings.deduction_types, deduction],
     });
 
     setNewDeduction({
-      name: '',
-      type: 'pre_tax',
-      category: 'benefit',
-      default_amount: '',
-      default_percentage: '',
-      frequency: 'monthly',
-      employer_contribution: '',
-      enabled: true
+      name: "",
+      type: "pre_tax",
+      category: "benefit",
+      default_amount: "",
+      default_percentage: "",
+      frequency: "monthly",
+      employer_contribution: "",
+      enabled: true,
     });
     setShowAddDeduction(false);
   };
@@ -195,14 +204,16 @@ export default function PayrollSettingsPage() {
 
     setSettings({
       ...settings,
-      deduction_types: settings.deduction_types.filter(d => d.id !== deductionId)
+      deduction_types: settings.deduction_types.filter(
+        (d) => d.id !== deductionId,
+      ),
     });
   };
 
   const updateSetting = (path: string, value: any) => {
     if (!settings) return;
 
-    const pathArray = path.split('.');
+    const pathArray = path.split(".");
     const newSettings = { ...settings };
     let current = newSettings;
 
@@ -231,8 +242,10 @@ export default function PayrollSettingsPage() {
               </label>
               <input
                 type="text"
-                value={settings?.company_info.name || ''}
-                onChange={(e) => updateSetting('company_info.name', e.target.value)}
+                value={settings?.company_info.name || ""}
+                onChange={(e) =>
+                  updateSetting("company_info.name", e.target.value)
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -243,8 +256,10 @@ export default function PayrollSettingsPage() {
               </label>
               <input
                 type="text"
-                value={settings?.company_info.tax_id || ''}
-                onChange={(e) => updateSetting('company_info.tax_id', e.target.value)}
+                value={settings?.company_info.tax_id || ""}
+                onChange={(e) =>
+                  updateSetting("company_info.tax_id", e.target.value)
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -256,8 +271,10 @@ export default function PayrollSettingsPage() {
               Company Address
             </label>
             <textarea
-              value={settings?.company_info.address || ''}
-              onChange={(e) => updateSetting('company_info.address', e.target.value)}
+              value={settings?.company_info.address || ""}
+              onChange={(e) =>
+                updateSetting("company_info.address", e.target.value)
+              }
               disabled={!editMode}
               rows={3}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
@@ -270,8 +287,13 @@ export default function PayrollSettingsPage() {
                 Payroll Frequency
               </label>
               <select
-                value={settings?.company_info.payroll_frequency || ''}
-                onChange={(e) => updateSetting('company_info.payroll_frequency', e.target.value)}
+                value={settings?.company_info.payroll_frequency || ""}
+                onChange={(e) =>
+                  updateSetting(
+                    "company_info.payroll_frequency",
+                    e.target.value,
+                  )
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               >
@@ -287,8 +309,13 @@ export default function PayrollSettingsPage() {
               </label>
               <input
                 type="text"
-                value={settings?.company_info.fiscal_year_start || ''}
-                onChange={(e) => updateSetting('company_info.fiscal_year_start', e.target.value)}
+                value={settings?.company_info.fiscal_year_start || ""}
+                onChange={(e) =>
+                  updateSetting(
+                    "company_info.fiscal_year_start",
+                    e.target.value,
+                  )
+                }
                 disabled={!editMode}
                 placeholder="MM-DD"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
@@ -299,8 +326,10 @@ export default function PayrollSettingsPage() {
                 Default Currency
               </label>
               <select
-                value={settings?.company_info.default_currency || ''}
-                onChange={(e) => updateSetting('company_info.default_currency', e.target.value)}
+                value={settings?.company_info.default_currency || ""}
+                onChange={(e) =>
+                  updateSetting("company_info.default_currency", e.target.value)
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               >
@@ -336,12 +365,25 @@ export default function PayrollSettingsPage() {
               <input
                 type="checkbox"
                 checked={settings?.tax_settings.federal_tax.enabled || false}
-                onChange={(e) => updateSetting('tax_settings.federal_tax.enabled', e.target.checked)}
+                onChange={(e) =>
+                  updateSetting(
+                    "tax_settings.federal_tax.enabled",
+                    e.target.checked,
+                  )
+                }
                 disabled={!editMode}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <Badge className={settings?.tax_settings.federal_tax.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                {settings?.tax_settings.federal_tax.enabled ? 'Enabled' : 'Disabled'}
+              <Badge
+                className={
+                  settings?.tax_settings.federal_tax.enabled
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"
+                }
+              >
+                {settings?.tax_settings.federal_tax.enabled
+                  ? "Enabled"
+                  : "Disabled"}
               </Badge>
             </div>
           </div>
@@ -359,13 +401,19 @@ export default function PayrollSettingsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {settings.tax_settings.federal_tax.brackets.map((bracket, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2">${bracket.min.toLocaleString()}</td>
-                        <td className="p-2">${bracket.max.toLocaleString()}</td>
-                        <td className="p-2">{bracket.rate}%</td>
-                      </tr>
-                    ))}
+                    {settings.tax_settings.federal_tax.brackets.map(
+                      (bracket, index) => (
+                        <tr key={index} className="border-b">
+                          <td className="p-2">
+                            ${bracket.min.toLocaleString()}
+                          </td>
+                          <td className="p-2">
+                            ${bracket.max.toLocaleString()}
+                          </td>
+                          <td className="p-2">{bracket.rate}%</td>
+                        </tr>
+                      ),
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -388,8 +436,16 @@ export default function PayrollSettingsPage() {
               <h4 className="font-medium">State Income Tax</h4>
               <p className="text-sm text-gray-600">Flat rate state tax</p>
             </div>
-            <Badge className={settings?.tax_settings.state_tax.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-              {settings?.tax_settings.state_tax.enabled ? 'Enabled' : 'Disabled'}
+            <Badge
+              className={
+                settings?.tax_settings.state_tax.enabled
+                  ? "bg-green-100 text-green-800"
+                  : "bg-gray-100 text-gray-800"
+              }
+            >
+              {settings?.tax_settings.state_tax.enabled
+                ? "Enabled"
+                : "Disabled"}
             </Badge>
           </div>
 
@@ -400,8 +456,10 @@ export default function PayrollSettingsPage() {
               </label>
               <input
                 type="text"
-                value={settings?.tax_settings.state_tax.state || ''}
-                onChange={(e) => updateSetting('tax_settings.state_tax.state', e.target.value)}
+                value={settings?.tax_settings.state_tax.state || ""}
+                onChange={(e) =>
+                  updateSetting("tax_settings.state_tax.state", e.target.value)
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -413,8 +471,13 @@ export default function PayrollSettingsPage() {
               <input
                 type="number"
                 step="0.1"
-                value={settings?.tax_settings.state_tax.flat_rate || ''}
-                onChange={(e) => updateSetting('tax_settings.state_tax.flat_rate', parseFloat(e.target.value))}
+                value={settings?.tax_settings.state_tax.flat_rate || ""}
+                onChange={(e) =>
+                  updateSetting(
+                    "tax_settings.state_tax.flat_rate",
+                    parseFloat(e.target.value),
+                  )
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -446,8 +509,13 @@ export default function PayrollSettingsPage() {
                 <input
                   type="number"
                   step="0.1"
-                  value={settings?.tax_settings.social_security.rate || ''}
-                  onChange={(e) => updateSetting('tax_settings.social_security.rate', parseFloat(e.target.value))}
+                  value={settings?.tax_settings.social_security.rate || ""}
+                  onChange={(e) =>
+                    updateSetting(
+                      "tax_settings.social_security.rate",
+                      parseFloat(e.target.value),
+                    )
+                  }
                   disabled={!editMode}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
@@ -459,8 +527,15 @@ export default function PayrollSettingsPage() {
                 <input
                   type="number"
                   step="0.1"
-                  value={settings?.tax_settings.social_security.employer_rate || ''}
-                  onChange={(e) => updateSetting('tax_settings.social_security.employer_rate', parseFloat(e.target.value))}
+                  value={
+                    settings?.tax_settings.social_security.employer_rate || ""
+                  }
+                  onChange={(e) =>
+                    updateSetting(
+                      "tax_settings.social_security.employer_rate",
+                      parseFloat(e.target.value),
+                    )
+                  }
                   disabled={!editMode}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
@@ -471,8 +546,13 @@ export default function PayrollSettingsPage() {
                 </label>
                 <input
                   type="number"
-                  value={settings?.tax_settings.social_security.wage_base || ''}
-                  onChange={(e) => updateSetting('tax_settings.social_security.wage_base', parseInt(e.target.value))}
+                  value={settings?.tax_settings.social_security.wage_base || ""}
+                  onChange={(e) =>
+                    updateSetting(
+                      "tax_settings.social_security.wage_base",
+                      parseInt(e.target.value),
+                    )
+                  }
                   disabled={!editMode}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
@@ -494,8 +574,13 @@ export default function PayrollSettingsPage() {
                 <input
                   type="number"
                   step="0.01"
-                  value={settings?.tax_settings.medicare.rate || ''}
-                  onChange={(e) => updateSetting('tax_settings.medicare.rate', parseFloat(e.target.value))}
+                  value={settings?.tax_settings.medicare.rate || ""}
+                  onChange={(e) =>
+                    updateSetting(
+                      "tax_settings.medicare.rate",
+                      parseFloat(e.target.value),
+                    )
+                  }
                   disabled={!editMode}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
@@ -507,8 +592,13 @@ export default function PayrollSettingsPage() {
                 <input
                   type="number"
                   step="0.01"
-                  value={settings?.tax_settings.medicare.employer_rate || ''}
-                  onChange={(e) => updateSetting('tax_settings.medicare.employer_rate', parseFloat(e.target.value))}
+                  value={settings?.tax_settings.medicare.employer_rate || ""}
+                  onChange={(e) =>
+                    updateSetting(
+                      "tax_settings.medicare.employer_rate",
+                      parseFloat(e.target.value),
+                    )
+                  }
                   disabled={!editMode}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
@@ -520,8 +610,13 @@ export default function PayrollSettingsPage() {
                 <input
                   type="number"
                   step="0.01"
-                  value={settings?.tax_settings.medicare.additional_rate || ''}
-                  onChange={(e) => updateSetting('tax_settings.medicare.additional_rate', parseFloat(e.target.value))}
+                  value={settings?.tax_settings.medicare.additional_rate || ""}
+                  onChange={(e) =>
+                    updateSetting(
+                      "tax_settings.medicare.additional_rate",
+                      parseFloat(e.target.value),
+                    )
+                  }
                   disabled={!editMode}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
@@ -532,8 +627,15 @@ export default function PayrollSettingsPage() {
                 </label>
                 <input
                   type="number"
-                  value={settings?.tax_settings.medicare.additional_threshold || ''}
-                  onChange={(e) => updateSetting('tax_settings.medicare.additional_threshold', parseInt(e.target.value))}
+                  value={
+                    settings?.tax_settings.medicare.additional_threshold || ""
+                  }
+                  onChange={(e) =>
+                    updateSetting(
+                      "tax_settings.medicare.additional_threshold",
+                      parseInt(e.target.value),
+                    )
+                  }
                   disabled={!editMode}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                 />
@@ -549,7 +651,7 @@ export default function PayrollSettingsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Deduction Types</h2>
-        <Button 
+        <Button
           onClick={() => setShowAddDeduction(true)}
           disabled={!editMode}
           className="flex items-center gap-2"
@@ -567,32 +669,49 @@ export default function PayrollSettingsPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h4 className="font-medium">{deduction.name}</h4>
-                    <Badge className={`${deduction.type === 'pre_tax' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                      {deduction.type.replace('_', '-')}
+                    <Badge
+                      className={`${deduction.type === "pre_tax" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}`}
+                    >
+                      {deduction.type.replace("_", "-")}
                     </Badge>
                     <Badge className="bg-gray-100 text-gray-800 capitalize">
                       {deduction.category}
                     </Badge>
-                    <Badge className={deduction.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                      {deduction.enabled ? 'Active' : 'Inactive'}
+                    <Badge
+                      className={
+                        deduction.enabled
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }
+                    >
+                      {deduction.enabled ? "Active" : "Inactive"}
                     </Badge>
                   </div>
                   <div className="mt-2 text-sm text-gray-600">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
-                        <span className="font-medium">Amount:</span> 
-                        {deduction.default_amount ? ` $${deduction.default_amount}` : 
-                         deduction.default_percentage ? ` ${deduction.default_percentage}%` : ' Variable'}
+                        <span className="font-medium">Amount:</span>
+                        {deduction.default_amount
+                          ? ` $${deduction.default_amount}`
+                          : deduction.default_percentage
+                            ? ` ${deduction.default_percentage}%`
+                            : " Variable"}
                       </div>
                       <div>
-                        <span className="font-medium">Frequency:</span> {deduction.frequency}
+                        <span className="font-medium">Frequency:</span>{" "}
+                        {deduction.frequency}
                       </div>
                       <div>
-                        <span className="font-medium">Employer Contribution:</span> 
-                        {deduction.employer_contribution ? ` ${deduction.employer_contribution}%` : ' None'}
+                        <span className="font-medium">
+                          Employer Contribution:
+                        </span>
+                        {deduction.employer_contribution
+                          ? ` ${deduction.employer_contribution}%`
+                          : " None"}
                       </div>
                       <div>
-                        <span className="font-medium">Type:</span> {deduction.type.replace('_', ' ')}
+                        <span className="font-medium">Type:</span>{" "}
+                        {deduction.type.replace("_", " ")}
                       </div>
                     </div>
                   </div>
@@ -602,8 +721,8 @@ export default function PayrollSettingsPage() {
                     <Button size="sm" variant="outline">
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => removeDeduction(deduction.id)}
                       className="text-red-600 hover:text-red-700"
@@ -623,7 +742,7 @@ export default function PayrollSettingsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-bold mb-4">Add Deduction Type</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -632,7 +751,9 @@ export default function PayrollSettingsPage() {
                 <input
                   type="text"
                   value={newDeduction.name}
-                  onChange={(e) => setNewDeduction({...newDeduction, name: e.target.value})}
+                  onChange={(e) =>
+                    setNewDeduction({ ...newDeduction, name: e.target.value })
+                  }
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., Parking Fee"
                 />
@@ -645,7 +766,9 @@ export default function PayrollSettingsPage() {
                   </label>
                   <select
                     value={newDeduction.type}
-                    onChange={(e) => setNewDeduction({...newDeduction, type: e.target.value})}
+                    onChange={(e) =>
+                      setNewDeduction({ ...newDeduction, type: e.target.value })
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="pre_tax">Pre-Tax</option>
@@ -658,7 +781,12 @@ export default function PayrollSettingsPage() {
                   </label>
                   <select
                     value={newDeduction.category}
-                    onChange={(e) => setNewDeduction({...newDeduction, category: e.target.value})}
+                    onChange={(e) =>
+                      setNewDeduction({
+                        ...newDeduction,
+                        category: e.target.value,
+                      })
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="benefit">Benefit</option>
@@ -677,7 +805,12 @@ export default function PayrollSettingsPage() {
                     type="number"
                     step="0.01"
                     value={newDeduction.default_amount}
-                    onChange={(e) => setNewDeduction({...newDeduction, default_amount: e.target.value})}
+                    onChange={(e) =>
+                      setNewDeduction({
+                        ...newDeduction,
+                        default_amount: e.target.value,
+                      })
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -689,7 +822,12 @@ export default function PayrollSettingsPage() {
                     type="number"
                     step="0.1"
                     value={newDeduction.default_percentage}
-                    onChange={(e) => setNewDeduction({...newDeduction, default_percentage: e.target.value})}
+                    onChange={(e) =>
+                      setNewDeduction({
+                        ...newDeduction,
+                        default_percentage: e.target.value,
+                      })
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -701,7 +839,12 @@ export default function PayrollSettingsPage() {
                 </label>
                 <select
                   value={newDeduction.frequency}
-                  onChange={(e) => setNewDeduction({...newDeduction, frequency: e.target.value})}
+                  onChange={(e) =>
+                    setNewDeduction({
+                      ...newDeduction,
+                      frequency: e.target.value,
+                    })
+                  }
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="per_paycheck">Per Paycheck</option>
@@ -715,8 +858,8 @@ export default function PayrollSettingsPage() {
               <Button onClick={addDeduction} className="flex-1">
                 Add Deduction
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowAddDeduction(false)}
                 className="flex-1"
               >
@@ -742,12 +885,16 @@ export default function PayrollSettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium">Enable Overtime Calculations</h4>
-              <p className="text-sm text-gray-600">Automatically calculate overtime pay based on rules</p>
+              <p className="text-sm text-gray-600">
+                Automatically calculate overtime pay based on rules
+              </p>
             </div>
             <input
               type="checkbox"
               checked={settings?.overtime_rules.enabled || false}
-              onChange={(e) => updateSetting('overtime_rules.enabled', e.target.checked)}
+              onChange={(e) =>
+                updateSetting("overtime_rules.enabled", e.target.checked)
+              }
               disabled={!editMode}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
@@ -762,12 +909,19 @@ export default function PayrollSettingsPage() {
                   </label>
                   <input
                     type="number"
-                    value={settings.overtime_rules.daily_overtime_hours || ''}
-                    onChange={(e) => updateSetting('overtime_rules.daily_overtime_hours', parseInt(e.target.value))}
+                    value={settings.overtime_rules.daily_overtime_hours || ""}
+                    onChange={(e) =>
+                      updateSetting(
+                        "overtime_rules.daily_overtime_hours",
+                        parseInt(e.target.value),
+                      )
+                    }
                     disabled={!editMode}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Hours before daily overtime kicks in</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Hours before daily overtime kicks in
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -775,12 +929,19 @@ export default function PayrollSettingsPage() {
                   </label>
                   <input
                     type="number"
-                    value={settings.overtime_rules.weekly_overtime_hours || ''}
-                    onChange={(e) => updateSetting('overtime_rules.weekly_overtime_hours', parseInt(e.target.value))}
+                    value={settings.overtime_rules.weekly_overtime_hours || ""}
+                    onChange={(e) =>
+                      updateSetting(
+                        "overtime_rules.weekly_overtime_hours",
+                        parseInt(e.target.value),
+                      )
+                    }
                     disabled={!editMode}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Hours before weekly overtime kicks in</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Hours before weekly overtime kicks in
+                  </p>
                 </div>
               </div>
 
@@ -792,12 +953,21 @@ export default function PayrollSettingsPage() {
                   <input
                     type="number"
                     step="0.1"
-                    value={settings.overtime_rules.overtime_rate_multiplier || ''}
-                    onChange={(e) => updateSetting('overtime_rules.overtime_rate_multiplier', parseFloat(e.target.value))}
+                    value={
+                      settings.overtime_rules.overtime_rate_multiplier || ""
+                    }
+                    onChange={(e) =>
+                      updateSetting(
+                        "overtime_rules.overtime_rate_multiplier",
+                        parseFloat(e.target.value),
+                      )
+                    }
                     disabled={!editMode}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                   />
-                  <p className="text-xs text-gray-500 mt-1">e.g., 1.5 for time and a half</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    e.g., 1.5 for time and a half
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -805,12 +975,19 @@ export default function PayrollSettingsPage() {
                   </label>
                   <input
                     type="number"
-                    value={settings.overtime_rules.double_time_hours || ''}
-                    onChange={(e) => updateSetting('overtime_rules.double_time_hours', parseInt(e.target.value))}
+                    value={settings.overtime_rules.double_time_hours || ""}
+                    onChange={(e) =>
+                      updateSetting(
+                        "overtime_rules.double_time_hours",
+                        parseInt(e.target.value),
+                      )
+                    }
                     disabled={!editMode}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Hours before double time</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Hours before double time
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -819,12 +996,21 @@ export default function PayrollSettingsPage() {
                   <input
                     type="number"
                     step="0.1"
-                    value={settings.overtime_rules.double_time_rate_multiplier || ''}
-                    onChange={(e) => updateSetting('overtime_rules.double_time_rate_multiplier', parseFloat(e.target.value))}
+                    value={
+                      settings.overtime_rules.double_time_rate_multiplier || ""
+                    }
+                    onChange={(e) =>
+                      updateSetting(
+                        "overtime_rules.double_time_rate_multiplier",
+                        parseFloat(e.target.value),
+                      )
+                    }
                     disabled={!editMode}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                   />
-                  <p className="text-xs text-gray-500 mt-1">e.g., 2.0 for double time</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    e.g., 2.0 for double time
+                  </p>
                 </div>
               </div>
             </div>
@@ -852,12 +1038,19 @@ export default function PayrollSettingsPage() {
               <input
                 type="number"
                 step="0.01"
-                value={settings?.compliance.minimum_wage || ''}
-                onChange={(e) => updateSetting('compliance.minimum_wage', parseFloat(e.target.value))}
+                value={settings?.compliance.minimum_wage || ""}
+                onChange={(e) =>
+                  updateSetting(
+                    "compliance.minimum_wage",
+                    parseFloat(e.target.value),
+                  )
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
-              <p className="text-xs text-gray-500 mt-1">Per hour minimum wage for your state</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Per hour minimum wage for your state
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -865,8 +1058,10 @@ export default function PayrollSettingsPage() {
               </label>
               <input
                 type="text"
-                value={settings?.compliance.state || ''}
-                onChange={(e) => updateSetting('compliance.state', e.target.value)}
+                value={settings?.compliance.state || ""}
+                onChange={(e) =>
+                  updateSetting("compliance.state", e.target.value)
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -881,8 +1076,13 @@ export default function PayrollSettingsPage() {
               <input
                 type="number"
                 step="0.01"
-                value={settings?.compliance.workers_comp_rate || ''}
-                onChange={(e) => updateSetting('compliance.workers_comp_rate', parseFloat(e.target.value))}
+                value={settings?.compliance.workers_comp_rate || ""}
+                onChange={(e) =>
+                  updateSetting(
+                    "compliance.workers_comp_rate",
+                    parseFloat(e.target.value),
+                  )
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -894,8 +1094,13 @@ export default function PayrollSettingsPage() {
               <input
                 type="number"
                 step="0.01"
-                value={settings?.compliance.disability_insurance_rate || ''}
-                onChange={(e) => updateSetting('compliance.disability_insurance_rate', parseFloat(e.target.value))}
+                value={settings?.compliance.disability_insurance_rate || ""}
+                onChange={(e) =>
+                  updateSetting(
+                    "compliance.disability_insurance_rate",
+                    parseFloat(e.target.value),
+                  )
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -907,8 +1112,13 @@ export default function PayrollSettingsPage() {
               <input
                 type="number"
                 step="0.01"
-                value={settings?.compliance.family_leave_rate || ''}
-                onChange={(e) => updateSetting('compliance.family_leave_rate', parseFloat(e.target.value))}
+                value={settings?.compliance.family_leave_rate || ""}
+                onChange={(e) =>
+                  updateSetting(
+                    "compliance.family_leave_rate",
+                    parseFloat(e.target.value),
+                  )
+                }
                 disabled={!editMode}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
@@ -921,7 +1131,9 @@ export default function PayrollSettingsPage() {
               <div>
                 <h4 className="font-medium text-yellow-800">Important Note</h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Compliance rates vary by state and are subject to change. Please consult with your accounting or legal team to ensure these rates are current and accurate for your jurisdiction.
+                  Compliance rates vary by state and are subject to change.
+                  Please consult with your accounting or legal team to ensure
+                  these rates are current and accurate for your jurisdiction.
                 </p>
               </div>
             </div>
@@ -951,13 +1163,17 @@ export default function PayrollSettingsPage() {
         <div className="mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Payroll Settings</h1>
-              <p className="text-gray-600">Configure payroll calculations, taxes, and compliance</p>
+              <h1 className="text-2xl font-bold text-gray-800">
+                Payroll Settings
+              </h1>
+              <p className="text-gray-600">
+                Configure payroll calculations, taxes, and compliance
+              </p>
             </div>
             <div className="flex gap-2">
               {editMode ? (
                 <>
-                  <Button 
+                  <Button
                     onClick={saveSettings}
                     disabled={isSaving}
                     className="flex items-center gap-2"
@@ -967,17 +1183,14 @@ export default function PayrollSettingsPage() {
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? "Saving..." : "Save Changes"}
                   </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => setEditMode(false)}
-                  >
+                  <Button variant="outline" onClick={() => setEditMode(false)}>
                     Cancel
                   </Button>
                 </>
               ) : (
-                <Button 
+                <Button
                   onClick={() => setEditMode(true)}
                   className="flex items-center gap-2"
                 >
@@ -992,19 +1205,19 @@ export default function PayrollSettingsPage() {
         {/* Navigation Tabs */}
         <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
           {[
-            { id: 'general', label: 'General', icon: Settings },
-            { id: 'taxes', label: 'Tax Settings', icon: Calculator },
-            { id: 'deductions', label: 'Deductions', icon: DollarSign },
-            { id: 'overtime', label: 'Overtime', icon: Clock },
-            { id: 'compliance', label: 'Compliance', icon: Shield }
+            { id: "general", label: "General", icon: Settings },
+            { id: "taxes", label: "Tax Settings", icon: Calculator },
+            { id: "deductions", label: "Deductions", icon: DollarSign },
+            { id: "overtime", label: "Overtime", icon: Clock },
+            { id: "compliance", label: "Compliance", icon: Shield },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               <tab.icon className="h-4 w-4" />
@@ -1014,12 +1227,12 @@ export default function PayrollSettingsPage() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'general' && renderGeneralSettings()}
-        {activeTab === 'taxes' && renderTaxSettings()}
-        {activeTab === 'deductions' && renderDeductionSettings()}
-        {activeTab === 'overtime' && renderOvertimeSettings()}
-        {activeTab === 'compliance' && renderComplianceSettings()}
+        {activeTab === "general" && renderGeneralSettings()}
+        {activeTab === "taxes" && renderTaxSettings()}
+        {activeTab === "deductions" && renderDeductionSettings()}
+        {activeTab === "overtime" && renderOvertimeSettings()}
+        {activeTab === "compliance" && renderComplianceSettings()}
       </div>
     </ModernDashboardLayout>
   );
-} 
+}

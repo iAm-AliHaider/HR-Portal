@@ -3,8 +3,8 @@
  * Comprehensive fix for loading states, Supabase errors, navigation problems, and auth warnings
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track all changes made
 let changesLog = [];
@@ -18,17 +18,17 @@ function logChange(file, action) {
 
 // 1. Fix offboarding infinite loading
 function fixOffboardingLoading() {
-  const filePath = path.join(process.cwd(), 'pages/offboarding.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/offboarding.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ offboarding.tsx not found');
+      console.log("❌ offboarding.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Fix the useEffect dependency issue that causes infinite loading
     let newContent = content.replace(
       /useEffect\(\(\) => \{\s*if \(allowAccess \|\| user\) \{\s*loadData\(\);\s*\}\s*\}, \[user, allowAccess\]\);/gs,
@@ -39,7 +39,7 @@ function fixOffboardingLoading() {
       // If no access and no user, stop loading immediately
       setIsLoading(false);
     }
-  }, [user, allowAccess]);`
+  }, [user, allowAccess]);`,
     );
 
     // Add timeout protection to loadData
@@ -66,33 +66,35 @@ function fixOffboardingLoading() {
     } finally {
       setIsLoading(false);
     }
-  };`
+  };`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/offboarding.tsx', 'Fixed infinite loading and added timeout protection');
+      logChange(
+        "pages/offboarding.tsx",
+        "Fixed infinite loading and added timeout protection",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing offboarding loading:', error);
+    console.error("Error fixing offboarding loading:", error);
   }
 }
 
 // 2. Fix jobs page Supabase error
 function fixJobsSupabaseError() {
-  const filePath = path.join(process.cwd(), 'pages/jobs/index.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/jobs/index.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ jobs/index.tsx not found');
+      console.log("❌ jobs/index.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Add error boundary for the jobs hook
     let newContent = content.replace(
       /const \{\s*jobs,\s*loading,\s*error,\s*createJob,\s*updateJob,\s*closeJob\s*\} = useJobs\(\);/g,
@@ -113,7 +115,7 @@ function fixJobsSupabaseError() {
       console.warn('Jobs API error, using fallback:', error);
       setApiError(error);
     }
-  }, [error]);`
+  }, [error]);`,
     );
 
     // Add fallback data when there's an error
@@ -153,30 +155,32 @@ function fixJobsSupabaseError() {
         </ModernDashboardLayout>
       </ModernRequireRole>
     );
-  }`
+  }`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/jobs/index.tsx', 'Added error handling and fallback for Supabase errors');
+      logChange(
+        "pages/jobs/index.tsx",
+        "Added error handling and fallback for Supabase errors",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing jobs Supabase error:', error);
+    console.error("Error fixing jobs Supabase error:", error);
   }
 }
 
 // 3. Create navigation recovery component
 function createNavigationRecovery() {
-  const componentDir = path.join(process.cwd(), 'components/ui');
-  const filePath = path.join(componentDir, 'NavigationRecovery.tsx');
-  
+  const componentDir = path.join(process.cwd(), "components/ui");
+  const filePath = path.join(componentDir, "NavigationRecovery.tsx");
+
   try {
     if (!fs.existsSync(componentDir)) {
       fs.mkdirSync(componentDir, { recursive: true });
     }
-    
+
     const component = `import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
@@ -218,25 +222,27 @@ export const NavigationRecovery: React.FC<{ children: React.ReactNode }> = ({ ch
 };
 
 export default NavigationRecovery;`;
-    
-    fs.writeFileSync(filePath, component, 'utf8');
+
+    fs.writeFileSync(filePath, component, "utf8");
     filesChanged++;
-    logChange('components/ui/NavigationRecovery.tsx', 'Created navigation recovery component');
-    
+    logChange(
+      "components/ui/NavigationRecovery.tsx",
+      "Created navigation recovery component",
+    );
   } catch (error) {
-    console.error('Error creating navigation recovery:', error);
+    console.error("Error creating navigation recovery:", error);
   }
 }
 
 // Run all fixes
 function runAllFixes() {
-  console.log('🔧 Starting comprehensive application fixes...');
-  console.log('');
-  
+  console.log("🔧 Starting comprehensive application fixes...");
+  console.log("");
+
   fixOffboardingLoading();
   fixJobsSupabaseError();
   createNavigationRecovery();
-  
+
   // Generate report
   const report = {
     timestamp: new Date().toISOString(),
@@ -244,36 +250,38 @@ function runAllFixes() {
       filesProcessed,
       filesChanged,
       issuesFixed: [
-        'Offboarding infinite loading',
-        'Jobs page Supabase errors',
-        'Navigation recovery system'
-      ]
+        "Offboarding infinite loading",
+        "Jobs page Supabase errors",
+        "Navigation recovery system",
+      ],
     },
     changes: changesLog,
     nextSteps: [
-      'Test offboarding page loading',
-      'Verify jobs page error handling',
-      'Check console for reduced warnings',
-      'Verify navigation recovery after errors'
-    ]
+      "Test offboarding page loading",
+      "Verify jobs page error handling",
+      "Check console for reduced warnings",
+      "Verify navigation recovery after errors",
+    ],
   };
-  
+
   fs.writeFileSync(
-    path.join(process.cwd(), 'application-issues-fixed.json'),
+    path.join(process.cwd(), "application-issues-fixed.json"),
     JSON.stringify(report, null, 2),
-    'utf8'
+    "utf8",
   );
-  
-  console.log('');
-  console.log('✅ All fixes completed!');
-  console.log(`📊 Processed ${filesProcessed} files, changed ${filesChanged} files`);
-  console.log('');
-  console.log('🎯 Issues Fixed:');
-  report.summary.issuesFixed.forEach(issue => {
+
+  console.log("");
+  console.log("✅ All fixes completed!");
+  console.log(
+    `📊 Processed ${filesProcessed} files, changed ${filesChanged} files`,
+  );
+  console.log("");
+  console.log("🎯 Issues Fixed:");
+  report.summary.issuesFixed.forEach((issue) => {
     console.log(`   ✓ ${issue}`);
   });
-  console.log('');
-  console.log('📝 Report saved to: application-issues-fixed.json');
+  console.log("");
+  console.log("📝 Report saved to: application-issues-fixed.json");
 }
 
-runAllFixes(); 
+runAllFixes();

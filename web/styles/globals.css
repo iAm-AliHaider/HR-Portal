@@ -6,63 +6,63 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 10%;
-    
+
     --card: 0 0% 100%;
     --card-foreground: 0 0% 10%;
-    
+
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
-    
+
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
-    
+
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 9%;
-    
+
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
-    
+
     --accent: 0 0% 96%;
     --accent-foreground: 0 0% 9%;
-    
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    
+
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 0 0% 70%;
-    
+
     --radius: 0.5rem;
     --viewport-width: 100vw;
     --scrollbar-width: calc(100vw - 100%);
     --available-width: calc(var(--viewport-width) - var(--scrollbar-width));
   }
- 
+
   .dark {
     --background: 0 0% 5%;
     --foreground: 0 0% 98%;
-    
+
     --card: 0 0% 5%;
     --card-foreground: 0 0% 98%;
-    
+
     --popover: 0 0% 5%;
     --popover-foreground: 0 0% 98%;
-    
+
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    
+
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 98%;
-    
+
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
-    
+
     --accent: 0 0% 15%;
     --accent-foreground: 0 0% 98%;
-    
+
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
-    
+
     --border: 0 0% 20%;
     --input: 0 0% 20%;
     --ring: 0 0% 30%;
@@ -79,7 +79,9 @@
     width: 100%;
     max-width: 100%;
     -webkit-text-size-adjust: 100%;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
   /* Improve dialog behavior on mobile */
@@ -128,26 +130,26 @@
       max-width: 1200px;
     }
   }
-  
+
   /* Added responsive grid layouts */
   .responsive-grid {
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 1rem;
   }
-  
+
   @media (min-width: 640px) {
     .responsive-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
-  
+
   @media (min-width: 1024px) {
     .responsive-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
-  
+
   @media (min-width: 1280px) {
     .responsive-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -169,7 +171,7 @@
       border-radius: var(--radius);
       padding: 1rem;
     }
-    
+
     .responsive-table-card tbody td {
       display: flex;
       text-align: right;
@@ -177,14 +179,14 @@
       border-bottom: none;
       padding: 0.5rem 0;
     }
-    
+
     .responsive-table-card tbody td:before {
       content: attr(data-label);
       font-weight: 600;
       text-align: left;
       padding-right: 0.5rem;
     }
-    
+
     .responsive-table-card thead {
       display: none;
     }
@@ -195,32 +197,32 @@
     display: flex;
     flex-direction: column;
   }
-  
+
   @media (min-width: 768px) {
     .flex-responsive {
       flex-direction: row;
     }
   }
-  
+
   /* Card grid for dashboards */
   .card-grid {
     display: grid;
     grid-template-columns: repeat(1, 1fr);
     gap: 1rem;
   }
-  
+
   @media (min-width: 640px) {
     .card-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
-  
+
   @media (min-width: 1024px) {
     .card-grid {
       grid-template-columns: repeat(3, 1fr);
     }
   }
-  
+
   @media (min-width: 1280px) {
     .card-grid {
       grid-template-columns: repeat(4, 1fr);
@@ -261,4 +263,4 @@
 /* Input field consistency */
 .input {
   @apply flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
-} 
+}

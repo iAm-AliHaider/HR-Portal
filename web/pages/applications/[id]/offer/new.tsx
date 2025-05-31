@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import { Box, Heading, Container, Spinner, Flex } from '@chakra-ui/react';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import OfferForm from '../../../../components/offers/OfferForm';
-import { getApplicationById } from '../../../../services/applications';
-import { GetServerSideProps } from 'next';
+import { useEffect, useState } from "react";
 
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import { Box, Heading, Container, Spinner, Flex } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+
+import OfferForm from "../../../../components/offers/OfferForm";
+import { getApplicationById } from "../../../../services/applications";
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
-
 
 export default function NewOfferPage() {
   const router = useRouter();
@@ -32,11 +34,11 @@ export default function NewOfferPage() {
             setApplicationExists(true);
           } else {
             // Application doesn't exist, redirect
-            router.push('/applications');
+            router.push("/applications");
           }
         } catch (error) {
-          console.error('Error checking application:', error);
-          router.push('/applications');
+          console.error("Error checking application:", error);
+          router.push("/applications");
         } finally {
           setIsLoading(false);
         }
@@ -66,13 +68,15 @@ export default function NewOfferPage() {
         <title>Create Offer | HR Portal</title>
         <meta name="description" content="Create a job offer for a candidate" />
       </Head>
-      
+
       <ModernDashboardLayout>
         <Container maxW="container.xl" py={6}>
-          <Heading size="lg" mb={6}>Create Offer</Heading>
+          <Heading size="lg" mb={6}>
+            Create Offer
+          </Heading>
           <OfferForm applicationId={applicationId as string} />
         </Container>
       </ModernDashboardLayout>
     </>
   );
-} 
+}

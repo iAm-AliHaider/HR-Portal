@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+
 import {
   Box,
   HStack,
@@ -17,38 +18,38 @@ import {
   ModalCloseButton,
   VStack,
   Divider,
-} from '@chakra-ui/react';
-import { FiFileText, FiClock, FiCheck, FiX, FiEye } from 'react-icons/fi';
-import { format } from 'date-fns';
+} from "@chakra-ui/react";
+import { format } from "date-fns";
+import { FiFileText, FiClock, FiCheck, FiX, FiEye } from "react-icons/fi";
 
 /**
  * Component to display a request card in the request panel
  */
 const RequestCard = ({ request }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
+
   // Determine status color
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending':
-        return 'yellow';
-      case 'approved':
-        return 'green';
-      case 'rejected':
-        return 'red';
+      case "pending":
+        return "yellow";
+      case "approved":
+        return "green";
+      case "rejected":
+        return "red";
       default:
-        return 'gray';
+        return "gray";
     }
   };
 
   // Get status icon
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return FiClock;
-      case 'approved':
+      case "approved":
         return FiCheck;
-      case 'rejected':
+      case "rejected":
         return FiX;
       default:
         return FiFileText;
@@ -59,7 +60,7 @@ const RequestCard = ({ request }) => {
   const formatDate = (dateString) => {
     try {
       const date = new Date(dateString);
-      return format(date, 'MMM d, yyyy');
+      return format(date, "MMM d, yyyy");
     } catch (error) {
       return dateString;
     }
@@ -68,25 +69,25 @@ const RequestCard = ({ request }) => {
   // Render form data in the modal
   const renderFormData = () => {
     if (!request.form_data) return null;
-    
+
     return Object.entries(request.form_data).map(([key, value]) => {
       // Skip internal fields or empty values
-      if (key === 'id' || key === 'employee_id' || !value) return null;
-      
+      if (key === "id" || key === "employee_id" || !value) return null;
+
       // Format the key for display
       const formattedKey = key
-        .replace(/([A-Z])/g, ' $1') // Add space before capital letters
-        .replace(/^./, str => str.toUpperCase()); // Capitalize first letter
-      
+        .replace(/([A-Z])/g, " $1") // Add space before capital letters
+        .replace(/^./, (str) => str.toUpperCase()); // Capitalize first letter
+
       // Format dates
-      if (key.toLowerCase().includes('date') && value) {
+      if (key.toLowerCase().includes("date") && value) {
         try {
           value = formatDate(value);
         } catch (e) {
           // Keep original value if date parsing fails
         }
       }
-      
+
       return (
         <Box key={key} mb={2}>
           <Text fontWeight="bold" fontSize="sm" color="gray.600">
@@ -100,33 +101,30 @@ const RequestCard = ({ request }) => {
 
   return (
     <>
-      <Box 
-        borderWidth="1px" 
-        borderRadius="lg" 
-        overflow="hidden" 
-        p={4} 
+      <Box
+        borderWidth="1px"
+        borderRadius="lg"
+        overflow="hidden"
+        p={4}
         shadow="sm"
-        _hover={{ shadow: 'md' }}
+        _hover={{ shadow: "md" }}
         transition="all 0.2s"
       >
         <HStack justify="space-between">
           <HStack spacing={4}>
-            <Icon 
-              as={FiFileText} 
-              boxSize={5} 
-              color="blue.500" 
-            />
+            <Icon as={FiFileText} boxSize={5} color="blue.500" />
             <Box>
               <Text fontWeight="bold">{request.title}</Text>
               <Text fontSize="sm" color="gray.600">
-                {request.request_types?.name || 'Request'} • {formatDate(request.created_at)}
+                {request.request_types?.name || "Request"} •{" "}
+                {formatDate(request.created_at)}
               </Text>
             </Box>
           </HStack>
           <HStack>
-            <Badge 
-              colorScheme={getStatusColor(request.status)} 
-              display="flex" 
+            <Badge
+              colorScheme={getStatusColor(request.status)}
+              display="flex"
               alignItems="center"
             >
               <Icon as={getStatusIcon(request.status)} mr={1} />
@@ -159,29 +157,34 @@ const RequestCard = ({ request }) => {
           <ModalBody pb={6}>
             <VStack align="stretch" spacing={4}>
               <HStack>
-                <Badge colorScheme={getStatusColor(request.status)} px={2} py={1}>
+                <Badge
+                  colorScheme={getStatusColor(request.status)}
+                  px={2}
+                  py={1}
+                >
                   <Flex align="center">
                     <Icon as={getStatusIcon(request.status)} mr={1} />
-                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                    {request.status.charAt(0).toUpperCase() +
+                      request.status.slice(1)}
                   </Flex>
                 </Badge>
                 <Text fontSize="sm" color="gray.500">
                   Submitted on {formatDate(request.created_at)}
                 </Text>
               </HStack>
-              
+
               <Box>
                 <Text fontWeight="bold">Request Type</Text>
-                <Text>{request.request_types?.name || 'Unknown'}</Text>
+                <Text>{request.request_types?.name || "Unknown"}</Text>
               </Box>
-              
+
               <Box>
                 <Text fontWeight="bold">Description</Text>
                 <Text>{request.description}</Text>
               </Box>
-              
+
               <Divider />
-              
+
               <Text fontWeight="bold">Request Details</Text>
               {renderFormData()}
             </VStack>
@@ -192,4 +195,4 @@ const RequestCard = ({ request }) => {
   );
 };
 
-export default RequestCard; 
+export default RequestCard;

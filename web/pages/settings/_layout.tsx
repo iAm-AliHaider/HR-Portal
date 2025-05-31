@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { GetServerSideProps } from 'next';
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/router';
-import { shouldBypassAuth } from '@/lib/auth';
+import React, { useEffect, useState } from "react";
+
+import { useRouter } from "next/router";
+
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+import { useAuth } from "@/hooks/useAuth";
+import { shouldBypassAuth } from "@/lib/auth";
 
 interface SettingsLayoutWrapperProps {
   children: React.ReactNode;
@@ -12,11 +15,13 @@ interface SettingsLayoutWrapperProps {
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
-export default function SettingsLayoutWrapper({ children }: SettingsLayoutWrapperProps) {
+export default function SettingsLayoutWrapper({
+  children,
+}: SettingsLayoutWrapperProps) {
   const { user, role, loading: authLoading } = useAuth();
   const router = useRouter();
   const allowAccess = shouldBypassAuth(router.query);
@@ -30,10 +35,10 @@ export default function SettingsLayoutWrapper({ children }: SettingsLayoutWrappe
 
     if (!authLoading) {
       setIsLoading(false);
-      
+
       // Redirect if user doesn't have access
-      if (!allowAccess && !['employee', 'manager', 'admin'].includes(role)) {
-        router.push('/login');
+      if (!allowAccess && !["employee", "manager", "admin"].includes(role)) {
+        router.push("/login");
       }
     }
 
@@ -54,9 +59,5 @@ export default function SettingsLayoutWrapper({ children }: SettingsLayoutWrappe
     );
   }
 
-  return (
-    <ModernDashboardLayout>
-      {children}
-    </ModernDashboardLayout>
-  );
-} 
+  return <ModernDashboardLayout>{children}</ModernDashboardLayout>;
+}

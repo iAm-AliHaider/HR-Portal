@@ -1,51 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import { useAuth } from '../hooks/useAuth';
-import RealUserInfo, { RealUser } from '../components/auth/RealUserInfo';
-import Link from 'next/link';
-import { GetServerSideProps } from 'next';
+import React, { useState, useEffect } from "react";
+
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+
+import { GetServerSideProps } from "next";
+
+import RealUserInfo, { RealUser } from "../components/auth/RealUserInfo";
+import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTestAccounts, setShowTestAccounts] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+
   const router = useRouter();
   const { user, signIn } = useAuth();
-  
+
   // Get redirect URL from query params with fallback
   const getRedirectUrl = () => {
     const returnUrl = router.query.returnUrl as string;
     const redirect = router.query.redirect as string;
-    
+
     // Prioritize returnUrl, then redirect, then default
-    if (returnUrl && returnUrl.startsWith('/')) {
+    if (returnUrl && returnUrl.startsWith("/")) {
       return decodeURIComponent(returnUrl);
     }
-    if (redirect && redirect.startsWith('/')) {
+    if (redirect && redirect.startsWith("/")) {
       return redirect;
     }
-    return '/dashboard';
+    return "/dashboard";
   };
-  
+
   const redirectUrl = getRedirectUrl();
-  
+
   const roleFilters = {
-    all: 'All Accounts',
-    admin: 'Administrators',
-    hr: 'HR Team',
-    manager: 'Managers',
-    employee: 'Employees'
+    all: "All Accounts",
+    admin: "Administrators",
+    hr: "HR Team",
+    manager: "Managers",
+    employee: "Employees",
   };
-  
+
   // Handle redirection if the user is already logged in
   useEffect(() => {
     if (user) {
-      console.log('User already logged in, redirecting to', redirectUrl);
+      console.log("User already logged in, redirecting to", redirectUrl);
       router.push(redirectUrl);
     }
   }, [user, router, redirectUrl]);
@@ -54,38 +57,38 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    
+
     try {
       const result = await signIn(email, password);
       if (result.success) {
         router.push(redirectUrl);
       } else {
-        setError(result.error || 'Invalid credentials');
+        setError(result.error || "Invalid credentials");
       }
     } catch (err) {
-      setError('An error occurred during login');
-      console.error('Login error:', err);
+      setError("An error occurred during login");
+      console.error("Login error:", err);
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleAccountSelect = (user: RealUser) => {
     setEmail(user.email);
     // Note: Real users don't expose passwords, this is just for display
     // Users should use the test passwords: admin123, hr123, employee123
   };
-  
+
   const getFilteredRoles = (filter: string): string[] => {
-    switch(filter) {
-      case 'admin':
-        return ['admin'];
-      case 'hr':
-        return ['hr', 'hr_director', 'hr_manager'];
-      case 'manager':
-        return ['manager', 'team_lead'];
-      case 'employee':
-        return ['employee'];
+    switch (filter) {
+      case "admin":
+        return ["admin"];
+      case "hr":
+        return ["hr", "hr_director", "hr_manager"];
+      case "manager":
+        return ["manager", "team_lead"];
+      case "employee":
+        return ["employee"];
       default:
         return [];
     }
@@ -96,10 +99,12 @@ export default function LoginPage() {
       <Head>
         <title>Login | HR Portal</title>
       </Head>
-      
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-20 h-20 rounded bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">HR</div>
+          <div className="w-20 h-20 rounded bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+            HR
+          </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           HR Portal Login
@@ -118,7 +123,10 @@ export default function LoginPage() {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <div className="mt-1">
@@ -136,7 +144,10 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <div className="mt-1">
@@ -169,11 +180,11 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? "Signing in..." : "Sign in"}
               </button>
             </div>
           </form>
-          
+
           {showTestAccounts && (
             <div className="mt-6">
               <div className="relative">
@@ -186,39 +197,48 @@ export default function LoginPage() {
                   </span>
                 </div>
               </div>
-              
+
               <div className="mt-4">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <div className="text-sm text-gray-600 mr-2">Filter by role:</div>
+                  <div className="text-sm text-gray-600 mr-2">
+                    Filter by role:
+                  </div>
                   {Object.entries(roleFilters).map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => setSelectedFilter(key)}
                       className={`px-3 py-1 text-xs rounded-full ${
                         selectedFilter === key
-                          ? 'bg-blue-100 text-blue-800 font-medium'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? "bg-blue-100 text-blue-800 font-medium"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       {label}
                     </button>
                   ))}
                 </div>
-                
-                <RealUserInfo 
-                  onSelect={handleAccountSelect} 
-                  filterRoles={selectedFilter !== 'all' ? getFilteredRoles(selectedFilter) : undefined}
+
+                <RealUserInfo
+                  onSelect={handleAccountSelect}
+                  filterRoles={
+                    selectedFilter !== "all"
+                      ? getFilteredRoles(selectedFilter)
+                      : undefined
+                  }
                 />
               </div>
             </div>
           )}
         </div>
-        
+
         {/* Add Registration Link */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+            Don't have an account?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
               Create Account
             </Link>
           </p>
@@ -231,6 +251,6 @@ export default function LoginPage() {
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
-}; 
+};

@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const ScrollArea = React.forwardRef<
   HTMLDivElement,
@@ -14,12 +14,12 @@ const ScrollArea = React.forwardRef<
     >
       {children}
     </div>
-  )
-})
-ScrollArea.displayName = "ScrollArea"
+  );
+});
+ScrollArea.displayName = "ScrollArea";
 
 interface ScrollBarProps extends React.HTMLAttributes<HTMLDivElement> {
-  orientation?: "vertical" | "horizontal"
+  orientation?: "vertical" | "horizontal";
 }
 
 const ScrollBar = React.forwardRef<HTMLDivElement, ScrollBarProps>(
@@ -29,11 +29,11 @@ const ScrollBar = React.forwardRef<HTMLDivElement, ScrollBarProps>(
         ref={ref}
         className={cn(
           "absolute flex touch-none select-none transition-colors",
-          orientation === "vertical" && 
+          orientation === "vertical" &&
             "h-full w-2 border-l border-l-transparent p-[1px] right-0",
-          orientation === "horizontal" && 
+          orientation === "horizontal" &&
             "h-2.5 border-t border-t-transparent p-[1px] bottom-0 left-0 right-0",
-          className
+          className,
         )}
         {...props}
       >
@@ -43,9 +43,9 @@ const ScrollBar = React.forwardRef<HTMLDivElement, ScrollBarProps>(
           )}
         />
       </div>
-    )
-  }
-)
-ScrollBar.displayName = "ScrollBar"
+    );
+  },
+);
+ScrollBar.displayName = "ScrollBar";
 
-export { ScrollArea, ScrollBar }
+export { ScrollArea, ScrollBar };

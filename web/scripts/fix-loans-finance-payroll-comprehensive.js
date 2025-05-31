@@ -3,8 +3,8 @@
  * Fix loans missing sidebar, test and fix finance/payroll functionality
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track changes
 let changesLog = [];
@@ -19,56 +19,63 @@ function logChange(file, action) {
 // 1. Fix loans pages missing sidebar - wrap with ModernDashboardLayout
 function fixLoansSidebar() {
   const loanPages = [
-    'pages/loans/index.tsx',
-    'pages/loans/applications/index.tsx',
-    'pages/loans/management/index.tsx',
-    'pages/loans/repayment-schedule/index.tsx'
+    "pages/loans/index.tsx",
+    "pages/loans/applications/index.tsx",
+    "pages/loans/management/index.tsx",
+    "pages/loans/repayment-schedule/index.tsx",
   ];
 
-  loanPages.forEach(filePath => {
+  loanPages.forEach((filePath) => {
     const fullPath = path.join(process.cwd(), filePath);
-    
+
     try {
       if (!fs.existsSync(fullPath)) {
         console.log(`❌ ${filePath} not found`);
         return;
       }
-      
+
       filesProcessed++;
-      const content = fs.readFileSync(fullPath, 'utf8');
-      
+      const content = fs.readFileSync(fullPath, "utf8");
+
       // Check if it already has ModernDashboardLayout
-      if (content.includes('ModernDashboardLayout') && content.includes('<ModernDashboardLayout>')) {
+      if (
+        content.includes("ModernDashboardLayout") &&
+        content.includes("<ModernDashboardLayout>")
+      ) {
         console.log(`✅ ${filePath} already has proper layout`);
         return;
       }
-      
+
       let newContent = content;
-      
+
       // Add import for ModernDashboardLayout if not present
-      if (!content.includes("import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout'")) {
+      if (
+        !content.includes(
+          "import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout'",
+        )
+      ) {
         newContent = newContent.replace(
           /import.*from 'next\/head';/,
           `import Head from 'next/head';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`,
         );
       }
-      
+
       // Find the return statement and wrap content in ModernDashboardLayout
-      if (filePath.includes('loans/index.tsx')) {
+      if (filePath.includes("loans/index.tsx")) {
         // Special handling for main loans page
         newContent = newContent.replace(
           /return \(\s*<>\s*<Head>/,
           `return (
     <ModernDashboardLayout>
-      <Head>`
+      <Head>`,
         );
-        
+
         newContent = newContent.replace(
           /<\/div>\s*<\/>\s*\);$/m,
           `      </div>
     </ModernDashboardLayout>
-  );`
+  );`,
         );
       } else {
         // Standard wrapping for other loan pages
@@ -76,31 +83,33 @@ import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`
           /return \(\s*(<>|\<div)/,
           `return (
     <ModernDashboardLayout>
-      $1`
+      $1`,
         );
-        
-        if (content.includes('</>')) {
+
+        if (content.includes("</>")) {
           newContent = newContent.replace(
             /<\/>\s*\);$/m,
             `    </ModernDashboardLayout>
-  );`
+  );`,
           );
         } else {
           newContent = newContent.replace(
             /<\/div>\s*\);$/m,
             `      </div>
     </ModernDashboardLayout>
-  );`
+  );`,
           );
         }
       }
 
       if (newContent !== content) {
-        fs.writeFileSync(fullPath, newContent, 'utf8');
+        fs.writeFileSync(fullPath, newContent, "utf8");
         filesChanged++;
-        logChange(filePath, 'Added ModernDashboardLayout wrapper for sidebar navigation');
+        logChange(
+          filePath,
+          "Added ModernDashboardLayout wrapper for sidebar navigation",
+        );
       }
-      
     } catch (error) {
       console.error(`Error fixing ${filePath}:`, error);
     }
@@ -109,20 +118,20 @@ import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`
 
 // 2. Fix loans functionality - add proper button handling and API endpoints
 function fixLoansFunction() {
-  const filePath = path.join(process.cwd(), 'pages/loans/index.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/loans/index.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/loans/index.tsx not found');
+      console.log("❌ pages/loans/index.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Add proper button click handlers and functionality
     let newContent = content;
-    
+
     // Enhance quick actions functionality
     newContent = newContent.replace(
       /<Button className="h-20 flex flex-col items-center justify-center">\s*<span className="text-2xl mb-1">🔍<\/span>\s*<span className="text-sm">Browse Courses<\/span>\s*<\/Button>/g,
@@ -132,9 +141,9 @@ function fixLoansFunction() {
       >
         <span className="text-2xl mb-1">➕</span>
         <span className="text-sm">Apply for Loan</span>
-      </Button>`
+      </Button>`,
     );
-    
+
     newContent = newContent.replace(
       /<Button variant="outline" className="h-20 flex flex-col items-center justify-center">\s*<span className="text-2xl mb-1">📚<\/span>\s*<span className="text-sm">Continue Learning<\/span>\s*<\/Button>/g,
       `<Button 
@@ -144,9 +153,9 @@ function fixLoansFunction() {
       >
         <span className="text-2xl mb-1">📋</span>
         <span className="text-sm">My Applications</span>
-      </Button>`
+      </Button>`,
     );
-    
+
     newContent = newContent.replace(
       /<Button variant="outline" className="h-20 flex flex-col items-center justify-center">\s*<span className="text-2xl mb-1">🎯<\/span>\s*<span className="text-sm">Learning Paths<\/span>\s*<\/Button>/g,
       `<Button 
@@ -156,9 +165,9 @@ function fixLoansFunction() {
       >
         <span className="text-2xl mb-1">💳</span>
         <span className="text-sm">Repayments</span>
-      </Button>`
+      </Button>`,
     );
-    
+
     newContent = newContent.replace(
       /<Button variant="outline" className="h-20 flex flex-col items-center justify-center">\s*<span className="text-2xl mb-1">🏆<\/span>\s*<span className="text-sm">View Certificates<\/span>\s*<\/Button>/g,
       `<Button 
@@ -168,7 +177,7 @@ function fixLoansFunction() {
       >
         <span className="text-2xl mb-1">📊</span>
         <span className="text-sm">{isAdmin ? 'Management' : 'Loan History'}</span>
-      </Button>`
+      </Button>`,
     );
 
     // Fix apply button functionality for loan programs
@@ -180,31 +189,33 @@ function fixLoansFunction() {
         onClick={() => handleNewLoanApplication()}
       >
         Apply Now
-      </Button>`
+      </Button>`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/loans/index.tsx', 'Enhanced button functionality and navigation');
+      logChange(
+        "pages/loans/index.tsx",
+        "Enhanced button functionality and navigation",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing loans functionality:', error);
+    console.error("Error fixing loans functionality:", error);
   }
 }
 
 // 3. Create missing API endpoints for loans
 function createLoansAPIEndpoints() {
-  const apiDir = path.join(process.cwd(), 'pages/api');
-  const loansApiPath = path.join(apiDir, 'loans.ts');
-  
+  const apiDir = path.join(process.cwd(), "pages/api");
+  const loansApiPath = path.join(apiDir, "loans.ts");
+
   try {
     // Create directory if it doesn't exist
     if (!fs.existsSync(apiDir)) {
       fs.mkdirSync(apiDir, { recursive: true });
     }
-    
+
     const apiContent = `import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Mock loans API endpoint
@@ -333,32 +344,34 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 }`;
 
     if (!fs.existsSync(loansApiPath)) {
-      fs.writeFileSync(loansApiPath, apiContent, 'utf8');
+      fs.writeFileSync(loansApiPath, apiContent, "utf8");
       filesChanged++;
-      logChange('pages/api/loans.ts', 'Created comprehensive loans API endpoint');
+      logChange(
+        "pages/api/loans.ts",
+        "Created comprehensive loans API endpoint",
+      );
     }
-    
   } catch (error) {
-    console.error('Error creating loans API endpoint:', error);
+    console.error("Error creating loans API endpoint:", error);
   }
 }
 
 // 4. Fix finance module functionality
 function fixFinanceModule() {
-  const filePath = path.join(process.cwd(), 'pages/reports/financial.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/reports/financial.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/reports/financial.tsx not found');
+      console.log("❌ pages/reports/financial.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Check if export functionality is working
     let newContent = content;
-    
+
     // Add proper export functionality
     newContent = newContent.replace(
       /<button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">\s*Export Report\s*<\/button>/g,
@@ -367,11 +380,11 @@ function fixFinanceModule() {
         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
       >
         Export Report
-      </button>`
+      </button>`,
     );
-    
+
     // Add export function before the return statement
-    if (!content.includes('handleExportReport')) {
+    if (!content.includes("handleExportReport")) {
       newContent = newContent.replace(
         /const formatDate = \(dateString\) => \{[\s\S]*?\};/,
         `const formatDate = (dateString) => {
@@ -400,10 +413,10 @@ function fixFinanceModule() {
     link.download = \`financial-report-\${new Date().toISOString().split('T')[0]}.csv\`;
     link.click();
     window.URL.revokeObjectURL(url);
-  };`
+  };`,
       );
     }
-    
+
     // Add budget forecast generation functionality
     newContent = newContent.replace(
       /<button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">\s*Generate Detailed Forecast\s*<\/button>/g,
@@ -412,11 +425,11 @@ function fixFinanceModule() {
         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
       >
         Generate Detailed Forecast
-      </button>`
+      </button>`,
     );
-    
+
     // Add forecast function if not present
-    if (!content.includes('handleGenerateForecast')) {
+    if (!content.includes("handleGenerateForecast")) {
       newContent = newContent.replace(
         /const handleExportReport = \(\) => \{[\s\S]*?\};/,
         `const handleExportReport = () => {
@@ -444,38 +457,40 @@ function fixFinanceModule() {
   // Handle forecast generation
   const handleGenerateForecast = () => {
     alert('Detailed forecast generation feature would integrate with financial planning systems. This would generate comprehensive budget projections based on current spending trends and historical data.');
-  };`
+  };`,
       );
     }
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/reports/financial.tsx', 'Enhanced export and forecast functionality');
+      logChange(
+        "pages/reports/financial.tsx",
+        "Enhanced export and forecast functionality",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing finance module:', error);
+    console.error("Error fixing finance module:", error);
   }
 }
 
 // 5. Fix payroll module functionality
 function fixPayrollModule() {
-  const filePath = path.join(process.cwd(), 'pages/payroll.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/payroll.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/payroll.tsx not found');
+      console.log("❌ pages/payroll.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     let newContent = content;
-    
+
     // Fix missing helper functions
-    if (!content.includes('getStatusColor')) {
+    if (!content.includes("getStatusColor")) {
       newContent = newContent.replace(
         /const renderDashboard = \(\) => \(/,
         `// Helper function for status colors
@@ -500,10 +515,10 @@ function fixPayrollModule() {
     }
   };
 
-  const renderDashboard = () => (`
+  const renderDashboard = () => (`,
       );
     }
-    
+
     // Fix payroll processing functionality
     newContent = newContent.replace(
       /<Button className="h-20 flex flex-col items-center justify-center">\s*<span className="text-2xl mb-1">▶️<\/span>\s*<span className="text-sm">Run Payroll<\/span>\s*<\/Button>/g,
@@ -513,9 +528,9 @@ function fixPayrollModule() {
       >
         <span className="text-2xl mb-1">▶️</span>
         <span className="text-sm">Run Payroll</span>
-      </Button>`
+      </Button>`,
     );
-    
+
     // Fix report generation
     newContent = newContent.replace(
       /<Button variant="outline" className="h-20 flex flex-col items-center justify-center">\s*<span className="text-2xl mb-1">📊<\/span>\s*<span className="text-sm">Generate Reports<\/span>\s*<\/Button>/g,
@@ -526,9 +541,9 @@ function fixPayrollModule() {
       >
         <span className="text-2xl mb-1">📊</span>
         <span className="text-sm">Generate Reports</span>
-      </Button>`
+      </Button>`,
     );
-    
+
     // Fix tax settings
     newContent = newContent.replace(
       /<Button variant="outline" className="h-20 flex flex-col items-center justify-center">\s*<span className="text-2xl mb-1">⚙️<\/span>\s*<span className="text-sm">Tax Settings<\/span>\s*<\/Button>/g,
@@ -539,9 +554,9 @@ function fixPayrollModule() {
       >
         <span className="text-2xl mb-1">⚙️</span>
         <span className="text-sm">Tax Settings</span>
-      </Button>`
+      </Button>`,
     );
-    
+
     // Add proper button handlers for employee actions
     newContent = newContent.replace(
       /<Button size="sm" variant="outline">Pay Stub<\/Button>/g,
@@ -551,11 +566,11 @@ function fixPayrollModule() {
         onClick={() => handleGeneratePayStub(employee.id)}
       >
         Pay Stub
-      </Button>`
+      </Button>`,
     );
-    
+
     // Add missing handler functions before return statement
-    if (!content.includes('handleGeneratePayStub')) {
+    if (!content.includes("handleGeneratePayStub")) {
       newContent = newContent.replace(
         /const handleProcessPayroll = \(e\) => \{[\s\S]*?\};/,
         `const handleProcessPayroll = (e) => {
@@ -583,38 +598,40 @@ function fixPayrollModule() {
   // Handle report download
   const handleDownloadReport = (reportId) => {
     alert(\`Downloading report ID: \${reportId}. This would download the selected payroll report.\`);
-  };`
+  };`,
       );
     }
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/payroll.tsx', 'Fixed missing functions and enhanced button functionality');
+      logChange(
+        "pages/payroll.tsx",
+        "Fixed missing functions and enhanced button functionality",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing payroll module:', error);
+    console.error("Error fixing payroll module:", error);
   }
 }
 
 // 6. Fix expenses functionality
 function fixExpensesModule() {
-  const filePath = path.join(process.cwd(), 'pages/expenses/index.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/expenses/index.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ pages/expenses/index.tsx not found');
+      console.log("❌ pages/expenses/index.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     let newContent = content;
-    
+
     // Fix missing API hooks implementation
-    if (content.includes('useExpenses') && !content.includes('mockExpenses')) {
+    if (content.includes("useExpenses") && !content.includes("mockExpenses")) {
       // Replace useExpenses hook with mock implementation
       newContent = newContent.replace(
         /const \{ \s*expenses, \s*loading, \s*error, \s*submitExpense, \s*approveExpense, \s*rejectExpense \s*\} = useExpenses\(\);/,
@@ -671,33 +688,37 @@ function fixExpensesModule() {
     setExpenses(prev => prev.map(exp => 
       exp.id === id ? {...exp, status: 'rejected', rejection_reason: reason} : exp
     ));
-  };`
+  };`,
       );
     }
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('pages/expenses/index.tsx', 'Fixed API hooks with mock implementation');
+      logChange(
+        "pages/expenses/index.tsx",
+        "Fixed API hooks with mock implementation",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing expenses module:', error);
+    console.error("Error fixing expenses module:", error);
   }
 }
 
 // Run all fixes
 function runComprehensiveFixes() {
-  console.log('🔧 Running comprehensive fixes for Loans, Finance, and Payroll modules...');
-  console.log('');
-  
+  console.log(
+    "🔧 Running comprehensive fixes for Loans, Finance, and Payroll modules...",
+  );
+  console.log("");
+
   fixLoansSidebar();
   fixLoansFunction();
   createLoansAPIEndpoints();
   fixFinanceModule();
   fixPayrollModule();
   fixExpensesModule();
-  
+
   // Generate report
   const report = {
     timestamp: new Date().toISOString(),
@@ -705,40 +726,42 @@ function runComprehensiveFixes() {
       filesProcessed,
       filesChanged,
       modulesFixed: [
-        'Loans Module - Sidebar navigation',
-        'Loans Module - Button functionality',
-        'Loans Module - API endpoints',
-        'Finance Module - Export functionality',
-        'Payroll Module - Missing functions',
-        'Expenses Module - API hooks'
-      ]
+        "Loans Module - Sidebar navigation",
+        "Loans Module - Button functionality",
+        "Loans Module - API endpoints",
+        "Finance Module - Export functionality",
+        "Payroll Module - Missing functions",
+        "Expenses Module - API hooks",
+      ],
     },
     changes: changesLog,
     nextSteps: [
-      'Test loan application flow',
-      'Verify all modules have proper navigation',
-      'Test finance report export',
-      'Test payroll processing buttons',
-      'Verify expense submission works'
-    ]
+      "Test loan application flow",
+      "Verify all modules have proper navigation",
+      "Test finance report export",
+      "Test payroll processing buttons",
+      "Verify expense submission works",
+    ],
   };
-  
+
   fs.writeFileSync(
-    path.join(process.cwd(), 'loans-finance-payroll-fixes.json'),
+    path.join(process.cwd(), "loans-finance-payroll-fixes.json"),
     JSON.stringify(report, null, 2),
-    'utf8'
+    "utf8",
   );
-  
-  console.log('');
-  console.log('✅ Comprehensive fixes completed!');
-  console.log(`📊 Processed ${filesProcessed} files, changed ${filesChanged} files`);
-  console.log('');
-  console.log('🎯 Modules Fixed:');
-  report.summary.modulesFixed.forEach(module => {
+
+  console.log("");
+  console.log("✅ Comprehensive fixes completed!");
+  console.log(
+    `📊 Processed ${filesProcessed} files, changed ${filesChanged} files`,
+  );
+  console.log("");
+  console.log("🎯 Modules Fixed:");
+  report.summary.modulesFixed.forEach((module) => {
     console.log(`   ✓ ${module}`);
   });
-  console.log('');
-  console.log('📝 Report saved to: loans-finance-payroll-fixes.json');
+  console.log("");
+  console.log("📝 Report saved to: loans-finance-payroll-fixes.json");
 }
 
-runComprehensiveFixes(); 
+runComprehensiveFixes();

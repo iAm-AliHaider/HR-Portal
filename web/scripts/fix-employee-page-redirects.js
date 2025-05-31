@@ -3,8 +3,8 @@
  * Remove hardcoded login redirects from employee pages and implement proper fallback behavior
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track all changes made
 let changesLog = [];
@@ -17,23 +17,24 @@ function logChange(file, action) {
 }
 
 function fixEmployeeProfilePage() {
-  const filePath = path.join(process.cwd(), 'pages/employee/profile.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/employee/profile.tsx");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ employee/profile.tsx not found');
+      console.log("❌ employee/profile.tsx not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Remove the hardcoded login redirect and replace with better fallback
     let newContent = content;
-    
+
     // Remove the problematic useEffect that redirects to login
-    const redirectUseEffectPattern = /\/\/ Ensure user has access to this page[\s\S]*?useEffect\(\(\) => \{[\s\S]*?router\.push\(['"]\/login\?redirect=\/employee\/profile['"]\);[\s\S]*?\}, \[allowAccess, role, router\]\);/;
-    
+    const redirectUseEffectPattern =
+      /\/\/ Ensure user has access to this page[\s\S]*?useEffect\(\(\) => \{[\s\S]*?router\.push\(['"]\/login\?redirect=\/employee\/profile['"]\);[\s\S]*?\}, \[allowAccess, role, router\]\);/;
+
     // Replace with better authentication handling
     const improvedAuthCheck = `  // Check authentication status with fallback
   useEffect(() => {
@@ -48,15 +49,22 @@ function fixEmployeeProfilePage() {
       // Show limited view instead of redirecting
     }
   }, [allowAccess, role, user]);`;
-    
+
     if (content.match(redirectUseEffectPattern)) {
-      newContent = newContent.replace(redirectUseEffectPattern, improvedAuthCheck);
-      logChange('pages/employee/profile.tsx', 'Removed login redirect, added graceful fallback');
+      newContent = newContent.replace(
+        redirectUseEffectPattern,
+        improvedAuthCheck,
+      );
+      logChange(
+        "pages/employee/profile.tsx",
+        "Removed login redirect, added graceful fallback",
+      );
     }
-    
+
     // Also update the loading/access check to not block the page
-    const loadingCheckPattern = /if \(!allowAccess && !\['employee', 'manager', 'admin'\]\.includes\(role\)\) \{[\s\S]*?return \([\s\S]*?\);[\s\S]*?\}/;
-    
+    const loadingCheckPattern =
+      /if \(!allowAccess && !\['employee', 'manager', 'admin'\]\.includes\(role\)\) \{[\s\S]*?return \([\s\S]*?\);[\s\S]*?\}/;
+
     const improvedLoadingCheck = `// Show content with appropriate permissions
   const hasLimitedAccess = !allowAccess && !['employee', 'manager', 'admin'].includes(role || '');
   
@@ -70,90 +78,106 @@ function fixEmployeeProfilePage() {
       </div>
     );
   }`;
-    
+
     if (content.match(loadingCheckPattern)) {
-      newContent = newContent.replace(loadingCheckPattern, improvedLoadingCheck);
-      logChange('pages/employee/profile.tsx', 'Improved loading state without blocking access');
+      newContent = newContent.replace(
+        loadingCheckPattern,
+        improvedLoadingCheck,
+      );
+      logChange(
+        "pages/employee/profile.tsx",
+        "Improved loading state without blocking access",
+      );
     }
-    
+
     // Update the page to use ModernDashboardLayout for consistent navigation
-    if (!content.includes('ModernDashboardLayout')) {
+    if (!content.includes("ModernDashboardLayout")) {
       // Add import
       newContent = newContent.replace(
         /import { GetServerSideProps } from 'next\/server';/,
         `import { GetServerSideProps } from 'next/server';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`
+import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';`,
       );
-      
+
       // Wrap the content with ModernDashboardLayout
       newContent = newContent.replace(
         /return \(\s*<>\s*<Head>/,
         `return (
     <ModernDashboardLayout title="My Profile" subtitle="View and update your personal information">
-      <Head>`
+      <Head>`,
       );
-      
+
       newContent = newContent.replace(
         /<\/div>\s*<\/>\s*\);/,
         `      </div>
     </ModernDashboardLayout>
-  );`
+  );`,
       );
-      
-      logChange('pages/employee/profile.tsx', 'Added ModernDashboardLayout for consistent navigation');
+
+      logChange(
+        "pages/employee/profile.tsx",
+        "Added ModernDashboardLayout for consistent navigation",
+      );
     }
-    
+
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
     }
-    
   } catch (error) {
     console.error(`❌ Error processing employee/profile.tsx:`, error.message);
   }
 }
 
 function checkOtherEmployeePages() {
-  const employeePagesDir = path.join(process.cwd(), 'pages/employee');
-  
+  const employeePagesDir = path.join(process.cwd(), "pages/employee");
+
   try {
     const files = fs.readdirSync(employeePagesDir);
-    
-    files.forEach(file => {
-      if (file.endsWith('.tsx') && file !== 'profile.tsx') {
+
+    files.forEach((file) => {
+      if (file.endsWith(".tsx") && file !== "profile.tsx") {
         const filePath = path.join(employeePagesDir, file);
         filesProcessed++;
-        
-        const content = fs.readFileSync(filePath, 'utf8');
-        
+
+        const content = fs.readFileSync(filePath, "utf8");
+
         // Check for login redirects
-        if (content.includes('router.push') && content.includes('/login')) {
+        if (content.includes("router.push") && content.includes("/login")) {
           console.warn(`⚠️ Found potential login redirect in ${file}`);
-          logChange(`pages/employee/${file}`, 'Found potential login redirect (needs manual review)');
+          logChange(
+            `pages/employee/${file}`,
+            "Found potential login redirect (needs manual review)",
+          );
         }
-        
+
         // Check for authentication patterns that might cause issues
-        if (content.includes('RequireRole') && !content.includes('ModernRequireRole')) {
+        if (
+          content.includes("RequireRole") &&
+          !content.includes("ModernRequireRole")
+        ) {
           console.warn(`⚠️ Found old RequireRole in ${file}`);
-          logChange(`pages/employee/${file}`, 'Found old RequireRole usage (needs manual review)');
+          logChange(
+            `pages/employee/${file}`,
+            "Found old RequireRole usage (needs manual review)",
+          );
         }
       }
     });
-    
   } catch (error) {
     console.error(`❌ Error checking employee pages:`, error.message);
   }
 }
 
 function createEmployeePageIndex() {
-  const filePath = path.join(process.cwd(), 'pages/employee/index.tsx');
-  
+  const filePath = path.join(process.cwd(), "pages/employee/index.tsx");
+
   // Only create if it doesn't exist
   if (fs.existsSync(filePath)) {
-    console.log('Employee index page already exists');
+    console.log("Employee index page already exists");
     return;
   }
-  
+
   const content = `import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -301,15 +325,15 @@ export default function EmployeeIndexPage() {
 }`;
 
   try {
-    fs.writeFileSync(filePath, content, 'utf8');
+    fs.writeFileSync(filePath, content, "utf8");
     filesChanged++;
-    logChange('pages/employee/index.tsx', 'Created employee portal index page');
+    logChange("pages/employee/index.tsx", "Created employee portal index page");
   } catch (error) {
     console.error(`❌ Error creating employee index page:`, error.message);
   }
 }
 
-console.log('🔧 Fixing employee page redirects...\n');
+console.log("🔧 Fixing employee page redirects...\n");
 
 // Process all fixes
 fixEmployeeProfilePage();
@@ -317,23 +341,23 @@ checkOtherEmployeePages();
 createEmployeePageIndex();
 
 // Summary
-console.log('\n📊 Summary:');
+console.log("\n📊 Summary:");
 console.log(`📁 Files processed: ${filesProcessed}`);
 console.log(`✅ Files changed: ${filesChanged}`);
 
 if (changesLog.length > 0) {
-  console.log('\n📝 Changes made:');
-  changesLog.forEach(change => console.log(`   ${change}`));
+  console.log("\n📝 Changes made:");
+  changesLog.forEach((change) => console.log(`   ${change}`));
 } else {
-  console.log('\n✅ No changes needed - all files already fixed!');
+  console.log("\n✅ No changes needed - all files already fixed!");
 }
 
-console.log('\n🎯 Employee Page Redirect Issues Fixed!');
-console.log('Benefits:');
-console.log('✅ Removed hardcoded login redirects');
-console.log('✅ Added graceful fallback behavior');
-console.log('✅ Improved user experience');
-console.log('✅ Created employee portal index page');
+console.log("\n🎯 Employee Page Redirect Issues Fixed!");
+console.log("Benefits:");
+console.log("✅ Removed hardcoded login redirects");
+console.log("✅ Added graceful fallback behavior");
+console.log("✅ Improved user experience");
+console.log("✅ Created employee portal index page");
 
 // Create report
 const report = {
@@ -342,18 +366,18 @@ const report = {
   filesChanged,
   changes: changesLog,
   fixes: [
-    'Removed hardcoded login redirect from employee profile',
-    'Added graceful authentication fallback',
-    'Improved loading states',
-    'Created employee portal index page',
-    'Added ModernDashboardLayout integration'
-  ]
+    "Removed hardcoded login redirect from employee profile",
+    "Added graceful authentication fallback",
+    "Improved loading states",
+    "Created employee portal index page",
+    "Added ModernDashboardLayout integration",
+  ],
 };
 
-fs.writeFileSync('employee-page-fixes.json', JSON.stringify(report, null, 2));
+fs.writeFileSync("employee-page-fixes.json", JSON.stringify(report, null, 2));
 
-console.log('\n🚀 Ready for testing:');
-console.log('1. Visit /employee to access employee portal');
-console.log('2. Visit /employee/profile to test profile page');
-console.log('3. Verify no login redirects occur');
-console.log('4. Check that all employee services are accessible'); 
+console.log("\n🚀 Ready for testing:");
+console.log("1. Visit /employee to access employee portal");
+console.log("2. Visit /employee/profile to test profile page");
+console.log("3. Verify no login redirects occur");
+console.log("4. Check that all employee services are accessible");

@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { cn } from '@/lib/utils';
+import React, { useState, useMemo } from "react";
+
+import { cn } from "@/lib/utils";
 
 export interface Column<T> {
   key: string;
@@ -35,27 +36,30 @@ const DataTable = <T extends Record<string, any>>({
   data,
   actions,
   isLoading = false,
-  emptyMessage = 'No data available',
+  emptyMessage = "No data available",
   onRowClick,
-  className = '',
+  className = "",
   sortable = true,
   striped = true,
   hoverable = true,
 }: DataTableProps<T>) => {
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-  
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  } | null>(null);
+
   const sortedData = useMemo(() => {
     if (!sortConfig || !sortable) return data;
-    
+
     return [...data].sort((a, b) => {
       if (a[sortConfig.key] === null) return 1;
       if (b[sortConfig.key] === null) return -1;
-      
+
       if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
+        return sortConfig.direction === "asc" ? -1 : 1;
       }
       if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
+        return sortConfig.direction === "asc" ? 1 : -1;
       }
       return 0;
     });
@@ -63,30 +67,41 @@ const DataTable = <T extends Record<string, any>>({
 
   const requestSort = (key: string) => {
     if (!sortable) return;
-    
-    let direction: 'asc' | 'desc' = 'asc';
-    
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+
+    let direction: "asc" | "desc" = "asc";
+
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "asc"
+    ) {
+      direction = "desc";
     }
-    
+
     setSortConfig({ key, direction });
   };
 
   const getSortIcon = (key: string) => {
     if (!sortable) return null;
-    
+
     if (sortConfig && sortConfig.key === key) {
-      return sortConfig.direction === 'asc' 
-        ? <span className="ml-1">↑</span> 
-        : <span className="ml-1">↓</span>;
+      return sortConfig.direction === "asc" ? (
+        <span className="ml-1">↑</span>
+      ) : (
+        <span className="ml-1">↓</span>
+      );
     }
     return <span className="ml-1 text-gray-300">↕</span>;
   };
 
   if (isLoading) {
     return (
-      <div className={cn('w-full overflow-hidden rounded-xl bg-white shadow-sm', className)}>
+      <div
+        className={cn(
+          "w-full overflow-hidden rounded-xl bg-white shadow-sm",
+          className,
+        )}
+      >
         <div className="p-8 flex justify-center">
           <div className="animate-pulse w-full space-y-4">
             <div className="h-10 bg-gray-200 rounded"></div>
@@ -101,18 +116,21 @@ const DataTable = <T extends Record<string, any>>({
 
   if (data.length === 0) {
     return (
-      <div className={cn('w-full overflow-hidden rounded-xl bg-white shadow-sm', className)}>
-        <div className="p-8 text-center text-gray-500">
-          {emptyMessage}
-        </div>
+      <div
+        className={cn(
+          "w-full overflow-hidden rounded-xl bg-white shadow-sm",
+          className,
+        )}
+      >
+        <div className="p-8 text-center text-gray-500">{emptyMessage}</div>
       </div>
     );
   }
 
   const getCellValue = (row: T, accessor: keyof T | string) => {
-    if (typeof accessor === 'string' && accessor.includes('.')) {
+    if (typeof accessor === "string" && accessor.includes(".")) {
       // Handle nested properties like 'user.name'
-      const keys = accessor.split('.');
+      const keys = accessor.split(".");
       let value: any = row;
       for (const key of keys) {
         if (value === null || value === undefined) return null;
@@ -124,7 +142,12 @@ const DataTable = <T extends Record<string, any>>({
   };
 
   return (
-    <div className={cn('w-full overflow-hidden rounded-xl bg-white shadow-sm', className)}>
+    <div
+      className={cn(
+        "w-full overflow-hidden rounded-xl bg-white shadow-sm",
+        className,
+      )}
+    >
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -133,15 +156,21 @@ const DataTable = <T extends Record<string, any>>({
                 <th
                   key={column.key || columnIndex}
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
-                    column.sortable !== false && sortable ? 'cursor-pointer select-none' : '',
-                    column.className
+                    "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
+                    column.sortable !== false && sortable
+                      ? "cursor-pointer select-none"
+                      : "",
+                    column.className,
                   )}
-                  onClick={() => column.sortable !== false && requestSort(column.key)}
+                  onClick={() =>
+                    column.sortable !== false && requestSort(column.key)
+                  }
                 >
                   <div className="flex items-center">
                     {column.header}
-                    {column.sortable !== false && sortable && getSortIcon(column.key)}
+                    {column.sortable !== false &&
+                      sortable &&
+                      getSortIcon(column.key)}
                   </div>
                 </th>
               ))}
@@ -154,12 +183,12 @@ const DataTable = <T extends Record<string, any>>({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedData.map((row, rowIndex) => (
-              <tr 
-                key={rowIndex} 
+              <tr
+                key={rowIndex}
                 className={cn(
-                  striped && rowIndex % 2 === 1 ? 'bg-gray-50' : '',
-                  hoverable ? 'hover:bg-gray-100' : '',
-                  onRowClick ? 'cursor-pointer' : ''
+                  striped && rowIndex % 2 === 1 ? "bg-gray-50" : "",
+                  hoverable ? "hover:bg-gray-100" : "",
+                  onRowClick ? "cursor-pointer" : "",
                 )}
                 onClick={() => onRowClick && onRowClick(row)}
               >
@@ -169,8 +198,8 @@ const DataTable = <T extends Record<string, any>>({
                     <td
                       key={`${rowIndex}-${column.key || columnIndex}`}
                       className={cn(
-                        'px-6 py-4 whitespace-nowrap text-sm text-gray-900',
-                        column.className
+                        "px-6 py-4 whitespace-nowrap text-sm text-gray-900",
+                        column.className,
                       )}
                     >
                       {column.cell ? column.cell(value, row) : value}
@@ -188,11 +217,14 @@ const DataTable = <T extends Record<string, any>>({
                             action.onClick(row);
                           }}
                           className={cn(
-                            'inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded',
-                            action.color || 'text-indigo-600 hover:text-indigo-900'
+                            "inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded",
+                            action.color ||
+                              "text-indigo-600 hover:text-indigo-900",
                           )}
                         >
-                          {action.icon && <span className="mr-1">{action.icon}</span>}
+                          {action.icon && (
+                            <span className="mr-1">{action.icon}</span>
+                          )}
                           {action.label}
                         </button>
                       ))}
@@ -208,4 +240,4 @@ const DataTable = <T extends Record<string, any>>({
   );
 };
 
-export default DataTable; 
+export default DataTable;

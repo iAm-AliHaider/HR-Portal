@@ -1,27 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { supabase } from '../../lib/supabase/client';
-import { GetServerSideProps } from 'next';
+import React, { useState, useEffect } from "react";
 
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+
+import { GetServerSideProps } from "next";
+
+import { supabase } from "../../lib/supabase/client";
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
-
 export default function CandidateLoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
-  const redirectTo = (router.query.redirect as string) || '/candidate/dashboard';
+  const redirectTo =
+    (router.query.redirect as string) || "/candidate/dashboard";
 
   useEffect(() => {
     // Check if user is already logged in
@@ -30,72 +32,82 @@ export default function CandidateLoginPage() {
 
   const checkExistingSession = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         router.push(redirectTo);
       }
     } catch (error) {
-      console.error('Session check error:', error);
+      console.error("Session check error:", error);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
       if (signInError) {
         // For development mode, simulate login
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Auth signin failed (dev mode):', signInError.message);
-          
+        if (process.env.NODE_ENV === "development") {
+          console.warn("Auth signin failed (dev mode):", signInError.message);
+
           // Check if candidate profile exists in localStorage
-          const storedProfile = localStorage.getItem('candidateProfile');
+          const storedProfile = localStorage.getItem("candidateProfile");
           if (storedProfile) {
             const profile = JSON.parse(storedProfile);
             if (profile.email === email) {
               // Simulate successful login
-              localStorage.setItem('candidateSession', JSON.stringify({
-                user: profile,
-                authenticated: true,
-                loginTime: new Date().toISOString()
-              }));
+              localStorage.setItem(
+                "candidateSession",
+                JSON.stringify({
+                  user: profile,
+                  authenticated: true,
+                  loginTime: new Date().toISOString(),
+                }),
+              );
               router.push(redirectTo);
               return;
             }
           }
-          
+
           // Demo credentials for testing
-          if (email === 'candidate@example.com' && password === 'password123') {
+          if (email === "candidate@example.com" && password === "password123") {
             const demoProfile = {
-              id: 'demo-candidate',
-              first_name: 'Demo',
-              last_name: 'Candidate',
-              email: 'candidate@example.com',
-              phone: '+1 (555) 123-4567',
-              current_company: 'Previous Company',
-              current_position: 'Software Engineer',
+              id: "demo-candidate",
+              first_name: "Demo",
+              last_name: "Candidate",
+              email: "candidate@example.com",
+              phone: "+1 (555) 123-4567",
+              current_company: "Previous Company",
+              current_position: "Software Engineer",
               experience_years: 5,
-              skills: 'React, Node.js, TypeScript',
-              summary: 'Experienced software engineer looking for new opportunities'
+              skills: "React, Node.js, TypeScript",
+              summary:
+                "Experienced software engineer looking for new opportunities",
             };
-            
-            localStorage.setItem('candidateSession', JSON.stringify({
-              user: demoProfile,
-              authenticated: true,
-              loginTime: new Date().toISOString()
-            }));
+
+            localStorage.setItem(
+              "candidateSession",
+              JSON.stringify({
+                user: demoProfile,
+                authenticated: true,
+                loginTime: new Date().toISOString(),
+              }),
+            );
             router.push(redirectTo);
             return;
           }
         }
-        
+
         throw signInError;
       }
 
@@ -104,31 +116,47 @@ export default function CandidateLoginPage() {
         router.push(redirectTo);
       }
     } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.message || 'Invalid email or password');
+      console.error("Login error:", err);
+      setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDemoLogin = () => {
-    setEmail('candidate@example.com');
-    setPassword('password123');
+    setEmail("candidate@example.com");
+    setPassword("password123");
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <Head>
         <title>Candidate Sign In | Recruitment Portal</title>
-        <meta name="description" content="Sign in to your candidate account and manage your job applications" />
+        <meta
+          name="description"
+          content="Sign in to your candidate account and manage your job applications"
+        />
       </Head>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Header */}
         <div className="text-center">
-          <Link href="/careers" className="inline-flex items-center text-blue-600 hover:text-blue-500 mb-4">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          <Link
+            href="/careers"
+            className="inline-flex items-center text-blue-600 hover:text-blue-500 mb-4"
+          >
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             Back to Careers
           </Link>
@@ -154,7 +182,10 @@ export default function CandidateLoginPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <div className="mt-1">
@@ -173,7 +204,10 @@ export default function CandidateLoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <div className="mt-1">
@@ -201,13 +235,19 @@ export default function CandidateLoginPage() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900"
+                >
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <Link href="/candidate/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link
+                  href="/candidate/forgot-password"
+                  className="font-medium text-blue-600 hover:text-blue-500"
+                >
                   Forgot your password?
                 </Link>
               </div>
@@ -219,20 +259,22 @@ export default function CandidateLoginPage() {
                 disabled={loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? "Signing in..." : "Sign in"}
               </button>
             </div>
           </form>
 
           {/* Demo Login for Development */}
-          {process.env.NODE_ENV === 'development' && (
+          {process.env.NODE_ENV === "development" && (
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Demo Account</span>
+                  <span className="px-2 bg-white text-gray-500">
+                    Demo Account
+                  </span>
                 </div>
               </div>
 
@@ -258,7 +300,9 @@ export default function CandidateLoginPage() {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">New to our platform?</span>
+                <span className="px-2 bg-white text-gray-500">
+                  New to our platform?
+                </span>
               </div>
             </div>
 
@@ -278,7 +322,10 @@ export default function CandidateLoginPage() {
               Browse Jobs
             </Link>
             <span className="text-gray-300">|</span>
-            <Link href="/candidate/help" className="text-gray-600 hover:text-gray-900">
+            <Link
+              href="/candidate/help"
+              className="text-gray-600 hover:text-gray-900"
+            >
               Help
             </Link>
           </div>
@@ -291,4 +338,4 @@ export default function CandidateLoginPage() {
       </div>
     </div>
   );
-} 
+}

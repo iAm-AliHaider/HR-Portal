@@ -1,16 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { mockTrainingCourses } from '../../services/mockData';
+import React, { useState, useEffect, useRef } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
 import {
-  BookOpen, Award, CheckCircle, Star, Clock, BarChart,
-  Search, Filter, Calendar, Play, Download, FileText,
-  Grid, List, ChevronRight, ThumbsUp, MessageSquare, Bookmark,
-  Award as Certificate, PlayCircle, TrendingUp, Plus, Zap, 
-  FileCheck, AlertTriangle, Users, Briefcase, BookOpen as Book
-} from 'lucide-react';
-import { GetServerSideProps } from 'next';
+  BookOpen,
+  Award,
+  CheckCircle,
+  Star,
+  Clock,
+  BarChart,
+  Search,
+  Filter,
+  Calendar,
+  Play,
+  Download,
+  FileText,
+  Grid,
+  List,
+  ChevronRight,
+  ThumbsUp,
+  MessageSquare,
+  Bookmark,
+  Award as Certificate,
+  PlayCircle,
+  TrendingUp,
+  Plus,
+  Zap,
+  FileCheck,
+  AlertTriangle,
+  Users,
+  Briefcase,
+  BookOpen as Book,
+} from "lucide-react";
+import { GetServerSideProps } from "next";
+
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+
+import { mockTrainingCourses } from "../../services/mockData";
 
 // Define types for our course data
 interface TrainingCourse {
@@ -44,30 +71,30 @@ interface CourseForm {
   certification: boolean;
 }
 
-
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
-
 
 export default function TrainingIndexPage() {
   const router = useRouter();
   const pageRef = useRef<HTMLDivElement>(null);
-  const isClient = typeof window !== 'undefined';
-  
+  const isClient = typeof window !== "undefined";
+
   // State
   const [courses, setCourses] = useState<TrainingCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<TrainingCourse | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<TrainingCourse | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [scrollPosition, setScrollPosition] = useState(0);
-  
+
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
@@ -75,47 +102,50 @@ export default function TrainingIndexPage() {
 
   // Form state
   const [formValues, setFormValues] = useState<CourseForm>({
-    title: '',
-    description: '',
-    category: '',
-    duration: '',
-    instructor: '',
+    title: "",
+    description: "",
+    category: "",
+    duration: "",
+    instructor: "",
     capacity: 20,
     price: 0,
-    requirements: '',
-    certification: false
+    requirements: "",
+    certification: false,
   });
-  
+
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Toast state
-  const [toasts, setToasts] = useState<Array<{id: string, type: string, message: string}>>([]);
+  const [toasts, setToasts] = useState<
+    Array<{ id: string; type: string; message: string }>
+  >([]);
 
   // Pagination and search
   const itemsPerPage = 9;
-  const filteredCourses = courses.filter(course => 
-    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCourses = courses.filter(
+    (course) =>
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.instructor.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-  
+
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const currentItems = filteredCourses.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
-  
+
   // Preserve scroll position
   useEffect(() => {
     const handleScroll = () => {
       setScrollPosition(window.scrollY);
     };
-    
+
     if (isClient) {
-      window.addEventListener('scroll', handleScroll, { passive: true });
+      window.addEventListener("scroll", handleScroll, { passive: true });
       return () => {
-        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener("scroll", handleScroll);
       };
     }
   }, [isClient]);
@@ -129,11 +159,11 @@ export default function TrainingIndexPage() {
 
   // Override browser's automatic scroll restoration
   useEffect(() => {
-    if (isClient && 'scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
+    if (isClient && "scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
       return () => {
-        if ('scrollRestoration' in history) {
-          history.scrollRestoration = 'auto';
+        if ("scrollRestoration" in history) {
+          history.scrollRestoration = "auto";
         }
       };
     }
@@ -148,7 +178,7 @@ export default function TrainingIndexPage() {
   const fetchCourses = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // In a real app, this would be a call to Supabase or an API
       // For now, we'll use the mock data with a timeout to simulate a real API call
@@ -157,46 +187,50 @@ export default function TrainingIndexPage() {
         setLoading(false);
       }, 500);
     } catch (err) {
-      console.error('Error fetching courses:', err);
-      setError('Failed to load training courses. Please try again later.');
+      console.error("Error fetching courses:", err);
+      setError("Failed to load training courses. Please try again later.");
       setLoading(false);
     }
   };
 
   // Form handlers
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value, type } = e.target;
-    
-    if (type === 'checkbox') {
+
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormValues(prev => ({ ...prev, [name]: checked }));
+      setFormValues((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormValues(prev => ({ ...prev, [name]: value }));
+      setFormValues((prev) => ({ ...prev, [name]: value }));
     }
-    
+
     // Clear error when field is modified
     if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: '' }));
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   // Submit form
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     const errors: Record<string, string> = {};
-    
+
     if (!formValues.title) {
-      errors.title = 'Course title is required';
+      errors.title = "Course title is required";
     }
-    
+
     if (!formValues.description) {
-      errors.description = 'Course description is required';
+      errors.description = "Course description is required";
     }
-    
+
     if (!formValues.category) {
-      errors.category = 'Category is required';
+      errors.category = "Category is required";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -205,7 +239,7 @@ export default function TrainingIndexPage() {
     }
 
     setIsSubmitting(true);
-    
+
     // In a real app, this would call an API or Supabase
     setTimeout(() => {
       const newCourse: TrainingCourse = {
@@ -217,17 +251,19 @@ export default function TrainingIndexPage() {
         instructor: formValues.instructor,
         enrolled: 0,
         capacity: formValues.capacity,
-        status: 'active',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "active",
+        start_date: new Date().toISOString().split("T")[0],
+        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         price: formValues.price,
-        location: 'Online',
+        location: "Online",
         certification: formValues.certification,
-        completed: 0
+        completed: 0,
       };
-      
-      setCourses(prev => [...prev, newCourse]);
-      showToast('success', 'Training course created successfully!');
+
+      setCourses((prev) => [...prev, newCourse]);
+      showToast("success", "Training course created successfully!");
       setShowAddModal(false);
       resetForm();
       setIsSubmitting(false);
@@ -237,18 +273,18 @@ export default function TrainingIndexPage() {
   // Handle enrollment
   const handleEnroll = (courseId: string) => {
     setIsSubmitting(true);
-    
+
     // In a real app, this would call an API or Supabase
     setTimeout(() => {
-      setCourses(prev => 
-        prev.map(course => 
-          course.id === courseId 
-            ? { ...course, enrolled: course.enrolled + 1 } 
-            : course
-        )
+      setCourses((prev) =>
+        prev.map((course) =>
+          course.id === courseId
+            ? { ...course, enrolled: course.enrolled + 1 }
+            : course,
+        ),
       );
-      
-      showToast('success', 'Successfully enrolled in course!');
+
+      showToast("success", "Successfully enrolled in course!");
       setShowEnrollModal(false);
       setSelectedCourse(null);
       setIsSubmitting(false);
@@ -256,10 +292,13 @@ export default function TrainingIndexPage() {
   };
 
   // Toast functions
-  const showToast = (type: 'success' | 'error' | 'info' | 'warning', message: string) => {
+  const showToast = (
+    type: "success" | "error" | "info" | "warning",
+    message: string,
+  ) => {
     const id = Date.now().toString();
-    setToasts(prev => [...prev, { id, type, message }]);
-    
+    setToasts((prev) => [...prev, { id, type, message }]);
+
     // Auto-remove after 5 seconds
     setTimeout(() => {
       removeToast(id);
@@ -267,21 +306,21 @@ export default function TrainingIndexPage() {
   };
 
   const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
   // Reset form
   const resetForm = () => {
     setFormValues({
-      title: '',
-      description: '',
-      category: '',
-      duration: '',
-      instructor: '',
+      title: "",
+      description: "",
+      category: "",
+      duration: "",
+      instructor: "",
       capacity: 20,
       price: 0,
-      requirements: '',
-      certification: false
+      requirements: "",
+      certification: false,
     });
     setFormErrors({});
   };
@@ -289,16 +328,16 @@ export default function TrainingIndexPage() {
   // Pagination handlers
   const nextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
-  
+
   const prevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
-  
+
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -308,12 +347,23 @@ export default function TrainingIndexPage() {
   // Calculate statistics
   const stats = {
     total: courses.length,
-    active: courses.filter(course => course.status === 'active').length,
+    active: courses.filter((course) => course.status === "active").length,
     enrolled: courses.reduce((sum, course) => sum + course.enrolled, 0),
-    completed: courses.reduce((sum, course) => sum + (course.completed || 0), 0)
+    completed: courses.reduce(
+      (sum, course) => sum + (course.completed || 0),
+      0,
+    ),
   };
 
-  const categories = ['Leadership', 'Safety', 'Technical', 'Soft Skills', 'Compliance', 'HR', 'Management'];
+  const categories = [
+    "Leadership",
+    "Safety",
+    "Technical",
+    "Soft Skills",
+    "Compliance",
+    "HR",
+    "Management",
+  ];
 
   if (loading) {
     return (
@@ -326,19 +376,29 @@ export default function TrainingIndexPage() {
   }
 
   return (
-    <ModernDashboardLayout title="Training Management" subtitle="Manage training courses and enrollments">
+    <ModernDashboardLayout
+      title="Training Management"
+      subtitle="Manage training courses and enrollments"
+    >
       <Head>
         <title>Training Management | HR Portal</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+        />
       </Head>
-      
+
       <div className="container mx-auto px-4 py-8" ref={pageRef}>
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Training Management</h1>
-              <p className="text-gray-600 mt-2">Manage training courses and enrollments</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Training Management
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Manage training courses and enrollments
+              </p>
             </div>
             <button
               onClick={() => setShowAddModal(true)}
@@ -353,38 +413,52 @@ export default function TrainingIndexPage() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Courses</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Courses
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.total}
+                  </p>
                 </div>
                 <div className="text-3xl">📚</div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active Courses</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Active Courses
+                  </p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {stats.active}
+                  </p>
                 </div>
                 <div className="text-3xl">✅</div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Enrolled</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.enrolled}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Enrolled
+                  </p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {stats.enrolled}
+                  </p>
                 </div>
                 <div className="text-3xl">👥</div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.completed}</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {stats.completed}
+                  </p>
                 </div>
                 <div className="text-3xl">🎓</div>
               </div>
@@ -421,29 +495,51 @@ export default function TrainingIndexPage() {
 
         {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {currentItems.map(course => (
+          {currentItems.map((course) => (
             <div key={course.id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{course.title}</h3>
-                  <p className="text-sm text-gray-600 mb-1">{course.category}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-1">
+                    {course.category}
+                  </p>
                   <p className="text-sm text-gray-500">{course.duration}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  course.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    course.status === "active"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
                   {course.status}
                 </span>
               </div>
-              
-              <p className="text-gray-700 text-sm mb-4 line-clamp-3">{course.description}</p>
-              
+
+              <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+                {course.description}
+              </p>
+
               <div className="space-y-2 text-sm mb-4">
-                <p><span className="font-medium">Instructor:</span> {course.instructor}</p>
-                <p><span className="font-medium">Enrolled:</span> {course.enrolled} / {course.capacity}</p>
-                <p><span className="font-medium">Completed:</span> {course.completed || 0}</p>
+                <p>
+                  <span className="font-medium">Instructor:</span>{" "}
+                  {course.instructor}
+                </p>
+                <p>
+                  <span className="font-medium">Enrolled:</span>{" "}
+                  {course.enrolled} / {course.capacity}
+                </p>
+                <p>
+                  <span className="font-medium">Completed:</span>{" "}
+                  {course.completed || 0}
+                </p>
                 {course.certification && (
-                  <p><span className="font-medium">Certification:</span> ✅ Available</p>
+                  <p>
+                    <span className="font-medium">Certification:</span> ✅
+                    Available
+                  </p>
                 )}
               </div>
 
@@ -481,10 +577,12 @@ export default function TrainingIndexPage() {
         {currentItems.length === 0 && (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <Book className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No courses found</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No courses found
+            </h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm 
-                ? `No courses match "${searchTerm}". Try another search term.` 
+              {searchTerm
+                ? `No courses match "${searchTerm}". Try another search term.`
                 : "No training courses have been created yet."}
             </p>
             <button
@@ -500,7 +598,9 @@ export default function TrainingIndexPage() {
         {totalPages > 1 && (
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-700">
-              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredCourses.length)} of {filteredCourses.length} results
+              Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(currentPage * itemsPerPage, filteredCourses.length)} of{" "}
+              {filteredCourses.length} results
             </p>
             <div className="flex space-x-2">
               <button
@@ -528,8 +628,10 @@ export default function TrainingIndexPage() {
         {showAddModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-90vh overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Course</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Create New Course
+              </h3>
+
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <div>
@@ -541,11 +643,13 @@ export default function TrainingIndexPage() {
                       name="title"
                       value={formValues.title}
                       onChange={handleInputChange}
-                      className={`w-full border ${formErrors.title ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2`}
+                      className={`w-full border ${formErrors.title ? "border-red-500" : "border-gray-300"} rounded-md px-3 py-2`}
                       required
                     />
                     {formErrors.title && (
-                      <p className="text-red-600 text-sm mt-1">{formErrors.title}</p>
+                      <p className="text-red-600 text-sm mt-1">
+                        {formErrors.title}
+                      </p>
                     )}
                   </div>
 
@@ -558,16 +662,20 @@ export default function TrainingIndexPage() {
                         name="category"
                         value={formValues.category}
                         onChange={handleInputChange}
-                        className={`w-full border ${formErrors.category ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2`}
+                        className={`w-full border ${formErrors.category ? "border-red-500" : "border-gray-300"} rounded-md px-3 py-2`}
                         required
                       >
                         <option value="">Select category</option>
-                        {categories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
                         ))}
                       </select>
                       {formErrors.category && (
-                        <p className="text-red-600 text-sm mt-1">{formErrors.category}</p>
+                        <p className="text-red-600 text-sm mt-1">
+                          {formErrors.category}
+                        </p>
                       )}
                     </div>
 
@@ -595,12 +703,14 @@ export default function TrainingIndexPage() {
                       name="description"
                       value={formValues.description}
                       onChange={handleInputChange}
-                      className={`w-full border ${formErrors.description ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2`}
+                      className={`w-full border ${formErrors.description ? "border-red-500" : "border-gray-300"} rounded-md px-3 py-2`}
                       rows={3}
                       required
                     />
                     {formErrors.description && (
-                      <p className="text-red-600 text-sm mt-1">{formErrors.description}</p>
+                      <p className="text-red-600 text-sm mt-1">
+                        {formErrors.description}
+                      </p>
                     )}
                   </div>
 
@@ -660,7 +770,10 @@ export default function TrainingIndexPage() {
                         onChange={handleInputChange}
                         className="mr-2"
                       />
-                      <label htmlFor="certification" className="text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="certification"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Certification Available
                       </label>
                     </div>
@@ -698,7 +811,7 @@ export default function TrainingIndexPage() {
                     className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Creating...' : 'Create Course'}
+                    {isSubmitting ? "Creating..." : "Create Course"}
                   </button>
                 </div>
               </form>
@@ -710,15 +823,26 @@ export default function TrainingIndexPage() {
         {showEnrollModal && selectedCourse && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Enroll in Course</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Enroll in Course
+              </h3>
               <p className="text-gray-600 mb-4">
                 Are you sure you want to enroll in "{selectedCourse.title}"?
               </p>
-              
+
               <div className="space-y-2 text-sm mb-4">
-                <p><span className="font-medium">Duration:</span> {selectedCourse.duration}</p>
-                <p><span className="font-medium">Instructor:</span> {selectedCourse.instructor}</p>
-                <p><span className="font-medium">Available Spots:</span> {selectedCourse.capacity - selectedCourse.enrolled}</p>
+                <p>
+                  <span className="font-medium">Duration:</span>{" "}
+                  {selectedCourse.duration}
+                </p>
+                <p>
+                  <span className="font-medium">Instructor:</span>{" "}
+                  {selectedCourse.instructor}
+                </p>
+                <p>
+                  <span className="font-medium">Available Spots:</span>{" "}
+                  {selectedCourse.capacity - selectedCourse.enrolled}
+                </p>
               </div>
 
               <div className="flex space-x-4">
@@ -735,9 +859,12 @@ export default function TrainingIndexPage() {
                 <button
                   onClick={() => handleEnroll(selectedCourse.id)}
                   className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                  disabled={isSubmitting || selectedCourse.enrolled >= selectedCourse.capacity}
+                  disabled={
+                    isSubmitting ||
+                    selectedCourse.enrolled >= selectedCourse.capacity
+                  }
                 >
-                  {isSubmitting ? 'Enrolling...' : 'Enroll Now'}
+                  {isSubmitting ? "Enrolling..." : "Enroll Now"}
                 </button>
               </div>
             </div>
@@ -748,32 +875,64 @@ export default function TrainingIndexPage() {
         {showDetailsModal && selectedCourse && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-90vh overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">{selectedCourse.title}</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {selectedCourse.title}
+              </h3>
+
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    Description
+                  </h4>
                   <p className="text-gray-700">{selectedCourse.description}</p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Course Details</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Course Details
+                    </h4>
                     <div className="space-y-1 text-sm">
-                      <p><span className="font-medium">Category:</span> {selectedCourse.category}</p>
-                      <p><span className="font-medium">Duration:</span> {selectedCourse.duration}</p>
-                      <p><span className="font-medium">Instructor:</span> {selectedCourse.instructor}</p>
-                      <p><span className="font-medium">Capacity:</span> {selectedCourse.capacity}</p>
+                      <p>
+                        <span className="font-medium">Category:</span>{" "}
+                        {selectedCourse.category}
+                      </p>
+                      <p>
+                        <span className="font-medium">Duration:</span>{" "}
+                        {selectedCourse.duration}
+                      </p>
+                      <p>
+                        <span className="font-medium">Instructor:</span>{" "}
+                        {selectedCourse.instructor}
+                      </p>
+                      <p>
+                        <span className="font-medium">Capacity:</span>{" "}
+                        {selectedCourse.capacity}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Enrollment Stats</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Enrollment Stats
+                    </h4>
                     <div className="space-y-1 text-sm">
-                      <p><span className="font-medium">Enrolled:</span> {selectedCourse.enrolled}</p>
-                      <p><span className="font-medium">Completed:</span> {selectedCourse.completed || 0}</p>
-                      <p><span className="font-medium">Available:</span> {selectedCourse.capacity - selectedCourse.enrolled}</p>
-                      <p><span className="font-medium">Certification:</span> {selectedCourse.certification ? 'Yes' : 'No'}</p>
+                      <p>
+                        <span className="font-medium">Enrolled:</span>{" "}
+                        {selectedCourse.enrolled}
+                      </p>
+                      <p>
+                        <span className="font-medium">Completed:</span>{" "}
+                        {selectedCourse.completed || 0}
+                      </p>
+                      <p>
+                        <span className="font-medium">Available:</span>{" "}
+                        {selectedCourse.capacity - selectedCourse.enrolled}
+                      </p>
+                      <p>
+                        <span className="font-medium">Certification:</span>{" "}
+                        {selectedCourse.certification ? "Yes" : "No"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -805,14 +964,17 @@ export default function TrainingIndexPage() {
 
         {/* Toast Notifications */}
         <div className="fixed top-4 right-4 z-50 space-y-2">
-          {toasts.map(toast => (
+          {toasts.map((toast) => (
             <div
               key={toast.id}
               className={`px-6 py-3 rounded-lg shadow-lg text-white ${
-                toast.type === 'success' ? 'bg-green-500' :
-                toast.type === 'error' ? 'bg-red-500' :
-                toast.type === 'warning' ? 'bg-yellow-500' :
-                'bg-blue-500'
+                toast.type === "success"
+                  ? "bg-green-500"
+                  : toast.type === "error"
+                    ? "bg-red-500"
+                    : toast.type === "warning"
+                      ? "bg-yellow-500"
+                      : "bg-blue-500"
               }`}
             >
               <div className="flex justify-between items-center">
@@ -827,7 +989,7 @@ export default function TrainingIndexPage() {
             </div>
           ))}
         </div>
-    </div>
+      </div>
     </ModernDashboardLayout>
   );
-} 
+}

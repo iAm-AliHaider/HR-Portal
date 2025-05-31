@@ -1,9 +1,22 @@
 {
-  "extends": "next/core-web-vitals",
+  "extends": ["next/core-web-vitals", "prettier"],
+  "plugins": ["@typescript-eslint", "import"],
   "rules": {
     "react/no-unescaped-entities": "off",
     "@next/next/no-img-element": "off",
     "react-hooks/exhaustive-deps": "off",
-    "react-hooks/rules-of-hooks": "off"
+    "react-hooks/rules-of-hooks": "error",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
+    "import/order": "off",
+    "prefer-const": "warn",
+    "no-var": "error",
+    "no-console": "off",
+    "no-debugger": "error"
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
   }
 }

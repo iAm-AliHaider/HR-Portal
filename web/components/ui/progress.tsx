@@ -1,12 +1,16 @@
-"use client"
+"use client";
 
-import React from 'react';
-import { Progress as ChakraProgress, ProgressProps as ChakraProgressProps } from '@chakra-ui/react';
+import React from "react";
+
+import {
+  Progress as ChakraProgress,
+  ProgressProps as ChakraProgressProps,
+} from "@chakra-ui/react";
 
 export interface ProgressProps extends ChakraProgressProps {}
 
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ value, colorScheme = 'blue', size = 'md', ...props }, ref) => {
+  ({ value, colorScheme = "blue", size = "md", ...props }, ref) => {
     return (
       <ChakraProgress
         ref={ref}
@@ -16,9 +20,9 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 Progress.displayName = "Progress";
 
-export { Progress }; 
+export { Progress };

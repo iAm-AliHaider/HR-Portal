@@ -1,6 +1,8 @@
 import React, { ReactNode } from "react";
+
 import Head from "next/head";
 import Link from "next/link";
+
 import { ChevronRight } from "lucide-react";
 
 // Components for the page layout
@@ -47,16 +49,20 @@ export function PageLayout({
           <nav className="flex mb-6 text-sm text-zinc-500">
             {breadcrumbs.map((item, index) => (
               <React.Fragment key={item.label}>
-                {index > 0 && <ChevronRight className="h-4 w-4 mx-2" strokeWidth={1.5} />}
+                {index > 0 && (
+                  <ChevronRight className="h-4 w-4 mx-2" strokeWidth={1.5} />
+                )}
                 {item.href ? (
-                  <Link 
-                    href={item.href} 
+                  <Link
+                    href={item.href}
                     className="hover:text-zinc-900 transition-colors"
                   >
                     {item.label}
                   </Link>
                 ) : (
-                  <span className="text-zinc-900 font-medium">{item.label}</span>
+                  <span className="text-zinc-900 font-medium">
+                    {item.label}
+                  </span>
                 )}
               </React.Fragment>
             ))}
@@ -69,7 +75,7 @@ export function PageLayout({
             <h1 className="text-2xl font-semibold text-zinc-900">{title}</h1>
             {description && <p className="text-zinc-500 mt-1">{description}</p>}
           </div>
-          
+
           {(actionButton || secondaryButton) && (
             <div className="flex gap-3">
               {secondaryButton && (
@@ -83,7 +89,7 @@ export function PageLayout({
                   {secondaryButton.label}
                 </button>
               )}
-              
+
               {actionButton && (
                 <button
                   onClick={actionButton.onClick}
@@ -98,7 +104,7 @@ export function PageLayout({
             </div>
           )}
         </div>
-        
+
         {/* Main content */}
         <div>{children}</div>
       </div>
@@ -115,9 +121,17 @@ interface StatsCardProps {
   icon?: ReactNode;
 }
 
-export function StatsCard({ title, value, description, className, icon }: StatsCardProps) {
+export function StatsCard({
+  title,
+  value,
+  description,
+  className,
+  icon,
+}: StatsCardProps) {
   return (
-    <div className={`rounded-md border border-zinc-200 bg-white p-6 shadow-sm hover:shadow transition-shadow ${className}`}>
+    <div
+      className={`rounded-md border border-zinc-200 bg-white p-6 shadow-sm hover:shadow transition-shadow ${className}`}
+    >
       {icon && <div className="mb-3 text-zinc-700">{icon}</div>}
       <p className="text-sm font-medium text-zinc-500">{title}</p>
       <p className="text-2xl font-semibold mt-1 text-zinc-900">{value}</p>
@@ -137,21 +151,23 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const getStatusStyles = () => {
     switch (status.toLowerCase()) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'inactive':
-        return 'bg-zinc-100 text-zinc-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-zinc-100 text-zinc-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-blue-100 text-blue-800";
       default:
-        return 'bg-zinc-100 text-zinc-800';
+        return "bg-zinc-100 text-zinc-800";
     }
   };
 
   return (
-    <span className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${getStatusStyles()} ${className}`}>
+    <span
+      className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${getStatusStyles()} ${className}`}
+    >
       {status}
     </span>
   );
@@ -160,48 +176,54 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 export function SearchFilterBar({ children }: { children: ReactNode }) {
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm mb-6">
-      <div className="flex flex-col md:flex-row gap-4">
-        {children}
-      </div>
+      <div className="flex flex-col md:flex-row gap-4">{children}</div>
     </div>
   );
 }
 
 // For rendering a grid of cards
-export function CardGrid({ children, columns = 3 }: { children: ReactNode, columns?: number }) {
+export function CardGrid({
+  children,
+  columns = 3,
+}: {
+  children: ReactNode;
+  columns?: number;
+}) {
   const gridCols = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+    1: "grid-cols-1",
+    2: "grid-cols-1 md:grid-cols-2",
+    3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+    4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
   };
 
   return (
-    <div className={`grid ${gridCols[columns as keyof typeof gridCols] || gridCols[3]} gap-6`}>
+    <div
+      className={`grid ${gridCols[columns as keyof typeof gridCols] || gridCols[3]} gap-6`}
+    >
       {children}
     </div>
   );
 }
 
 // Card component for consistent styling
-export function Card({ 
-  title, 
-  description, 
-  children, 
-  icon, 
+export function Card({
+  title,
+  description,
+  children,
+  icon,
   className,
-  onClick
-}: { 
-  title: string; 
-  description?: string; 
-  children?: ReactNode; 
+  onClick,
+}: {
+  title: string;
+  description?: string;
+  children?: ReactNode;
   icon?: ReactNode;
   className?: string;
   onClick?: () => void;
 }) {
   return (
-    <div 
-      className={`rounded-md border border-zinc-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow ${onClick ? 'cursor-pointer' : ''} ${className}`}
+    <div
+      className={`rounded-md border border-zinc-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow ${onClick ? "cursor-pointer" : ""} ${className}`}
       onClick={onClick}
     >
       <div className="flex items-center mb-3">
@@ -212,7 +234,9 @@ export function Card({
         )}
         <div>
           <h3 className="text-lg font-medium text-zinc-900">{title}</h3>
-          {description && <p className="text-sm text-zinc-500 mt-1">{description}</p>}
+          {description && (
+            <p className="text-sm text-zinc-500 mt-1">{description}</p>
+          )}
         </div>
       </div>
       {children}
@@ -236,34 +260,56 @@ export function DataTable({ children }: { children: ReactNode }) {
 export function TableHeader({ children }: { children: ReactNode }) {
   return (
     <thead className="bg-zinc-50">
-      <tr>
-        {children}
-      </tr>
+      <tr>{children}</tr>
     </thead>
   );
 }
 
-export function TableCell({ children, className }: { children: ReactNode, className?: string }) {
+export function TableCell({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <td className={`px-6 py-4 whitespace-nowrap text-sm text-zinc-900 ${className}`}>
+    <td
+      className={`px-6 py-4 whitespace-nowrap text-sm text-zinc-900 ${className}`}
+    >
       {children}
     </td>
   );
 }
 
-export function TableHeaderCell({ children, className }: { children: ReactNode, className?: string }) {
+export function TableHeaderCell({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <th className={`px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider ${className}`}>
+    <th
+      className={`px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider ${className}`}
+    >
       {children}
     </th>
   );
 }
 
-export function UserAvatar({ name, email, imgSrc }: { name: string, email: string, imgSrc?: string }) {
+export function UserAvatar({
+  name,
+  email,
+  imgSrc,
+}: {
+  name: string;
+  email: string;
+  imgSrc?: string;
+}) {
   const initials = name
-    .split(' ')
-    .map(part => part[0])
-    .join('')
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
     .toUpperCase()
     .substring(0, 2);
 
@@ -274,7 +320,9 @@ export function UserAvatar({ name, email, imgSrc }: { name: string, email: strin
           <img className="h-10 w-10 rounded-full" src={imgSrc} alt={name} />
         ) : (
           <div className="h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center">
-            <span className="text-sm font-medium text-zinc-700">{initials}</span>
+            <span className="text-sm font-medium text-zinc-700">
+              {initials}
+            </span>
           </div>
         )}
       </div>
@@ -286,18 +334,18 @@ export function UserAvatar({ name, email, imgSrc }: { name: string, email: strin
   );
 }
 
-export function EmptyState({ 
-  title, 
-  description, 
-  actionLabel, 
+export function EmptyState({
+  title,
+  description,
+  actionLabel,
   onAction,
-  icon
-}: { 
-  title: string, 
-  description: string, 
-  actionLabel?: string, 
-  onAction?: () => void,
-  icon?: ReactNode
+  icon,
+}: {
+  title: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  icon?: ReactNode;
 }) {
   return (
     <div className="text-center py-12 bg-zinc-50 rounded-lg border border-zinc-200">
@@ -334,4 +382,4 @@ export function EmptyState({
       )}
     </div>
   );
-} 
+}

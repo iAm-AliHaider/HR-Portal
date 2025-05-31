@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { useAuth } from '../../hooks/useAuth';
-import { useRouter } from 'next/router';
-import Sidebar from '../ui/Sidebar';
-import Topbar from '../ui/Topbar';
+import React, { useState, useEffect } from "react";
+
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+import { useAuth } from "../../hooks/useAuth";
+import Sidebar from "../ui/Sidebar";
+import Topbar from "../ui/Topbar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -30,7 +32,11 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Dashboard Error Boundary caught an error:', error, errorInfo);
+    console.error(
+      "Dashboard Error Boundary caught an error:",
+      error,
+      errorInfo,
+    );
   }
 
   render() {
@@ -42,7 +48,8 @@ class ErrorBoundary extends React.Component<
               Something went wrong
             </h2>
             <p className="text-gray-600 mb-6">
-              We're sorry, but something unexpected happened. Please try refreshing the page.
+              We're sorry, but something unexpected happened. Please try
+              refreshing the page.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -59,7 +66,11 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-export default function DashboardLayout({ children, title, subtitle }: DashboardLayoutProps) {
+export default function DashboardLayout({
+  children,
+  title,
+  subtitle,
+}: DashboardLayoutProps) {
   const { user, loading, error } = useAuth();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
@@ -74,11 +85,11 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
   useEffect(() => {
     if (!loading && !user && isMounted) {
       // In production, redirect with a delay to prevent hydration issues
-      const isProduction = process.env.NODE_ENV === 'production';
+      const isProduction = process.env.NODE_ENV === "production";
       const delay = isProduction ? 1000 : 0;
-      
+
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, delay);
     }
   }, [user, loading, router, isMounted]);
@@ -89,9 +100,9 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
       setSidebarOpen(false);
     };
 
-    router.events.on('routeChangeComplete', handleRouteChange);
+    router.events.on("routeChangeComplete", handleRouteChange);
     return () => {
-      router.events.off('routeChangeComplete', handleRouteChange);
+      router.events.off("routeChangeComplete", handleRouteChange);
     };
   }, [router.events]);
 
@@ -121,7 +132,7 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
           </h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => router.push("/login")}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             Go to Login
@@ -146,34 +157,40 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50">
         <Head>
-          <title>{title ? `${title} | HR Portal` : 'HR Portal'}</title>
+          <title>{title ? `${title} | HR Portal` : "HR Portal"}</title>
           <meta name="description" content="HR Portal Dashboard" />
         </Head>
-        
+
         {/* Layout structure */}
         <div className="flex h-screen overflow-hidden">
           {/* Mobile sidebar backdrop */}
           {sidebarOpen && (
-            <div 
+            <div
               className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
           )}
-          
+
           {/* Sidebar */}
-          <div className={`
+          <div
+            className={`
             fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
-            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             lg:relative lg:translate-x-0 lg:z-0
-          `}>
-            <Sidebar isMobile={!sidebarOpen} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          `}
+          >
+            <Sidebar
+              isMobile={!sidebarOpen}
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+            />
           </div>
 
           {/* Main content area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Top bar */}
             <Topbar onMobileMenuToggle={toggleSidebar} />
-            
+
             {/* Main content */}
             <main className="flex-1 overflow-auto">
               <div className="responsive-container py-6 sm:py-8">
@@ -185,9 +202,7 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
                       </h1>
                     )}
                     {subtitle && (
-                      <p className="mt-1 text-sm text-gray-600">
-                        {subtitle}
-                      </p>
+                      <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
                     )}
                   </div>
                 )}
@@ -199,4 +214,4 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
       </div>
     </ErrorBoundary>
   );
-} 
+}

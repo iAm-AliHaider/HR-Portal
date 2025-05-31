@@ -1,20 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState, useEffect } from "react";
+
+import { useRouter } from "next/router";
+
 import {
-  User, Search, Filter, Grid, List, Plus, Edit, Trash2, 
-  CheckCircle, AlertCircle, Building, MapPin, Phone, Mail, Users,
-  UserPlus, Briefcase, Calendar, Activity
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/lib/supabase';
-import { GetServerSideProps } from 'next';
-import { PageLayout, StatsCard, CardGrid, SearchFilterBar } from '@/components/layout/PageLayout';
-import { useToast, useForm, useModal, usePagination, useSearch } from '../../hooks/useApi';
+  User,
+  Search,
+  Filter,
+  Grid,
+  List,
+  Plus,
+  Edit,
+  Trash2,
+  CheckCircle,
+  AlertCircle,
+  Building,
+  MapPin,
+  Phone,
+  Mail,
+  Users,
+  UserPlus,
+  Briefcase,
+  Calendar,
+  Activity,
+} from "lucide-react";
+import { GetServerSideProps } from "next";
+
+import {
+  PageLayout,
+  StatsCard,
+  CardGrid,
+  SearchFilterBar,
+} from "@/components/layout/PageLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/lib/supabase";
+
+import {
+  useToast,
+  useForm,
+  useModal,
+  usePagination,
+  useSearch,
+} from "../../hooks/useApi";
 
 // Employee form interface
 interface EmployeeForm {
@@ -32,7 +77,7 @@ interface EmployeeForm {
 const PeopleDirectory = () => {
   const router = useRouter();
   const toast = useToast();
-  
+
   // Define local state for employees management instead of using the hook
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,24 +88,28 @@ const PeopleDirectory = () => {
     try {
       if (supabase) {
         const { data, error: createError } = await supabase
-          .from('employees')
+          .from("employees")
           .insert([employeeData])
           .select();
-        
+
         if (createError) throw createError;
-        
+
         const newId = data && data.length > 0 ? data[0].id : Date.now();
         // Refresh employees list
-        setEmployees(prev => [...prev, {...employeeData, id: newId}]);
+        setEmployees((prev) => [...prev, { ...employeeData, id: newId }]);
         return data || [];
       } else {
         // Mock operation for demo
-        const newEmployee = {...employeeData, id: Date.now(), status: 'active'};
-        setEmployees(prev => [...prev, newEmployee]);
+        const newEmployee = {
+          ...employeeData,
+          id: Date.now(),
+          status: "active",
+        };
+        setEmployees((prev) => [...prev, newEmployee]);
         return newEmployee;
       }
     } catch (err) {
-      console.error('Error creating employee:', err);
+      console.error("Error creating employee:", err);
       throw err;
     }
   };
@@ -69,22 +118,30 @@ const PeopleDirectory = () => {
     try {
       if (supabase) {
         const { data, error: updateError } = await supabase
-          .from('employees')
+          .from("employees")
           .update(employeeData)
-          .eq('id', id);
-        
+          .eq("id", id);
+
         if (updateError) throw updateError;
-        
+
         // Update local state
-        setEmployees(prev => prev.map(emp => emp.id === id ? {...emp, ...employeeData} : emp));
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            emp.id === id ? { ...emp, ...employeeData } : emp,
+          ),
+        );
         return data;
       } else {
         // Mock operation for demo
-        setEmployees(prev => prev.map(emp => emp.id === id ? {...emp, ...employeeData} : emp));
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            emp.id === id ? { ...emp, ...employeeData } : emp,
+          ),
+        );
         return employeeData;
       }
     } catch (err) {
-      console.error('Error updating employee:', err);
+      console.error("Error updating employee:", err);
       throw err;
     }
   };
@@ -93,94 +150,118 @@ const PeopleDirectory = () => {
     try {
       if (supabase) {
         const { error: deleteError } = await supabase
-          .from('employees')
+          .from("employees")
           .delete()
-          .eq('id', id);
-        
+          .eq("id", id);
+
         if (deleteError) throw deleteError;
       }
-      
+
       // Update local state
-      setEmployees(prev => prev.filter(emp => emp.id !== id));
-      
+      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
     } catch (err) {
-      console.error('Error deleting employee:', err);
+      console.error("Error deleting employee:", err);
       throw err;
     }
   };
-  
+
   // UI state
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Modals
   const addModal = useModal();
   const editModal = useModal();
   const deleteModal = useModal();
 
   // Search and pagination
-  const { searchTerm, setSearchTerm, filteredItems } = useSearch(
-    employees, 
-    ['name', 'email', 'department', 'position']
-  );
-  const { currentItems, currentPage, totalPages, goToPage, hasNext, hasPrev, nextPage, prevPage } = 
-    usePagination(filteredItems, 12);
+  const { searchTerm, setSearchTerm, filteredItems } = useSearch(employees, [
+    "name",
+    "email",
+    "department",
+    "position",
+  ]);
+  const {
+    currentItems,
+    currentPage,
+    totalPages,
+    goToPage,
+    hasNext,
+    hasPrev,
+    nextPage,
+    prevPage,
+  } = usePagination(filteredItems, 12);
 
   // Form management
   const form = useForm<EmployeeForm>({
-    name: '',
-    email: '',
-    department: '',
-    position: '',
-    location: '',
-    phone: '',
+    name: "",
+    email: "",
+    department: "",
+    position: "",
+    location: "",
+    phone: "",
     salary: 0,
-    manager_id: '',
-    hire_date: ''
+    manager_id: "",
+    hire_date: "",
   });
 
   // Mock departments and locations for the demo
-  const departments = ['Engineering', 'HR', 'Marketing', 'Finance', 'Sales', 'Design', 'Operations'];
-  const locations = ['New York', 'San Francisco', 'London', 'Remote', 'Tokyo', 'Berlin'];
-  
+  const departments = [
+    "Engineering",
+    "HR",
+    "Marketing",
+    "Finance",
+    "Sales",
+    "Design",
+    "Operations",
+  ];
+  const locations = [
+    "New York",
+    "San Francisco",
+    "London",
+    "Remote",
+    "Tokyo",
+    "Berlin",
+  ];
+
   // Mock data for employees
   const mockEmployees = [
     {
       id: 1,
-      name: 'John Doe',
-      email: 'john.doe@company.com',
-      department: 'Engineering',
-      position: 'Senior Developer',
-      location: 'San Francisco',
-      phone: '+1 (555) 123-4567',
-      hire_date: '2022-04-15',
-      status: 'active',
-      avatar: '/avatars/user-01.jpg'
+      name: "John Doe",
+      email: "john.doe@company.com",
+      department: "Engineering",
+      position: "Senior Developer",
+      location: "San Francisco",
+      phone: "+1 (555) 123-4567",
+      hire_date: "2022-04-15",
+      status: "active",
+      avatar: "/avatars/user-01.jpg",
     },
     {
       id: 2,
-      name: 'Jane Smith',
-      email: 'jane.smith@company.com',
-      department: 'Marketing',
-      position: 'Marketing Manager',
-      location: 'New York',
-      phone: '+1 (555) 987-6543',
-      hire_date: '2021-08-10',
-      status: 'active',
-      avatar: '/avatars/user-02.jpg'
+      name: "Jane Smith",
+      email: "jane.smith@company.com",
+      department: "Marketing",
+      position: "Marketing Manager",
+      location: "New York",
+      phone: "+1 (555) 987-6543",
+      hire_date: "2021-08-10",
+      status: "active",
+      avatar: "/avatars/user-02.jpg",
     },
     {
       id: 3,
-      name: 'Michael Johnson',
-      email: 'michael.j@company.com',
-      department: 'HR',
-      position: 'HR Director',
-      location: 'Remote',
-      phone: '+1 (555) 456-7890',
-      hire_date: '2020-02-28',
-      status: 'active',
-      avatar: '/avatars/user-03.jpg'
+      name: "Michael Johnson",
+      email: "michael.j@company.com",
+      department: "HR",
+      position: "HR Director",
+      location: "Remote",
+      phone: "+1 (555) 456-7890",
+      hire_date: "2020-02-28",
+      status: "active",
+      avatar: "/avatars/user-03.jpg",
     },
   ];
 
@@ -189,31 +270,33 @@ const PeopleDirectory = () => {
     const fetchEmployees = async () => {
       try {
         setLoading(true);
-        
+
         // Check if supabase is initialized
-        if (typeof supabase !== 'undefined' && supabase !== null) {
+        if (typeof supabase !== "undefined" && supabase !== null) {
           try {
             const { data, error } = await supabase
-              .from('employees')
-              .select('*')
-              .order('name', { ascending: true });
+              .from("employees")
+              .select("*")
+              .order("name", { ascending: true });
 
             if (error) throw error;
 
             // Use real data if available, otherwise fall back to mock data
             setEmployees(data && data.length > 0 ? data : mockEmployees);
           } catch (supabaseError) {
-            console.error('Supabase error:', supabaseError);
-            setError('Failed to load employees from database. Using demo data instead.');
+            console.error("Supabase error:", supabaseError);
+            setError(
+              "Failed to load employees from database. Using demo data instead.",
+            );
             setEmployees(mockEmployees); // Fallback to mock data
           }
         } else {
-          console.log('Supabase client not available, using mock data');
+          console.log("Supabase client not available, using mock data");
           setEmployees(mockEmployees); // Use mock data
         }
       } catch (err) {
-        console.error('Error fetching employees:', err);
-        setError('Failed to load employees. Using demo data instead.');
+        console.error("Error fetching employees:", err);
+        setError("Failed to load employees. Using demo data instead.");
         setEmployees(mockEmployees); // Fallback to mock data
       } finally {
         setLoading(false);
@@ -224,15 +307,18 @@ const PeopleDirectory = () => {
   }, []);
 
   // Filter employees based on search term
-  const filteredEmployees = employees.filter(emp => 
-    emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.position?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEmployees = employees.filter(
+    (emp) =>
+      emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.position?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-  
+
   // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     form.setValue(name as keyof EmployeeForm, value);
   };
@@ -240,31 +326,31 @@ const PeopleDirectory = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setIsSubmitting(true);
-      
+
       if (selectedEmployee) {
         // Update existing employee
         await updateEmployee(selectedEmployee.id, form.values);
-        toast.success('Employee updated successfully');
+        toast.success("Employee updated successfully");
         editModal.closeModal();
       } else {
         // Create new employee
         await createEmployee({
           ...form.values,
-          status: 'active',
-          created_at: new Date().toISOString()
+          status: "active",
+          created_at: new Date().toISOString(),
         });
-        toast.success('Employee added successfully');
+        toast.success("Employee added successfully");
         addModal.closeModal();
       }
-      
+
       // Reset form
       form.reset();
     } catch (err) {
-      console.error('Error submitting form:', err);
-      toast.error('Failed to save employee data');
+      console.error("Error submitting form:", err);
+      toast.error("Failed to save employee data");
     } finally {
       setIsSubmitting(false);
     }
@@ -272,39 +358,42 @@ const PeopleDirectory = () => {
 
   const handleEdit = (employee: any) => {
     setSelectedEmployee(employee);
-    
+
     // Set form values
-    Object.keys(form.values).forEach(key => {
+    Object.keys(form.values).forEach((key) => {
       if (employee[key] !== undefined) {
         form.setValue(key as keyof EmployeeForm, employee[key]);
       }
     });
-    
+
     editModal.openModal();
   };
 
   const handleDelete = async () => {
     if (!selectedEmployee) return;
-    
+
     try {
       setIsSubmitting(true);
       await deleteEmployee(selectedEmployee.id);
-      toast.success('Employee removed successfully');
+      toast.success("Employee removed successfully");
       deleteModal.closeModal();
       setSelectedEmployee(null);
     } catch (err) {
-      console.error('Error deleting employee:', err);
-      toast.error('Failed to delete employee');
+      console.error("Error deleting employee:", err);
+      toast.error("Failed to delete employee");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Department counts for stats
-  const departmentCounts = departments.reduce((acc, dept) => {
-    acc[dept] = employees.filter(emp => emp.department === dept).length;
-    return acc;
-  }, {} as Record<string, number>);
+  const departmentCounts = departments.reduce(
+    (acc, dept) => {
+      acc[dept] = employees.filter((emp) => emp.department === dept).length;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   return (
     <PageLayout
@@ -312,7 +401,7 @@ const PeopleDirectory = () => {
       description="Manage employee information and organization structure"
       breadcrumbs={[
         { label: "Dashboard", href: "/dashboard" },
-        { label: "People" }
+        { label: "People" },
       ]}
       actionButton={{
         label: "Add Employee",
@@ -362,41 +451,47 @@ const PeopleDirectory = () => {
             className="w-full pl-10 pr-4 py-2 border border-zinc-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
           />
         </div>
-        
+
         <div className="w-full md:w-48">
-          <Select onValueChange={(value) => setSearchTerm(value !== 'all' ? value : '')}>
+          <Select
+            onValueChange={(value) =>
+              setSearchTerm(value !== "all" ? value : "")
+            }
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Filter by department" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Departments</SelectItem>
-              {departments.map(dept => (
-                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+              {departments.map((dept) => (
+                <SelectItem key={dept} value={dept}>
+                  {dept}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="flex space-x-2">
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setViewMode('cards')}
-            className={viewMode === 'cards' ? 'bg-zinc-100' : ''}
+            onClick={() => setViewMode("cards")}
+            className={viewMode === "cards" ? "bg-zinc-100" : ""}
           >
             <Grid className="h-4 w-4" strokeWidth={1.5} />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setViewMode('table')}
-            className={viewMode === 'table' ? 'bg-zinc-100' : ''}
+            onClick={() => setViewMode("table")}
+            className={viewMode === "table" ? "bg-zinc-100" : ""}
           >
             <List className="h-4 w-4" strokeWidth={1.5} />
           </Button>
         </div>
       </SearchFilterBar>
-      
+
       {/* Employee List */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
@@ -404,64 +499,91 @@ const PeopleDirectory = () => {
         </div>
       ) : (
         <>
-          {viewMode === 'cards' ? (
+          {viewMode === "cards" ? (
             <CardGrid columns={3}>
-              {filteredEmployees.map(employee => (
-                <div key={employee.id} className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+              {filteredEmployees.map((employee) => (
+                <div
+                  key={employee.id}
+                  className="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden"
+                >
                   <div className="p-5">
                     <div className="flex items-start">
                       <div className="flex-shrink-0 mr-4">
                         {employee.avatar ? (
-                          <img 
-                            src={employee.avatar} 
-                            alt={employee.name} 
+                          <img
+                            src={employee.avatar}
+                            alt={employee.name}
                             className="h-12 w-12 rounded-full object-cover"
                           />
                         ) : (
                           <div className="h-12 w-12 rounded-full bg-zinc-200 flex items-center justify-center">
-                            <User className="h-6 w-6 text-zinc-500" strokeWidth={1.5} />
+                            <User
+                              className="h-6 w-6 text-zinc-500"
+                              strokeWidth={1.5}
+                            />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h2 className="text-lg font-medium text-zinc-900 truncate">{employee.name}</h2>
+                        <h2 className="text-lg font-medium text-zinc-900 truncate">
+                          {employee.name}
+                        </h2>
                         <p className="mt-1 text-sm text-zinc-500 flex items-center">
-                          <Briefcase className="w-3 h-3 mr-1 inline" strokeWidth={1.5} />
+                          <Briefcase
+                            className="w-3 h-3 mr-1 inline"
+                            strokeWidth={1.5}
+                          />
                           {employee.position}
                         </p>
                         <p className="mt-1 text-sm text-zinc-500 flex items-center">
-                          <Building className="w-3 h-3 mr-1 inline" strokeWidth={1.5} />
+                          <Building
+                            className="w-3 h-3 mr-1 inline"
+                            strokeWidth={1.5}
+                          />
                           {employee.department}
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="mt-4 space-y-2">
                       <p className="text-sm text-zinc-500 flex items-center">
-                        <Mail className="w-4 h-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                        <Mail
+                          className="w-4 h-4 mr-2 text-zinc-400"
+                          strokeWidth={1.5}
+                        />
                         {employee.email}
                       </p>
                       {employee.phone && (
                         <p className="text-sm text-zinc-500 flex items-center">
-                          <Phone className="w-4 h-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                          <Phone
+                            className="w-4 h-4 mr-2 text-zinc-400"
+                            strokeWidth={1.5}
+                          />
                           {employee.phone}
                         </p>
                       )}
                       {employee.location && (
                         <p className="text-sm text-zinc-500 flex items-center">
-                          <MapPin className="w-4 h-4 mr-2 text-zinc-400" strokeWidth={1.5} />
+                          <MapPin
+                            className="w-4 h-4 mr-2 text-zinc-400"
+                            strokeWidth={1.5}
+                          />
                           {employee.location}
                         </p>
                       )}
                     </div>
-                    
+
                     <div className="mt-5 flex justify-end space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(employee)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(employee)}
+                      >
                         <Edit className="h-3 w-3 mr-1" strokeWidth={1.5} />
                         Edit
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                         onClick={() => {
@@ -476,13 +598,20 @@ const PeopleDirectory = () => {
                   </div>
                 </div>
               ))}
-              
+
               {filteredEmployees.length === 0 && (
                 <div className="col-span-full flex justify-center items-center h-64 bg-zinc-50 rounded-lg border border-zinc-200">
                   <div className="text-center">
-                    <User className="h-10 w-10 text-zinc-400 mx-auto mb-3" strokeWidth={1.5} />
-                    <h3 className="text-zinc-500 text-lg">No employees found</h3>
-                    <p className="text-zinc-400 text-sm mt-1">Try adjusting your search or filters</p>
+                    <User
+                      className="h-10 w-10 text-zinc-400 mx-auto mb-3"
+                      strokeWidth={1.5}
+                    />
+                    <h3 className="text-zinc-500 text-lg">
+                      No employees found
+                    </h3>
+                    <p className="text-zinc-400 text-sm mt-1">
+                      Try adjusting your search or filters
+                    </p>
                   </div>
                 </div>
               )}
@@ -492,62 +621,95 @@ const PeopleDirectory = () => {
               <table className="min-w-full divide-y divide-zinc-200">
                 <thead className="bg-zinc-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Employee</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Department</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Position</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Location</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                      Employee
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                      Department
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                      Position
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-zinc-200">
-                  {filteredEmployees.map(employee => (
+                  {filteredEmployees.map((employee) => (
                     <tr key={employee.id} className="hover:bg-zinc-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
                             {employee.avatar ? (
-                              <img 
-                                src={employee.avatar} 
-                                alt={employee.name} 
+                              <img
+                                src={employee.avatar}
+                                alt={employee.name}
                                 className="h-10 w-10 rounded-full object-cover"
                               />
                             ) : (
                               <div className="h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center">
-                                <User className="h-5 w-5 text-zinc-500" strokeWidth={1.5} />
+                                <User
+                                  className="h-5 w-5 text-zinc-500"
+                                  strokeWidth={1.5}
+                                />
                               </div>
                             )}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-zinc-900">{employee.name}</div>
-                            <div className="text-sm text-zinc-500">{employee.email}</div>
+                            <div className="text-sm font-medium text-zinc-900">
+                              {employee.name}
+                            </div>
+                            <div className="text-sm text-zinc-500">
+                              {employee.email}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-zinc-900">{employee.department}</div>
+                        <div className="text-sm text-zinc-900">
+                          {employee.department}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-zinc-900">{employee.position}</div>
+                        <div className="text-sm text-zinc-900">
+                          {employee.position}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-zinc-900">{employee.location}</div>
+                        <div className="text-sm text-zinc-900">
+                          {employee.location}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          employee.status === 'active' ? 'bg-green-100 text-green-800' : 
-                          employee.status === 'inactive' ? 'bg-red-100 text-red-800' : 
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                            employee.status === "active"
+                              ? "bg-green-100 text-green-800"
+                              : employee.status === "inactive"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
                           {employee.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(employee)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(employee)}
+                        >
                           <Edit className="h-4 w-4" strokeWidth={1.5} />
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
                           onClick={() => {
@@ -562,13 +724,20 @@ const PeopleDirectory = () => {
                   ))}
                 </tbody>
               </table>
-              
+
               {filteredEmployees.length === 0 && (
                 <div className="flex justify-center items-center h-64 bg-white">
                   <div className="text-center">
-                    <User className="h-10 w-10 text-zinc-400 mx-auto mb-3" strokeWidth={1.5} />
-                    <h3 className="text-zinc-500 text-lg">No employees found</h3>
-                    <p className="text-zinc-400 text-sm mt-1">Try adjusting your search or filters</p>
+                    <User
+                      className="h-10 w-10 text-zinc-400 mx-auto mb-3"
+                      strokeWidth={1.5}
+                    />
+                    <h3 className="text-zinc-500 text-lg">
+                      No employees found
+                    </h3>
+                    <p className="text-zinc-400 text-sm mt-1">
+                      Try adjusting your search or filters
+                    </p>
                   </div>
                 </div>
               )}
@@ -576,7 +745,7 @@ const PeopleDirectory = () => {
           )}
         </>
       )}
-      
+
       {/* Add Employee Modal */}
       {addModal.isOpen && (
         <Dialog open={true} onOpenChange={() => addModal.closeModal()}>
@@ -587,12 +756,15 @@ const PeopleDirectory = () => {
                 Enter the employee details below to add them to the directory.
               </DialogDescription>
             </DialogHeader>
-            
+
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label htmlFor="name" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Full Name
                     </label>
                     <Input
@@ -604,9 +776,12 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div className="col-span-2">
-                    <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Email Address
                     </label>
                     <Input
@@ -619,29 +794,39 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="department" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="department"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Department
                     </label>
-                    <Select 
-                      name="department" 
+                    <Select
+                      name="department"
                       value={form.values.department}
-                      onValueChange={(value) => form.setValue('department', value)}
+                      onValueChange={(value) =>
+                        form.setValue("department", value)
+                      }
                     >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
                       <SelectContent>
-                        {departments.map(dept => (
-                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        {departments.map((dept) => (
+                          <SelectItem key={dept} value={dept}>
+                            {dept}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="position" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="position"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Position
                     </label>
                     <Input
@@ -653,29 +838,39 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="location"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Location
                     </label>
-                    <Select 
-                      name="location" 
+                    <Select
+                      name="location"
                       value={form.values.location}
-                      onValueChange={(value) => form.setValue('location', value)}
+                      onValueChange={(value) =>
+                        form.setValue("location", value)
+                      }
                     >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select location" />
                       </SelectTrigger>
                       <SelectContent>
-                        {locations.map(loc => (
-                          <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                        {locations.map((loc) => (
+                          <SelectItem key={loc} value={loc}>
+                            {loc}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Phone Number
                     </label>
                     <Input
@@ -686,9 +881,12 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="hire_date" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="hire_date"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Hire Date
                     </label>
                     <Input
@@ -700,9 +898,12 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="salary" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="salary"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Salary
                     </label>
                     <Input
@@ -716,20 +917,25 @@ const PeopleDirectory = () => {
                   </div>
                 </div>
               </div>
-              
+
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => addModal.closeModal()} disabled={isSubmitting}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => addModal.closeModal()}
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Add Employee'}
+                  {isSubmitting ? "Saving..." : "Add Employee"}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       )}
-      
+
       {/* Edit Employee Modal */}
       {editModal.isOpen && (
         <Dialog open={true} onOpenChange={() => editModal.closeModal()}>
@@ -740,12 +946,15 @@ const PeopleDirectory = () => {
                 Update the employee details.
               </DialogDescription>
             </DialogHeader>
-            
+
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label htmlFor="edit-name" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-name"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Full Name
                     </label>
                     <Input
@@ -757,9 +966,12 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div className="col-span-2">
-                    <label htmlFor="edit-email" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-email"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Email Address
                     </label>
                     <Input
@@ -772,29 +984,39 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="edit-department" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-department"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Department
                     </label>
-                    <Select 
-                      name="department" 
+                    <Select
+                      name="department"
                       value={form.values.department}
-                      onValueChange={(value) => form.setValue('department', value)}
+                      onValueChange={(value) =>
+                        form.setValue("department", value)
+                      }
                     >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
                       <SelectContent>
-                        {departments.map(dept => (
-                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        {departments.map((dept) => (
+                          <SelectItem key={dept} value={dept}>
+                            {dept}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="edit-position" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-position"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Position
                     </label>
                     <Input
@@ -806,29 +1028,39 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="edit-location" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-location"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Location
                     </label>
-                    <Select 
-                      name="location" 
+                    <Select
+                      name="location"
                       value={form.values.location}
-                      onValueChange={(value) => form.setValue('location', value)}
+                      onValueChange={(value) =>
+                        form.setValue("location", value)
+                      }
                     >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select location" />
                       </SelectTrigger>
                       <SelectContent>
-                        {locations.map(loc => (
-                          <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                        {locations.map((loc) => (
+                          <SelectItem key={loc} value={loc}>
+                            {loc}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="edit-phone" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-phone"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Phone Number
                     </label>
                     <Input
@@ -839,9 +1071,12 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="edit-hire_date" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-hire_date"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Hire Date
                     </label>
                     <Input
@@ -853,9 +1088,12 @@ const PeopleDirectory = () => {
                       className="mt-1"
                     />
                   </div>
-                  
+
                   <div>
-                    <label htmlFor="edit-salary" className="block text-sm font-medium text-zinc-700">
+                    <label
+                      htmlFor="edit-salary"
+                      className="block text-sm font-medium text-zinc-700"
+                    >
                       Salary
                     </label>
                     <Input
@@ -869,20 +1107,25 @@ const PeopleDirectory = () => {
                   </div>
                 </div>
               </div>
-              
+
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => editModal.closeModal()} disabled={isSubmitting}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => editModal.closeModal()}
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Update Employee'}
+                  {isSubmitting ? "Saving..." : "Update Employee"}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       )}
-      
+
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
         <Dialog open={true} onOpenChange={() => deleteModal.closeModal()}>
@@ -890,22 +1133,28 @@ const PeopleDirectory = () => {
             <DialogHeader>
               <DialogTitle>Confirm Deletion</DialogTitle>
               <DialogDescription>
-                Are you sure you want to remove {selectedEmployee?.name} from the directory? This action cannot be undone.
+                Are you sure you want to remove {selectedEmployee?.name} from
+                the directory? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            
+
             <DialogFooter className="sm:justify-end">
-              <Button type="button" variant="outline" onClick={() => deleteModal.closeModal()} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => deleteModal.closeModal()}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
-              <Button 
-                type="button" 
-                variant="destructive" 
-                onClick={handleDelete} 
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
                 disabled={isSubmitting}
                 className="bg-red-600 hover:bg-red-700"
               >
-                {isSubmitting ? 'Deleting...' : 'Delete Employee'}
+                {isSubmitting ? "Deleting..." : "Delete Employee"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -919,6 +1168,6 @@ export default PeopleDirectory;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
-}; 
+};

@@ -1,10 +1,14 @@
-import React from 'react';
-import { Switch as ChakraSwitch, SwitchProps as ChakraSwitchProps } from '@chakra-ui/react';
+import React from "react";
+
+import {
+  Switch as ChakraSwitch,
+  SwitchProps as ChakraSwitchProps,
+} from "@chakra-ui/react";
 
 export interface SwitchProps extends ChakraSwitchProps {}
 
 const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
-  ({ colorScheme = 'blue', size = 'md', ...props }, ref) => {
+  ({ colorScheme = "blue", size = "md", ...props }, ref) => {
     return (
       <ChakraSwitch
         ref={ref}
@@ -13,9 +17,9 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 Switch.displayName = "Switch";
 
-export { Switch }; 
+export { Switch };

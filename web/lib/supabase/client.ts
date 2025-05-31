@@ -1,26 +1,31 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 // Production environment validation
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const isDevelopment = process.env.NODE_ENV === 'development'
-const isProduction = process.env.NODE_ENV === 'production'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const isDevelopment = process.env.NODE_ENV === "development";
+const isProduction = process.env.NODE_ENV === "production";
 
 // Validate required environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  const missingVars = []
-  if (!supabaseUrl) missingVars.push('NEXT_PUBLIC_SUPABASE_URL')
-  if (!supabaseAnonKey) missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY')
-  
+  const missingVars = [];
+  if (!supabaseUrl) missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!supabaseAnonKey) missingVars.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
   throw new Error(
-    `Missing required environment variables: ${missingVars.join(', ')}. ` +
-    'Please check your environment configuration.'
-  )
+    `Missing required environment variables: ${missingVars.join(", ")}. ` +
+      "Please check your environment configuration.",
+  );
 }
 
 // URL validation
-if (!supabaseUrl.includes('supabase.co') && !supabaseUrl.includes('localhost')) {
-  throw new Error('Invalid Supabase URL format. Must be a valid Supabase project URL.')
+if (
+  !supabaseUrl.includes("supabase.co") &&
+  !supabaseUrl.includes("localhost")
+) {
+  throw new Error(
+    "Invalid Supabase URL format. Must be a valid Supabase project URL.",
+  );
 }
 
 // Singleton pattern to prevent multiple client instances
@@ -38,15 +43,16 @@ function createSupabaseClient(): SupabaseClient {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        flowType: 'pkce',
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        storageKey: 'hr-portal-auth',
+        flowType: "pkce",
+        storage:
+          typeof window !== "undefined" ? window.localStorage : undefined,
+        storageKey: "hr-portal-auth",
         debug: isDevelopment,
       },
       global: {
         headers: {
-          'X-Client-Info': 'hr-portal-web@1.0.0',
-          'X-Environment': process.env.NODE_ENV || 'development'
+          "X-Client-Info": "hr-portal-web@1.0.0",
+          "X-Environment": process.env.NODE_ENV || "development",
         },
       },
       realtime: {
@@ -57,24 +63,27 @@ function createSupabaseClient(): SupabaseClient {
         reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 5000),
       },
       db: {
-        schema: 'public'
-      }
+        schema: "public",
+      },
     });
 
     // Production error handling
-    if (typeof window !== 'undefined' && isProduction) {
+    if (typeof window !== "undefined" && isProduction) {
       // Capture critical auth errors in production
       const originalAuthSignUp = supabaseInstance.auth.signUp;
       supabaseInstance.auth.signUp = async (...args) => {
         try {
-          const result = await originalAuthSignUp.apply(supabaseInstance.auth, args);
+          const result = await originalAuthSignUp.apply(
+            supabaseInstance.auth,
+            args,
+          );
           if (result.error) {
-            console.error('Auth Error during signUp:', result.error.message);
+            console.error("Auth Error during signUp:", result.error.message);
             // In production, you might want to send this to a monitoring service
           }
           return result;
         } catch (error) {
-          console.error('Unexpected error during signUp:', error);
+          console.error("Unexpected error during signUp:", error);
           throw error;
         }
       };
@@ -82,8 +91,10 @@ function createSupabaseClient(): SupabaseClient {
 
     return supabaseInstance;
   } catch (error) {
-    console.error('Failed to initialize Supabase client:', error);
-    throw new Error('Database connection failed. Please check your configuration.');
+    console.error("Failed to initialize Supabase client:", error);
+    throw new Error(
+      "Database connection failed. Please check your configuration.",
+    );
   }
 }
 
@@ -92,13 +103,13 @@ export const supabase = createSupabaseClient();
 
 // Development logging
 if (isDevelopment) {
-  console.log('Supabase client initialized with URL:', supabaseUrl)
-  console.log('Environment:', process.env.NODE_ENV)
+  console.log("Supabase client initialized with URL:", supabaseUrl);
+  console.log("Environment:", process.env.NODE_ENV);
 }
 
 // Production validation
 if (isProduction) {
-  console.log('HR Portal connected to production database')
+  console.log("HR Portal connected to production database");
 }
 
 // Helper function to check if Supabase is properly configured
@@ -106,7 +117,7 @@ export const isSupabaseConfigured = () => {
   try {
     return !!(supabaseUrl && supabaseAnonKey && supabase);
   } catch (error) {
-    console.error('Supabase configuration check failed:', error);
+    console.error("Supabase configuration check failed:", error);
     return false;
   }
 };
@@ -115,51 +126,58 @@ export const isSupabaseConfigured = () => {
 export const checkDatabaseConnection = async () => {
   try {
     const startTime = Date.now();
-    const { data, error } = await supabase.from('profiles').select('count').limit(1);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("count")
+      .limit(1);
     const duration = Date.now() - startTime;
-    
+
     return {
       success: !error,
       duration,
-      error: error ? error.message : null
+      error: error ? error.message : null,
     };
   } catch (error) {
     return {
       success: false,
       duration: 0,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 };
 
 // Global type definition
 declare global {
-  const supabase: SupabaseClient
+  const supabase: SupabaseClient;
 }
 
 // Helper for tenant-aware queries with error handling
 export const tenantClient = (tenantId: string) => {
   try {
     if (!isSupabaseConfigured()) {
-      throw new Error('Supabase not properly configured');
+      throw new Error("Supabase not properly configured");
     }
-    return supabase.from('employees').select().eq('tenant_id', tenantId)
+    return supabase.from("employees").select().eq("tenant_id", tenantId);
   } catch (error) {
-    console.error('Tenant client error:', error)
-    throw error
+    console.error("Tenant client error:", error);
+    throw error;
   }
-}
+};
 
 // Production helper to validate user session
 export const validateUserSession = async () => {
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error) throw error;
     return { session, error: null };
   } catch (error) {
-    return { 
-      session: null, 
-      error: error instanceof Error ? error.message : 'Session validation failed' 
+    return {
+      session: null,
+      error:
+        error instanceof Error ? error.message : "Session validation failed",
     };
   }
 };
@@ -169,4 +187,4 @@ export const resetSupabaseClient = () => {
   if (isDevelopment) {
     supabaseInstance = null;
   }
-}; 
+};

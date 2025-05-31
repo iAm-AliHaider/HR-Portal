@@ -1,9 +1,10 @@
-import { OnboardingPlan } from '../../../packages/types/hr'
+import { OnboardingPlan } from "../../../packages/types/hr";
 
 export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
   {
     title: "Engineering Team Onboarding",
-    description: "Comprehensive onboarding plan for software engineers and technical roles",
+    description:
+      "Comprehensive onboarding plan for software engineers and technical roles",
     department_id: "engineering",
     job_role: "engineer",
     is_default: true,
@@ -11,15 +12,17 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
     task_templates: [
       {
         title: "Complete I-9 Employment Verification",
-        description: "Provide required documentation for I-9 verification process",
+        description:
+          "Provide required documentation for I-9 verification process",
         category: "legal",
         priority: "critical",
         assigned_to_role: "hr",
         due_day_offset: 0,
         approval_required: true,
         time_estimate: 0.5,
-        instructions: "Employee must provide valid I-9 documentation. HR will verify and complete form.",
-        resources: ["https://www.uscis.gov/i-9"]
+        instructions:
+          "Employee must provide valid I-9 documentation. HR will verify and complete form.",
+        resources: ["https://www.uscis.gov/i-9"],
       },
       {
         title: "Setup Payroll and Benefits",
@@ -29,31 +32,39 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "hr",
         due_day_offset: 1,
         time_estimate: 1,
-        instructions: "Complete payroll setup, health insurance enrollment, and 401k registration",
-        documents_required: ["Bank account info", "Insurance beneficiary forms"]
+        instructions:
+          "Complete payroll setup, health insurance enrollment, and 401k registration",
+        documents_required: [
+          "Bank account info",
+          "Insurance beneficiary forms",
+        ],
       },
       {
         title: "IT Equipment Provisioning",
-        description: "Provision laptop, monitor, phone, and necessary software licenses",
+        description:
+          "Provision laptop, monitor, phone, and necessary software licenses",
         category: "it",
         priority: "critical",
         assigned_to_role: "it",
         due_day_offset: 0,
         time_estimate: 2,
-        instructions: "Setup MacBook Pro, external monitor, headset, and install development tools",
-        auto_assign: true
+        instructions:
+          "Setup MacBook Pro, external monitor, headset, and install development tools",
+        auto_assign: true,
       },
       {
         title: "Create Development Environment",
-        description: "Setup development environment, IDE, and development tools",
+        description:
+          "Setup development environment, IDE, and development tools",
         category: "technical",
         priority: "high",
         assigned_to_role: "it",
         due_day_offset: 1,
         dependencies: [2], // Depends on equipment provisioning
         time_estimate: 3,
-        instructions: "Install VS Code, Docker, Git, and connect to company repositories",
-        resources: ["Company dev setup guide", "Git workflows documentation"]
+        instructions:
+          "Install VS Code, Docker, Git, and connect to company repositories",
+        resources: ["Company dev setup guide", "Git workflows documentation"],
       },
       {
         title: "Security Training and Access Setup",
@@ -64,7 +75,8 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         due_day_offset: 2,
         approval_required: true,
         time_estimate: 2,
-        instructions: "Complete mandatory security training, setup VPN client, enable 2FA on all accounts"
+        instructions:
+          "Complete mandatory security training, setup VPN client, enable 2FA on all accounts",
       },
       {
         title: "Workspace Assignment and Office Tour",
@@ -74,7 +86,8 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "manager",
         due_day_offset: 0,
         time_estimate: 0.5,
-        instructions: "Show new hire their workspace, introduce to immediate team members"
+        instructions:
+          "Show new hire their workspace, introduce to immediate team members",
       },
       {
         title: "Team Introduction Meeting",
@@ -84,7 +97,8 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "manager",
         due_day_offset: 1,
         time_estimate: 1,
-        instructions: "Schedule team meeting for introductions, explain team dynamics and current projects"
+        instructions:
+          "Schedule team meeting for introductions, explain team dynamics and current projects",
       },
       {
         title: "Assign Onboarding Buddy",
@@ -94,17 +108,20 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "manager",
         due_day_offset: 0,
         time_estimate: 0.5,
-        instructions: "Select and brief buddy on their responsibilities during onboarding period"
+        instructions:
+          "Select and brief buddy on their responsibilities during onboarding period",
       },
       {
         title: "Company Orientation Presentation",
-        description: "Attend company overview presentation covering culture, values, and policies",
+        description:
+          "Attend company overview presentation covering culture, values, and policies",
         category: "orientation",
         priority: "high",
         assigned_to_role: "hr",
         due_day_offset: 1,
         time_estimate: 2,
-        instructions: "Present company history, mission, values, organizational structure, and key policies"
+        instructions:
+          "Present company history, mission, values, organizational structure, and key policies",
       },
       {
         title: "Review Employee Handbook",
@@ -115,7 +132,7 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         due_day_offset: 3,
         approval_required: true,
         time_estimate: 2,
-        documents_required: ["Employee handbook acknowledgment form"]
+        documents_required: ["Employee handbook acknowledgment form"],
       },
       {
         title: "Code of Conduct Training",
@@ -126,7 +143,7 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         due_day_offset: 5,
         approval_required: true,
         time_estimate: 1,
-        instructions: "Complete online ethics training module and pass quiz"
+        instructions: "Complete online ethics training module and pass quiz",
       },
       {
         title: "Project Assignment and Briefing",
@@ -136,18 +153,21 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "manager",
         due_day_offset: 3,
         time_estimate: 2,
-        instructions: "Explain project scope, timeline, team members, and expected deliverables"
+        instructions:
+          "Explain project scope, timeline, team members, and expected deliverables",
       },
       {
         title: "Development Tools Training",
-        description: "Training on company-specific development tools and processes",
+        description:
+          "Training on company-specific development tools and processes",
         category: "training",
         priority: "high",
         assigned_to_role: "buddy",
         due_day_offset: 5,
         dependencies: [3], // Depends on dev environment setup
         time_estimate: 4,
-        instructions: "Hands-on training with deployment tools, testing frameworks, and code review process"
+        instructions:
+          "Hands-on training with deployment tools, testing frameworks, and code review process",
       },
       {
         title: "First Code Review",
@@ -158,7 +178,8 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         due_day_offset: 7,
         dependencies: [12], // Depends on tools training
         time_estimate: 3,
-        instructions: "Complete small feature or bug fix and submit for code review"
+        instructions:
+          "Complete small feature or bug fix and submit for code review",
       },
       {
         title: "One-Week Check-in Meeting",
@@ -168,7 +189,8 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "manager",
         due_day_offset: 7,
         time_estimate: 1,
-        instructions: "Discuss progress, address concerns, gather feedback on onboarding experience"
+        instructions:
+          "Discuss progress, address concerns, gather feedback on onboarding experience",
       },
       {
         title: "Complete Benefits Enrollment",
@@ -179,50 +201,56 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         due_day_offset: 10,
         approval_required: true,
         time_estimate: 1,
-        documents_required: ["Benefits enrollment forms", "Dependent information"]
+        documents_required: [
+          "Benefits enrollment forms",
+          "Dependent information",
+        ],
       },
       {
         title: "Two-Week Onboarding Review",
-        description: "Comprehensive review of onboarding progress and next steps",
+        description:
+          "Comprehensive review of onboarding progress and next steps",
         category: "feedback",
         priority: "high",
         assigned_to_role: "manager",
         due_day_offset: 14,
         time_estimate: 1.5,
-        instructions: "Review completed tasks, assess integration, plan for remainder of probationary period"
-      }
+        instructions:
+          "Review completed tasks, assess integration, plan for remainder of probationary period",
+      },
     ],
     checklist_items: [
       {
         title: "Received company laptop and equipment",
         category: "equipment",
-        required: true
+        required: true,
       },
       {
         title: "Access to all necessary systems and applications",
         category: "access",
-        required: true
+        required: true,
       },
       {
         title: "Completed mandatory training modules",
         category: "training",
-        required: true
+        required: true,
       },
       {
         title: "Met with all key team members",
         category: "social",
-        required: true
+        required: true,
       },
       {
         title: "Familiar with company policies and procedures",
         category: "policy",
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
   {
     title: "Sales Team Onboarding",
-    description: "Comprehensive onboarding plan for sales representatives and account managers",
+    description:
+      "Comprehensive onboarding plan for sales representatives and account managers",
     department_id: "sales",
     job_role: "sales",
     is_default: true,
@@ -230,13 +258,14 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
     task_templates: [
       {
         title: "Complete Employment Documentation",
-        description: "Complete I-9, tax forms, and other required employment paperwork",
+        description:
+          "Complete I-9, tax forms, and other required employment paperwork",
         category: "legal",
         priority: "critical",
         assigned_to_role: "hr",
         due_day_offset: 0,
         approval_required: true,
-        time_estimate: 1
+        time_estimate: 1,
       },
       {
         title: "CRM System Setup and Training",
@@ -246,28 +275,33 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "it",
         due_day_offset: 1,
         time_estimate: 4,
-        instructions: "Create Salesforce account, configure user permissions, and complete CRM training"
+        instructions:
+          "Create Salesforce account, configure user permissions, and complete CRM training",
       },
       {
         title: "Product Knowledge Training",
-        description: "Comprehensive training on all company products and services",
+        description:
+          "Comprehensive training on all company products and services",
         category: "training",
         priority: "critical",
         assigned_to_role: "manager",
         due_day_offset: 3,
         time_estimate: 8,
-        instructions: "Multi-day product training covering features, benefits, pricing, and competitive positioning"
+        instructions:
+          "Multi-day product training covering features, benefits, pricing, and competitive positioning",
       },
       {
         title: "Sales Process and Methodology Training",
-        description: "Learn company sales process, methodologies, and best practices",
+        description:
+          "Learn company sales process, methodologies, and best practices",
         category: "training",
         priority: "high",
         assigned_to_role: "manager",
         due_day_offset: 5,
         dependencies: [2], // After product training
         time_estimate: 6,
-        instructions: "Training on sales stages, qualification criteria, and closing techniques"
+        instructions:
+          "Training on sales stages, qualification criteria, and closing techniques",
       },
       {
         title: "Territory Assignment and Planning",
@@ -277,7 +311,8 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "manager",
         due_day_offset: 7,
         time_estimate: 3,
-        instructions: "Review assigned accounts, develop territory strategy, set initial targets"
+        instructions:
+          "Review assigned accounts, develop territory strategy, set initial targets",
       },
       {
         title: "Customer Database Review",
@@ -288,17 +323,20 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         due_day_offset: 10,
         dependencies: [1, 4], // After CRM training and territory assignment
         time_estimate: 8,
-        instructions: "Research key accounts, review interaction history, identify opportunities"
+        instructions:
+          "Research key accounts, review interaction history, identify opportunities",
       },
       {
         title: "Shadow Experienced Sales Rep",
-        description: "Observe experienced sales representative on customer calls",
+        description:
+          "Observe experienced sales representative on customer calls",
         category: "training",
         priority: "high",
         assigned_to_role: "buddy",
         due_day_offset: 10,
         time_estimate: 16,
-        instructions: "Attend customer meetings, observe sales techniques, learn customer interaction skills"
+        instructions:
+          "Attend customer meetings, observe sales techniques, learn customer interaction skills",
       },
       {
         title: "First Customer Presentation",
@@ -309,7 +347,8 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         due_day_offset: 14,
         dependencies: [6], // After shadowing
         time_estimate: 2,
-        instructions: "Prepare and deliver presentation to existing customer with manager present"
+        instructions:
+          "Prepare and deliver presentation to existing customer with manager present",
       },
       {
         title: "Sales Goal Setting",
@@ -319,41 +358,44 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "manager",
         due_day_offset: 14,
         time_estimate: 1,
-        instructions: "Establish realistic but challenging goals for first 90 days"
+        instructions:
+          "Establish realistic but challenging goals for first 90 days",
       },
       {
         title: "Three-Week Performance Review",
-        description: "Comprehensive review of onboarding progress and performance",
+        description:
+          "Comprehensive review of onboarding progress and performance",
         category: "feedback",
         priority: "high",
         assigned_to_role: "manager",
         due_day_offset: 21,
         time_estimate: 1.5,
-        instructions: "Assess progress, provide feedback, plan for ongoing development"
-      }
+        instructions:
+          "Assess progress, provide feedback, plan for ongoing development",
+      },
     ],
     checklist_items: [
       {
         title: "CRM system access and proficiency",
         category: "systems",
-        required: true
+        required: true,
       },
       {
         title: "Product knowledge certification",
         category: "training",
-        required: true
+        required: true,
       },
       {
         title: "Completed customer shadowing hours",
         category: "training",
-        required: true
+        required: true,
       },
       {
         title: "First customer presentation delivered",
         category: "milestone",
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
   {
     title: "General Employee Onboarding",
@@ -371,7 +413,7 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "hr",
         due_day_offset: 0,
         approval_required: true,
-        time_estimate: 0.5
+        time_estimate: 0.5,
       },
       {
         title: "Payroll and Tax Setup",
@@ -381,16 +423,17 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "hr",
         due_day_offset: 0,
         approval_required: true,
-        time_estimate: 0.5
+        time_estimate: 0.5,
       },
       {
         title: "IT Account Setup",
-        description: "Create email account and provide access to necessary systems",
+        description:
+          "Create email account and provide access to necessary systems",
         category: "it",
         priority: "critical",
         assigned_to_role: "it",
         due_day_offset: 0,
-        time_estimate: 1
+        time_estimate: 1,
       },
       {
         title: "Workspace Assignment",
@@ -399,7 +442,7 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         priority: "high",
         assigned_to_role: "manager",
         due_day_offset: 0,
-        time_estimate: 0.5
+        time_estimate: 0.5,
       },
       {
         title: "Company Orientation",
@@ -408,7 +451,7 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         priority: "high",
         assigned_to_role: "hr",
         due_day_offset: 1,
-        time_estimate: 2
+        time_estimate: 2,
       },
       {
         title: "Department Introduction",
@@ -417,17 +460,18 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         priority: "high",
         assigned_to_role: "manager",
         due_day_offset: 1,
-        time_estimate: 1
+        time_estimate: 1,
       },
       {
         title: "Safety Training",
-        description: "Complete workplace safety training and emergency procedures",
+        description:
+          "Complete workplace safety training and emergency procedures",
         category: "safety",
         priority: "critical",
         assigned_to_role: "hr",
         due_day_offset: 2,
         approval_required: true,
-        time_estimate: 1
+        time_estimate: 1,
       },
       {
         title: "Employee Handbook Review",
@@ -437,7 +481,7 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         assigned_to_role: "employee",
         due_day_offset: 3,
         approval_required: true,
-        time_estimate: 2
+        time_estimate: 2,
       },
       {
         title: "Benefits Enrollment",
@@ -446,7 +490,7 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         priority: "high",
         assigned_to_role: "hr",
         due_day_offset: 5,
-        time_estimate: 1
+        time_estimate: 1,
       },
       {
         title: "First Week Check-in",
@@ -455,30 +499,30 @@ export const DEFAULT_ONBOARDING_TEMPLATES: Partial<OnboardingPlan>[] = [
         priority: "high",
         assigned_to_role: "manager",
         due_day_offset: 7,
-        time_estimate: 0.5
-      }
+        time_estimate: 0.5,
+      },
     ],
     checklist_items: [
       {
         title: "All employment paperwork completed",
         category: "documentation",
-        required: true
+        required: true,
       },
       {
         title: "System access verified",
         category: "access",
-        required: true
+        required: true,
       },
       {
         title: "Workspace setup complete",
         category: "facilities",
-        required: true
+        required: true,
       },
       {
         title: "Safety training completed",
         category: "safety",
-        required: true
-      }
-    ]
-  }
-] 
+        required: true,
+      },
+    ],
+  },
+];

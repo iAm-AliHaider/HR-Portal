@@ -1,4 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+
+import NextLink from "next/link";
+import { useRouter } from "next/router";
+
 import {
   Box,
   Grid,
@@ -25,16 +29,15 @@ import {
   Td,
   VStack,
   useColorModeValue,
-  Link
-} from '@chakra-ui/react';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import { Application, Job, Interview, Offer } from '../../../packages/types';
-import { getApplications } from '../../services/applications';
-import { getJobs } from '../../services/jobs';
-import { getUpcomingInterviews } from '../../services/interviews';
-import { getOffers } from '../../services/offers';
-import { formatDistanceToNow } from 'date-fns';
+  Link,
+} from "@chakra-ui/react";
+import { formatDistanceToNow } from "date-fns";
+
+import { Application, Job, Interview, Offer } from "../../../packages/types";
+import { getApplications } from "../../services/applications";
+import { getUpcomingInterviews } from "../../services/interviews";
+import { getJobs } from "../../services/jobs";
+import { getOffers } from "../../services/offers";
 
 interface RecruitmentDashboardProps {
   orgId: string;
@@ -47,114 +50,128 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [timeframe, setTimeframe] = useState('30days');
-  
-  const cardBg = useColorModeValue('white', 'gray.700');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const [timeframe, setTimeframe] = useState("30days");
+
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         // Fetch data in parallel
-        const [applicationsData, jobsData, interviewsData, offersData] = await Promise.all([
-          getApplications(orgId),
-          getJobs(orgId),
-          getUpcomingInterviews(orgId, 14), // Next 2 weeks
-          getOffers(orgId)
-        ]);
-        
+        const [applicationsData, jobsData, interviewsData, offersData] =
+          await Promise.all([
+            getApplications(orgId),
+            getJobs(orgId),
+            getUpcomingInterviews(orgId, 14), // Next 2 weeks
+            getOffers(orgId),
+          ]);
+
         setApplications(applicationsData);
         setJobs(jobsData);
         setInterviews(interviewsData);
         setOffers(offersData);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [orgId]);
 
   // Filter data based on selected timeframe
   const getDateFilteredData = (data: any[], dateField: string) => {
-    if (timeframe === 'all') {
+    if (timeframe === "all") {
       return data;
     }
-    
+
     const now = new Date();
     let cutoffDate: Date;
-    
-    if (timeframe === '7days') {
+
+    if (timeframe === "7days") {
       cutoffDate = new Date(now.setDate(now.getDate() - 7));
-    } else if (timeframe === '30days') {
+    } else if (timeframe === "30days") {
       cutoffDate = new Date(now.setDate(now.getDate() - 30));
-    } else if (timeframe === '90days') {
+    } else if (timeframe === "90days") {
       cutoffDate = new Date(now.setDate(now.getDate() - 90));
     } else {
       cutoffDate = new Date(now.setFullYear(now.getFullYear() - 1));
     }
-    
-    return data.filter(item => new Date(item[dateField]) >= cutoffDate);
+
+    return data.filter((item) => new Date(item[dateField]) >= cutoffDate);
   };
-  
-  const filteredApplications = getDateFilteredData(applications, 'application_date');
-  const openJobs = jobs.filter(job => job.status === 'published');
-  
+
+  const filteredApplications = getDateFilteredData(
+    applications,
+    "application_date",
+  );
+  const openJobs = jobs.filter((job) => job.status === "published");
+
   // Calculate key metrics
   const totalApplications = filteredApplications.length;
-  const newApplications = filteredApplications.filter(app => app.status === 'new').length;
-  const interviewStage = filteredApplications.filter(app => app.status === 'interview').length;
-  const offerStage = filteredApplications.filter(app => app.status === 'offered').length;
-  const hiredCandidates = filteredApplications.filter(app => app.status === 'hired').length;
-  const rejectedCandidates = filteredApplications.filter(app => app.status === 'rejected').length;
-  
+  const newApplications = filteredApplications.filter(
+    (app) => app.status === "new",
+  ).length;
+  const interviewStage = filteredApplications.filter(
+    (app) => app.status === "interview",
+  ).length;
+  const offerStage = filteredApplications.filter(
+    (app) => app.status === "offered",
+  ).length;
+  const hiredCandidates = filteredApplications.filter(
+    (app) => app.status === "hired",
+  ).length;
+  const rejectedCandidates = filteredApplications.filter(
+    (app) => app.status === "rejected",
+  ).length;
+
   // Calculate conversion rates
-  const screeningToInterviewRate = totalApplications > 0 
-    ? Math.round((interviewStage / totalApplications) * 100) 
-    : 0;
-  
-  const interviewToOfferRate = interviewStage > 0 
-    ? Math.round((offerStage / interviewStage) * 100) 
-    : 0;
-  
-  const offerAcceptanceRate = offerStage > 0
-    ? Math.round((hiredCandidates / offerStage) * 100)
-    : 0;
-  
+  const screeningToInterviewRate =
+    totalApplications > 0
+      ? Math.round((interviewStage / totalApplications) * 100)
+      : 0;
+
+  const interviewToOfferRate =
+    interviewStage > 0 ? Math.round((offerStage / interviewStage) * 100) : 0;
+
+  const offerAcceptanceRate =
+    offerStage > 0 ? Math.round((hiredCandidates / offerStage) * 100) : 0;
+
   // Sort jobs by most applications
   const topJobs = [...jobs]
-    .map(job => ({
+    .map((job) => ({
       ...job,
-      applicationCount: applications.filter(app => app.job_id === job.id).length
+      applicationCount: applications.filter((app) => app.job_id === job.id)
+        .length,
     }))
     .sort((a, b) => b.applicationCount - a.applicationCount)
     .slice(0, 5);
-  
+
   // Format date
   const formatDate = (dateString: string) => {
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true });
     } catch (e) {
-      return 'Invalid date';
+      return "Invalid date";
     }
   };
-  
+
   return (
     <Box>
-      <Flex 
-        justify="space-between" 
+      <Flex
+        justify="space-between"
         align={{ base: "flex-start", sm: "center" }}
         direction={{ base: "column", sm: "row" }}
         mb={6}
         gap={{ base: 4, sm: 0 }}
       >
         <Heading size="lg">Recruitment Dashboard</Heading>
-        
-        <Select 
+
+        <Select
           value={timeframe}
           onChange={(e) => setTimeframe(e.target.value)}
           maxW="200px"
@@ -166,13 +183,13 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
           <option value="all">All time</option>
         </Select>
       </Flex>
-      
+
       {/* Key metrics */}
-      <Grid 
-        templateColumns={{ 
-          base: "1fr", 
-          md: "repeat(2, 1fr)", 
-          lg: "repeat(4, 1fr)" 
+      <Grid
+        templateColumns={{
+          base: "1fr",
+          md: "repeat(2, 1fr)",
+          lg: "repeat(4, 1fr)",
         }}
         gap={6}
         mb={8}
@@ -182,56 +199,50 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
             <Stat>
               <StatLabel>Total Applications</StatLabel>
               <StatNumber>{totalApplications}</StatNumber>
-              <StatHelpText>
-                {newApplications} new
-              </StatHelpText>
+              <StatHelpText>{newApplications} new</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
-        
+
         <Card bg={cardBg} boxShadow="sm">
           <CardBody>
             <Stat>
               <StatLabel>Open Positions</StatLabel>
               <StatNumber>{openJobs.length}</StatNumber>
-              <StatHelpText>
-                {jobs.length} total
-              </StatHelpText>
+              <StatHelpText>{jobs.length} total</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
-        
+
         <Card bg={cardBg} boxShadow="sm">
           <CardBody>
             <Stat>
               <StatLabel>Candidates Hired</StatLabel>
               <StatNumber>{hiredCandidates}</StatNumber>
-              <StatHelpText>
-                {offerStage} offers sent
-              </StatHelpText>
+              <StatHelpText>{offerStage} offers sent</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
-        
+
         <Card bg={cardBg} boxShadow="sm">
           <CardBody>
             <Stat>
               <StatLabel>Upcoming Interviews</StatLabel>
               <StatNumber>{interviews.length}</StatNumber>
-              <StatHelpText>
-                Next 14 days
-              </StatHelpText>
+              <StatHelpText>Next 14 days</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
       </Grid>
-      
+
       {/* Conversion metrics */}
-      <Heading size="md" mb={4}>Recruitment Funnel</Heading>
-      <Grid 
-        templateColumns={{ 
-          base: "1fr", 
-          md: "repeat(3, 1fr)"
+      <Heading size="md" mb={4}>
+        Recruitment Funnel
+      </Heading>
+      <Grid
+        templateColumns={{
+          base: "1fr",
+          md: "repeat(3, 1fr)",
         }}
         gap={6}
         mb={8}
@@ -247,7 +258,7 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
             </Stat>
           </CardBody>
         </Card>
-        
+
         <Card bg={cardBg} boxShadow="sm">
           <CardBody>
             <Stat>
@@ -259,7 +270,7 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
             </Stat>
           </CardBody>
         </Card>
-        
+
         <Card bg={cardBg} boxShadow="sm">
           <CardBody>
             <Stat>
@@ -272,12 +283,9 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
           </CardBody>
         </Card>
       </Grid>
-      
+
       {/* Two-column layout for bottom sections */}
-      <Grid 
-        templateColumns={{ base: "1fr", lg: "2fr 1fr" }}
-        gap={6}
-      >
+      <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={6}>
         {/* Top Jobs */}
         <Card bg={cardBg} boxShadow="sm">
           <CardHeader pb={0}>
@@ -294,24 +302,37 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
                 </Tr>
               </Thead>
               <Tbody>
-                {topJobs.map(job => (
-                  <Tr key={job.id} _hover={{ bg: 'gray.50', cursor: 'pointer' }} onClick={() => router.push(`/jobs/${job.id}`)}>
+                {topJobs.map((job) => (
+                  <Tr
+                    key={job.id}
+                    _hover={{ bg: "gray.50", cursor: "pointer" }}
+                    onClick={() => router.push(`/jobs/${job.id}`)}
+                  >
                     <Td fontWeight="medium">{job.title}</Td>
-                    <Td>{job.dept_id || 'N/A'}</Td>
+                    <Td>{job.dept_id || "N/A"}</Td>
                     <Td isNumeric>{job.applicationCount}</Td>
                     <Td>
-                                            <Badge                         colorScheme={job.status === 'published' ? 'green' : 'gray'}                      >                        {job.status}                      </Badge>
+                      <Badge
+                        colorScheme={
+                          job.status === "published" ? "green" : "gray"
+                        }
+                      >
+                        {" "}
+                        {job.status}{" "}
+                      </Badge>
                     </Td>
                   </Tr>
                 ))}
                 {topJobs.length === 0 && (
                   <Tr>
-                    <Td colSpan={4} textAlign="center" py={4}>No job postings found</Td>
+                    <Td colSpan={4} textAlign="center" py={4}>
+                      No job postings found
+                    </Td>
                   </Tr>
                 )}
               </Tbody>
             </Table>
-            
+
             <Box mt={4}>
               <Link as={NextLink} href="/jobs" color="blue.500">
                 View all positions
@@ -319,7 +340,7 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
             </Box>
           </CardBody>
         </Card>
-        
+
         {/* Upcoming Interviews */}
         <Card bg={cardBg} boxShadow="sm">
           <CardHeader pb={0}>
@@ -328,14 +349,14 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
           <CardBody>
             {interviews.length > 0 ? (
               <VStack spacing={3} align="stretch">
-                {interviews.map(interview => (
-                  <Box 
-                    key={interview.id} 
+                {interviews.map((interview) => (
+                  <Box
+                    key={interview.id}
                     p={3}
                     borderRadius="md"
                     border="1px"
                     borderColor={borderColor}
-                    _hover={{ bg: 'gray.50', cursor: 'pointer' }}
+                    _hover={{ bg: "gray.50", cursor: "pointer" }}
                     onClick={() => router.push(`/interviews/${interview.id}`)}
                   >
                     <Flex justify="space-between" mb={1}>
@@ -351,7 +372,7 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
                         href={`/applications/${interview.application_id}`}
                         fontSize="sm"
                         color="blue.500"
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         View Application
                       </Link>
@@ -360,9 +381,11 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
                 ))}
               </VStack>
             ) : (
-              <Text py={4} textAlign="center">No upcoming interviews</Text>
+              <Text py={4} textAlign="center">
+                No upcoming interviews
+              </Text>
             )}
-            
+
             <Box mt={4}>
               <Link as={NextLink} href="/interviews" color="blue.500">
                 View all interviews
@@ -375,4 +398,4 @@ const RecruitmentDashboard = ({ orgId }: RecruitmentDashboardProps) => {
   );
 };
 
-export default RecruitmentDashboard; 
+export default RecruitmentDashboard;

@@ -1,7 +1,8 @@
 import React from "react";
+
+import Link from "next/link";
 import { useRouter } from "next/router";
-import Link from 'next/link';
-import { useAuthFixed } from '@/lib/supabase/useAuthFixes';
+
 import {
   Home,
   Database,
@@ -11,44 +12,74 @@ import {
   Activity,
   Users,
   Bug,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuthFixed } from "@/lib/supabase/useAuthFixes";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default function DebugSidebar({ 
+export default function DebugSidebar({
   onClose,
-  isMobile = false
-}: { 
+  isMobile = false,
+}: {
   onClose?: () => void;
   isMobile?: boolean;
 }) {
   const router = useRouter();
   const { user, role, logout } = useAuthFixed();
-  
+
   const isActiveLink = (href: string) => {
     return router.pathname === href || router.pathname.startsWith(`${href}/`);
   };
 
   const debugLinks = [
-    { name: 'Debug Home', href: '/debug', icon: <Home className="mr-3 h-4 w-4" /> },
-    { name: 'Authentication', href: '/debug/auth', icon: <Shield className="mr-3 h-4 w-4" /> },
-    { name: 'Supabase Tests', href: '/debug/supabase-test', icon: <Database className="mr-3 h-4 w-4" /> },
-    { name: 'User Management', href: '/debug/users', icon: <Users className="mr-3 h-4 w-4" /> },
-    { name: 'System Status', href: '/debug/status', icon: <Activity className="mr-3 h-4 w-4" /> },
-    { name: 'Configuration', href: '/debug/config', icon: <Settings className="mr-3 h-4 w-4" /> },
-    { name: 'Logs', href: '/logs', icon: <FileText className="mr-3 h-4 w-4" /> },
+    {
+      name: "Debug Home",
+      href: "/debug",
+      icon: <Home className="mr-3 h-4 w-4" />,
+    },
+    {
+      name: "Authentication",
+      href: "/debug/auth",
+      icon: <Shield className="mr-3 h-4 w-4" />,
+    },
+    {
+      name: "Supabase Tests",
+      href: "/debug/supabase-test",
+      icon: <Database className="mr-3 h-4 w-4" />,
+    },
+    {
+      name: "User Management",
+      href: "/debug/users",
+      icon: <Users className="mr-3 h-4 w-4" />,
+    },
+    {
+      name: "System Status",
+      href: "/debug/status",
+      icon: <Activity className="mr-3 h-4 w-4" />,
+    },
+    {
+      name: "Configuration",
+      href: "/debug/config",
+      icon: <Settings className="mr-3 h-4 w-4" />,
+    },
+    {
+      name: "Logs",
+      href: "/logs",
+      icon: <FileText className="mr-3 h-4 w-4" />,
+    },
   ];
 
   return (
-    <div 
+    <div
       className={cn(
-        "flex flex-col h-full border-r transition-all duration-300 ease-in-out", 
+        "flex flex-col h-full border-r transition-all duration-300 ease-in-out",
         "bg-white text-zinc-900 border-zinc-200",
         isMobile && "fixed inset-y-0 left-0 z-50 shadow-lg w-[260px]",
-        !isMobile && "w-64"
+        !isMobile && "w-64",
       )}
     >
       {/* Header */}
@@ -88,7 +119,7 @@ export default function DebugSidebar({
                   variant={isActiveLink(item.href) ? "default" : "ghost"}
                   className={cn(
                     "w-full justify-start transition-all duration-200 rounded-md text-sm h-9 font-normal",
-                    isActiveLink(item.href) 
+                    isActiveLink(item.href)
                       ? "bg-zinc-900 text-white"
                       : "border-zinc-200 text-zinc-900 hover:bg-zinc-100",
                   )}
@@ -100,7 +131,7 @@ export default function DebugSidebar({
               </Link>
             ))}
           </div>
-          
+
           <div className="px-2 mb-2">
             <h3 className="text-xs font-medium tracking-wider uppercase text-zinc-500">
               Main Navigation
@@ -146,34 +177,40 @@ export default function DebugSidebar({
         {user ? (
           <div className="flex items-center mb-2">
             <Avatar className="h-8 w-8 mr-2 border border-zinc-200">
-              <AvatarImage src={user.avatar || ''} alt={user.email || 'User'} />
+              <AvatarImage src={user.avatar || ""} alt={user.email || "User"} />
               <AvatarFallback className="bg-zinc-100 text-zinc-900">
-                {user.email?.charAt(0).toUpperCase() || 'D'}
+                {user.email?.charAt(0).toUpperCase() || "D"}
               </AvatarFallback>
             </Avatar>
             <div className="overflow-hidden">
               <p className="text-sm font-medium truncate text-zinc-900">
-                {user.name || user.email || 'Debug User'}
+                {user.name || user.email || "Debug User"}
               </p>
               <p className="text-xs truncate text-zinc-500">
-                {role?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Admin'}
+                {role
+                  ?.replace(/_/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase()) || "Admin"}
               </p>
             </div>
           </div>
         ) : (
           <div className="flex items-center mb-2">
             <Avatar className="h-8 w-8 mr-2 border border-zinc-200">
-              <AvatarFallback className="bg-zinc-100 text-zinc-900">D</AvatarFallback>
+              <AvatarFallback className="bg-zinc-100 text-zinc-900">
+                D
+              </AvatarFallback>
             </Avatar>
             <div className="overflow-hidden">
-              <p className="text-sm font-medium truncate text-zinc-900">Debug Mode</p>
+              <p className="text-sm font-medium truncate text-zinc-900">
+                Debug Mode
+              </p>
               <p className="text-xs truncate text-zinc-500">Admin</p>
             </div>
           </div>
         )}
-        <Button 
-          variant="outline" 
-          className="w-full transition-all duration-200 rounded-md text-sm font-normal border-zinc-200 text-zinc-900 hover:bg-zinc-100" 
+        <Button
+          variant="outline"
+          className="w-full transition-all duration-200 rounded-md text-sm font-normal border-zinc-200 text-zinc-900 hover:bg-zinc-100"
           onClick={logout}
           data-logout-button="true"
         >
@@ -182,4 +219,4 @@ export default function DebugSidebar({
       </div>
     </div>
   );
-} 
+}

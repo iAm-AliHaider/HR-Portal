@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from "react";
+
+import { useRouter } from "next/router";
+
+import { useAuth } from "@/hooks/useAuth";
 
 type RequireRoleProps = {
   roles: string[];
@@ -19,13 +21,13 @@ export default function RequireRole({ roles, children }: RequireRoleProps) {
     if (!loading) {
       // If no user is logged in, redirect to login
       if (!user) {
-        router.push('/login?returnUrl=' + encodeURIComponent(router.asPath));
+        router.push("/login?returnUrl=" + encodeURIComponent(router.asPath));
         return;
       }
 
       // If user doesn't have required role, redirect to unauthorized page
       if (!roles.includes(role)) {
-        router.push('/unauthorized');
+        router.push("/unauthorized");
       }
     }
   }, [user, role, loading, router, roles]);
@@ -41,4 +43,4 @@ export default function RequireRole({ roles, children }: RequireRoleProps) {
 
   // User has required role, render children
   return <>{children}</>;
-} 
+}

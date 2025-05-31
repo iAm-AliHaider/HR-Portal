@@ -1,7 +1,7 @@
 export interface WorkflowStep {
   id: string;
   name: string;
-  type: 'approval' | 'notification' | 'action';
+  type: "approval" | "notification" | "action";
   config: Record<string, any>;
 }
 
@@ -20,14 +20,17 @@ export class WorkflowEngine {
     console.log(`[WorkflowEngine] Registered workflow: ${workflow.name}`);
   }
 
-  executeWorkflow(workflowId: string, context: Record<string, any>): Promise<void> {
+  executeWorkflow(
+    workflowId: string,
+    context: Record<string, any>,
+  ): Promise<void> {
     const workflow = this.workflows.get(workflowId);
     if (!workflow) {
       throw new Error(`Workflow not found: ${workflowId}`);
     }
 
     console.log(`[WorkflowEngine] Executing workflow: ${workflow.name}`);
-    
+
     // Basic workflow execution logic
     return Promise.resolve();
   }
@@ -37,4 +40,4 @@ export class WorkflowEngine {
   }
 }
 
-export const workflowEngine = new WorkflowEngine(); 
+export const workflowEngine = new WorkflowEngine();

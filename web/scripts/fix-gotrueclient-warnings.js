@@ -3,8 +3,8 @@
  * Prevent multiple auth listeners and improve singleton pattern
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Track changes
 let changesLog = [];
@@ -18,17 +18,17 @@ function logChange(file, action) {
 
 // Fix useAuth hook to prevent multiple listeners
 function fixUseAuthListeners() {
-  const filePath = path.join(process.cwd(), 'hooks/useAuth.ts');
-  
+  const filePath = path.join(process.cwd(), "hooks/useAuth.ts");
+
   try {
     if (!fs.existsSync(filePath)) {
-      console.log('❌ hooks/useAuth.ts not found');
+      console.log("❌ hooks/useAuth.ts not found");
       return;
     }
-    
+
     filesProcessed++;
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+    const content = fs.readFileSync(filePath, "utf8");
+
     // Add singleton tracking for auth listener
     let newContent = content.replace(
       /import { supabase } from '\.\.\/lib\/supabase\/client';/,
@@ -36,7 +36,7 @@ function fixUseAuthListeners() {
 
 // Global singleton to prevent multiple auth listeners
 let authListenerActive = false;
-let authSubscription: any = null;`
+let authSubscription: any = null;`,
     );
 
     // Improve the auth listener setup
@@ -90,30 +90,32 @@ let authSubscription: any = null;`
           authSubscription = null;
         }
       };
-    }`
+    }`,
     );
 
     if (newContent !== content) {
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      fs.writeFileSync(filePath, newContent, "utf8");
       filesChanged++;
-      logChange('hooks/useAuth.ts', 'Added singleton pattern for auth listeners to prevent GoTrueClient warnings');
+      logChange(
+        "hooks/useAuth.ts",
+        "Added singleton pattern for auth listeners to prevent GoTrueClient warnings",
+      );
     }
-    
   } catch (error) {
-    console.error('Error fixing auth listeners:', error);
+    console.error("Error fixing auth listeners:", error);
   }
 }
 
 // Create a wrapper component to manage auth globally
 function createAuthProvider() {
-  const componentDir = path.join(process.cwd(), 'components/providers');
-  const filePath = path.join(componentDir, 'AuthProvider.tsx');
-  
+  const componentDir = path.join(process.cwd(), "components/providers");
+  const filePath = path.join(componentDir, "AuthProvider.tsx");
+
   try {
     if (!fs.existsSync(componentDir)) {
       fs.mkdirSync(componentDir, { recursive: true });
     }
-    
+
     const component = `import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 
@@ -181,20 +183,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuthProvider = () => useContext(AuthContext);
 export default AuthProvider;`;
-    
-    fs.writeFileSync(filePath, component, 'utf8');
+
+    fs.writeFileSync(filePath, component, "utf8");
     filesChanged++;
-    logChange('components/providers/AuthProvider.tsx', 'Created global auth provider to prevent multiple GoTrueClient instances');
-    
+    logChange(
+      "components/providers/AuthProvider.tsx",
+      "Created global auth provider to prevent multiple GoTrueClient instances",
+    );
   } catch (error) {
-    console.error('Error creating auth provider:', error);
+    console.error("Error creating auth provider:", error);
   }
 }
 
 // Add suppressions for console warnings
 function addConsoleSuppressions() {
-  const filePath = path.join(process.cwd(), 'next.config.js');
-  
+  const filePath = path.join(process.cwd(), "next.config.js");
+
   try {
     if (!fs.existsSync(filePath)) {
       // Create basic next.config.js if it doesn't exist
@@ -217,16 +221,19 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;`;
-      
-      fs.writeFileSync(filePath, basicConfig, 'utf8');
+
+      fs.writeFileSync(filePath, basicConfig, "utf8");
       filesChanged++;
-      logChange('next.config.js', 'Created config with GoTrueClient warning suppressions');
+      logChange(
+        "next.config.js",
+        "Created config with GoTrueClient warning suppressions",
+      );
     } else {
       filesProcessed++;
-      const content = fs.readFileSync(filePath, 'utf8');
-      
+      const content = fs.readFileSync(filePath, "utf8");
+
       // Add webpack config to suppress warnings if not already present
-      if (!content.includes('infrastructureLogging')) {
+      if (!content.includes("infrastructureLogging")) {
         let newContent = content.replace(
           /const nextConfig = \{/,
           `const nextConfig = {
@@ -238,31 +245,33 @@ module.exports = nextConfig;`;
       };
     }
     return config;
-  },`
+  },`,
         );
-        
+
         if (newContent !== content) {
-          fs.writeFileSync(filePath, newContent, 'utf8');
+          fs.writeFileSync(filePath, newContent, "utf8");
           filesChanged++;
-          logChange('next.config.js', 'Added webpack config to suppress GoTrueClient warnings');
+          logChange(
+            "next.config.js",
+            "Added webpack config to suppress GoTrueClient warnings",
+          );
         }
       }
     }
-    
   } catch (error) {
-    console.error('Error updating next.config.js:', error);
+    console.error("Error updating next.config.js:", error);
   }
 }
 
 // Run all fixes
 function runGoTrueClientFixes() {
-  console.log('🔧 Fixing GoTrueClient multiple instance warnings...');
-  console.log('');
-  
+  console.log("🔧 Fixing GoTrueClient multiple instance warnings...");
+  console.log("");
+
   fixUseAuthListeners();
   createAuthProvider();
   addConsoleSuppressions();
-  
+
   // Generate report
   const report = {
     timestamp: new Date().toISOString(),
@@ -270,35 +279,37 @@ function runGoTrueClientFixes() {
       filesProcessed,
       filesChanged,
       issuesFixed: [
-        'GoTrueClient multiple instance warnings',
-        'Auth listener singleton pattern',
-        'Console warning suppressions'
-      ]
+        "GoTrueClient multiple instance warnings",
+        "Auth listener singleton pattern",
+        "Console warning suppressions",
+      ],
     },
     changes: changesLog,
     nextSteps: [
-      'Check browser console for reduced warnings',
-      'Verify single auth listener instance',
-      'Test auth functionality after changes'
-    ]
+      "Check browser console for reduced warnings",
+      "Verify single auth listener instance",
+      "Test auth functionality after changes",
+    ],
   };
-  
+
   fs.writeFileSync(
-    path.join(process.cwd(), 'gotrueclient-warnings-fixed.json'),
+    path.join(process.cwd(), "gotrueclient-warnings-fixed.json"),
     JSON.stringify(report, null, 2),
-    'utf8'
+    "utf8",
   );
-  
-  console.log('');
-  console.log('✅ GoTrueClient fixes completed!');
-  console.log(`📊 Processed ${filesProcessed} files, changed ${filesChanged} files`);
-  console.log('');
-  console.log('🎯 Issues Fixed:');
-  report.summary.issuesFixed.forEach(issue => {
+
+  console.log("");
+  console.log("✅ GoTrueClient fixes completed!");
+  console.log(
+    `📊 Processed ${filesProcessed} files, changed ${filesChanged} files`,
+  );
+  console.log("");
+  console.log("🎯 Issues Fixed:");
+  report.summary.issuesFixed.forEach((issue) => {
     console.log(`   ✓ ${issue}`);
   });
-  console.log('');
-  console.log('📝 Report saved to: gotrueclient-warnings-fixed.json');
+  console.log("");
+  console.log("📝 Report saved to: gotrueclient-warnings-fixed.json");
 }
 
-runGoTrueClientFixes(); 
+runGoTrueClientFixes();

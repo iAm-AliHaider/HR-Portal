@@ -1,13 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useWorkplaceSafety } from '@/hooks/useApi';
-import { useAuth } from '@/hooks/useAuth';
-import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { Badge } from '../../components/ui/badge';
+import React, { useState, useEffect } from "react";
+
+import Link from "next/link";
+import { useRouter } from "next/router";
+
 import {
   BarChart,
   AlertTriangle,
@@ -17,39 +12,58 @@ import {
   Clipboard,
   Plus,
   Calendar,
-  Activity
-} from 'lucide-react';
-import { GetServerSideProps } from 'next';
+  Activity,
+} from "lucide-react";
+import { GetServerSideProps } from "next";
 
+import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useWorkplaceSafety } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
+
+import { Badge } from "../../components/ui/badge";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
 
 // Force Server-Side Rendering to prevent static generation
 export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
-    props: {}
+    props: {},
   };
 };
 
-
 export default function WorkplaceSafetyPage() {
-  const { 
-    safetyData, 
-    incidents, 
-    safetyChecks, 
-    equipmentInspections, 
-    loading, 
-    error 
+  const {
+    safetyData,
+    incidents,
+    safetyChecks,
+    equipmentInspections,
+    loading,
+    error,
   } = useWorkplaceSafety();
-  
+
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('incidents');
+  const [activeTab, setActiveTab] = useState("incidents");
   const { user, role } = useAuth();
-  const isAdmin = role === 'admin' || role === 'manager' || role === 'safety_officer';
+  const isAdmin =
+    role === "admin" || role === "manager" || role === "safety_officer";
 
   // Set active tab based on URL query parameter
   useEffect(() => {
     if (router.query.tab) {
       const tab = router.query.tab as string;
-      if (['incidents', 'checks', 'equipment'].includes(tab)) {
+      if (["incidents", "checks", "equipment"].includes(tab)) {
         setActiveTab(tab);
       }
     }
@@ -58,13 +72,13 @@ export default function WorkplaceSafetyPage() {
   // Function to format date string
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
-  
+
   if (loading) {
     return (
       <ModernDashboardLayout title="Workplace Safety">
@@ -74,51 +88,58 @@ export default function WorkplaceSafetyPage() {
       </ModernDashboardLayout>
     );
   }
-  
+
   if (error) {
     return (
       <ModernDashboardLayout title="Workplace Safety">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div
+          className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
           <strong className="font-bold">Error!</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
       </ModernDashboardLayout>
     );
   }
-  
+
   // Function to handle tab changes and update URL
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    router.push({
-      pathname: router.pathname,
-      query: { tab }
-    }, undefined, { shallow: true });
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { tab },
+      },
+      undefined,
+      { shallow: true },
+    );
   };
-  
+
   // Status badge component
   const StatusBadge = ({ status }: { status: string }) => {
     const getStatusColor = () => {
       switch (status.toLowerCase()) {
-        case 'resolved':
-        case 'completed':
-        case 'passed':
-          return 'bg-green-100 text-green-800';
-        case 'in progress':
-        case 'scheduled':
-          return 'bg-blue-100 text-blue-800';
-        case 'under investigation':
-        case 'pending':
-          return 'bg-yellow-100 text-yellow-800';
-        case 'failed':
-        case 'canceled':
-          return 'bg-red-100 text-red-800';
-        case 'passed with concerns':
-          return 'bg-orange-100 text-orange-800';
+        case "resolved":
+        case "completed":
+        case "passed":
+          return "bg-green-100 text-green-800";
+        case "in progress":
+        case "scheduled":
+          return "bg-blue-100 text-blue-800";
+        case "under investigation":
+        case "pending":
+          return "bg-yellow-100 text-yellow-800";
+        case "failed":
+        case "canceled":
+          return "bg-red-100 text-red-800";
+        case "passed with concerns":
+          return "bg-orange-100 text-orange-800";
         default:
-          return 'bg-gray-100 text-gray-800';
+          return "bg-gray-100 text-gray-800";
       }
     };
-    
+
     return (
       <Badge variant="outline" className={`${getStatusColor()} border-0`}>
         {status}
@@ -130,67 +151,72 @@ export default function WorkplaceSafetyPage() {
   const SeverityBadge = ({ severity }: { severity: string }) => {
     const getSeverityColor = () => {
       switch (severity.toLowerCase()) {
-        case 'low':
-          return 'bg-green-100 text-green-800';
-        case 'medium':
-          return 'bg-yellow-100 text-yellow-800';
-        case 'high':
-          return 'bg-red-100 text-red-800';
+        case "low":
+          return "bg-green-100 text-green-800";
+        case "medium":
+          return "bg-yellow-100 text-yellow-800";
+        case "high":
+          return "bg-red-100 text-red-800";
         default:
-          return 'bg-gray-100 text-gray-800';
+          return "bg-gray-100 text-gray-800";
       }
     };
-    
+
     return (
       <Badge variant="outline" className={`${getSeverityColor()} border-0`}>
         {severity}
       </Badge>
     );
   };
-  
+
   return (
-    <ModernDashboardLayout title="Workplace Safety" subtitle="Monitor and manage workplace safety incidents, checks, and equipment inspections">
+    <ModernDashboardLayout
+      title="Workplace Safety"
+      subtitle="Monitor and manage workplace safety incidents, checks, and equipment inspections"
+    >
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
           <button
-            onClick={() => handleTabChange('incidents')}
+            onClick={() => handleTabChange("incidents")}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'incidents'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              activeTab === "incidents"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             Incidents
           </button>
           <button
-            onClick={() => handleTabChange('checks')}
+            onClick={() => handleTabChange("checks")}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'checks'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              activeTab === "checks"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             Safety Checks
           </button>
           <button
-            onClick={() => handleTabChange('equipment')}
+            onClick={() => handleTabChange("equipment")}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'equipment'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              activeTab === "equipment"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             Equipment Inspections
           </button>
         </nav>
       </div>
-      
+
       {/* Safety Dashboard Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Incidents</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Incidents
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -198,16 +224,22 @@ export default function WorkplaceSafetyPage() {
               <div className="text-2xl font-bold">
                 {loading ? "..." : safetyData.statistics.incidentCount || 0}
               </div>
-              <Badge variant="outline" className="ml-4 bg-yellow-100 text-yellow-800 border-0">
-                {loading ? "..." : safetyData.statistics.openIncidents || 0} Open
+              <Badge
+                variant="outline"
+                className="ml-4 bg-yellow-100 text-yellow-800 border-0"
+              >
+                {loading ? "..." : safetyData.statistics.openIncidents || 0}{" "}
+                Open
               </Badge>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Safety Checks</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Safety Checks
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -215,16 +247,22 @@ export default function WorkplaceSafetyPage() {
               <div className="text-2xl font-bold">
                 {loading ? "..." : safetyChecks?.length || 0}
               </div>
-              <Badge variant="outline" className="ml-4 bg-blue-100 text-blue-800 border-0">
-                {loading ? "..." : safetyData.statistics.upcomingChecks || 0} Upcoming
+              <Badge
+                variant="outline"
+                className="ml-4 bg-blue-100 text-blue-800 border-0"
+              >
+                {loading ? "..." : safetyData.statistics.upcomingChecks || 0}{" "}
+                Upcoming
               </Badge>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Equipment Issues</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Equipment Issues
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -235,16 +273,21 @@ export default function WorkplaceSafetyPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Compliance Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Compliance Rate
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
               <Activity className="h-5 w-5 text-blue-500 mr-2" />
               <div className="text-2xl font-bold">
-                {loading ? "..." : safetyData.statistics.inspectionCompliance || 0}%
+                {loading
+                  ? "..."
+                  : safetyData.statistics.inspectionCompliance || 0}
+                %
               </div>
             </div>
           </CardContent>
@@ -252,16 +295,21 @@ export default function WorkplaceSafetyPage() {
       </div>
 
       {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList>
           <TabsTrigger value="incidents" className="relative">
             <AlertTriangle className="mr-2 h-4 w-4" />
             Incidents
-            {!loading && incidents.filter(i => i.status !== 'Resolved').length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
-                {incidents.filter(i => i.status !== 'Resolved').length}
-              </span>
-            )}
+            {!loading &&
+              incidents.filter((i) => i.status !== "Resolved").length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                  {incidents.filter((i) => i.status !== "Resolved").length}
+                </span>
+              )}
           </TabsTrigger>
           <TabsTrigger value="checks">
             <Clipboard className="mr-2 h-4 w-4" />
@@ -276,7 +324,7 @@ export default function WorkplaceSafetyPage() {
             Analytics
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="incidents" className="space-y-4">
           <Card>
             <CardHeader>
@@ -297,7 +345,9 @@ export default function WorkplaceSafetyPage() {
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-medium">{incident.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{incident.description}</p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {incident.description}
+                          </p>
                         </div>
                         <StatusBadge status={incident.status} />
                       </div>
@@ -326,7 +376,7 @@ export default function WorkplaceSafetyPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="checks" className="space-y-4">
           <Card>
             <CardHeader>
@@ -339,7 +389,9 @@ export default function WorkplaceSafetyPage() {
               {loading ? (
                 <div className="text-center py-4">Loading safety checks...</div>
               ) : safetyChecks.length === 0 ? (
-                <div className="text-center py-4">No safety checks scheduled</div>
+                <div className="text-center py-4">
+                  No safety checks scheduled
+                </div>
               ) : (
                 <div className="divide-y">
                   {safetyChecks.map((check) => (
@@ -367,12 +419,19 @@ export default function WorkplaceSafetyPage() {
                         <p className="text-sm font-medium mb-1">Check Items:</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {check.checkItems.slice(0, 4).map((item) => (
-                            <div key={item.id} className="flex items-center text-sm">
-                              <div className={`h-2 w-2 rounded-full mr-2 ${
-                                item.status === 'Completed' ? 'bg-green-500' :
-                                item.status === 'In Progress' ? 'bg-blue-500' :
-                                'bg-gray-300'
-                              }`} />
+                            <div
+                              key={item.id}
+                              className="flex items-center text-sm"
+                            >
+                              <div
+                                className={`h-2 w-2 rounded-full mr-2 ${
+                                  item.status === "Completed"
+                                    ? "bg-green-500"
+                                    : item.status === "In Progress"
+                                      ? "bg-blue-500"
+                                      : "bg-gray-300"
+                                }`}
+                              />
                               {item.description}
                             </div>
                           ))}
@@ -390,7 +449,7 @@ export default function WorkplaceSafetyPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="equipment" className="space-y-4">
           <Card>
             <CardHeader>
@@ -401,16 +460,22 @@ export default function WorkplaceSafetyPage() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-4">Loading equipment inspections...</div>
+                <div className="text-center py-4">
+                  Loading equipment inspections...
+                </div>
               ) : equipmentInspections.length === 0 ? (
-                <div className="text-center py-4">No equipment inspections found</div>
+                <div className="text-center py-4">
+                  No equipment inspections found
+                </div>
               ) : (
                 <div className="divide-y">
                   {equipmentInspections.map((inspection) => (
                     <div key={inspection.id} className="py-4">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-medium">{inspection.equipmentName}</h3>
+                          <h3 className="font-medium">
+                            {inspection.equipmentName}
+                          </h3>
                           <p className="text-sm text-gray-600 mt-1">
                             {inspection.inspectionType} • {inspection.location}
                           </p>
@@ -444,7 +509,7 @@ export default function WorkplaceSafetyPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="analytics" className="space-y-4">
           <Card>
             <CardHeader>
@@ -464,4 +529,4 @@ export default function WorkplaceSafetyPage() {
       </Tabs>
     </ModernDashboardLayout>
   );
-} 
+}

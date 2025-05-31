@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+
 import {
   Modal,
   ModalOverlay,
@@ -13,11 +14,11 @@ import {
   ModalHeaderProps,
   ModalBodyProps,
   ModalFooterProps,
-  useDisclosure
-} from '@chakra-ui/react';
+  useDisclosure,
+} from "@chakra-ui/react";
 
 // Dialog Container (using Modal)
-export interface DialogProps extends Omit<ModalProps, 'children'> {
+export interface DialogProps extends Omit<ModalProps, "children"> {
   children: React.ReactNode;
 }
 
@@ -37,7 +38,7 @@ export interface DialogTriggerProps {
 }
 
 const DialogTrigger = ({ children, onClick }: DialogTriggerProps) => {
-  return React.cloneElement(children, { 
+  return React.cloneElement(children, {
     onClick: (e: React.MouseEvent) => {
       if (children.props.onClick) {
         children.props.onClick(e);
@@ -45,7 +46,7 @@ const DialogTrigger = ({ children, onClick }: DialogTriggerProps) => {
       if (onClick) {
         onClick();
       }
-    }
+    },
   });
 };
 
@@ -54,10 +55,8 @@ export interface DialogContentProps extends ModalContentProps {}
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   (props, ref) => {
-    return (
-      <ModalContent ref={ref} {...props} />
-    );
-  }
+    return <ModalContent ref={ref} {...props} />;
+  },
 );
 
 // Dialog Header
@@ -65,10 +64,8 @@ export interface DialogHeaderProps extends ModalHeaderProps {}
 
 const DialogHeader = React.forwardRef<HTMLElement, DialogHeaderProps>(
   (props, ref) => {
-    return (
-      <ModalHeader ref={ref} {...props} />
-    );
-  }
+    return <ModalHeader ref={ref} {...props} />;
+  },
 );
 
 // Dialog Title
@@ -76,32 +73,27 @@ export interface DialogTitleProps extends ModalHeaderProps {}
 
 const DialogTitle = React.forwardRef<HTMLElement, DialogTitleProps>(
   (props, ref) => {
-    return (
-      <ModalHeader ref={ref} fontSize="lg" fontWeight="bold" {...props} />
-    );
-  }
+    return <ModalHeader ref={ref} fontSize="lg" fontWeight="bold" {...props} />;
+  },
 );
 
 // Dialog Description
 export interface DialogDescriptionProps extends ModalBodyProps {}
 
-const DialogDescription = React.forwardRef<HTMLDivElement, DialogDescriptionProps>(
-  ({ color = 'gray.600', fontSize = 'sm', ...props }, ref) => {
-    return (
-      <ModalBody ref={ref} color={color} fontSize={fontSize} {...props} />
-    );
-  }
-);
+const DialogDescription = React.forwardRef<
+  HTMLDivElement,
+  DialogDescriptionProps
+>(({ color = "gray.600", fontSize = "sm", ...props }, ref) => {
+  return <ModalBody ref={ref} color={color} fontSize={fontSize} {...props} />;
+});
 
 // Dialog Footer
 export interface DialogFooterProps extends ModalFooterProps {}
 
 const DialogFooter = React.forwardRef<HTMLElement, DialogFooterProps>(
   (props, ref) => {
-    return (
-      <ModalFooter ref={ref} {...props} />
-    );
-  }
+    return <ModalFooter ref={ref} {...props} />;
+  },
 );
 
 Dialog.displayName = "Dialog";
@@ -120,5 +112,5 @@ export {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  useDisclosure
-}; 
+  useDisclosure,
+};

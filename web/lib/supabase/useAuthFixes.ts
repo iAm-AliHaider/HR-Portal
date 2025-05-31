@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
-import { supabase } from './client';
-import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useEffect, useState } from "react";
+
+import { User as SupabaseUser } from "@supabase/supabase-js";
+
+import { supabase } from "./client";
 
 // Extended user type to include profile information
 export interface User {
@@ -25,9 +27,11 @@ export function useAuthFixed() {
   const convertSupabaseUser = (supabaseUser: SupabaseUser): User => {
     return {
       id: supabaseUser.id,
-      email: supabaseUser.email || '',
-      name: supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name,
-      role: supabaseUser.user_metadata?.role || 'employee',
+      email: supabaseUser.email || "",
+      name:
+        supabaseUser.user_metadata?.name ||
+        supabaseUser.user_metadata?.full_name,
+      role: supabaseUser.user_metadata?.role || "employee",
     };
   };
 
@@ -35,23 +39,23 @@ export function useAuthFixed() {
   const fetchUserProfile = async (userId: string): Promise<any> => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
         .single();
 
       if (error) {
-        console.warn('Profile fetch error:', error.message);
-        return { role: 'employee', profile: null };
+        console.warn("Profile fetch error:", error.message);
+        return { role: "employee", profile: null };
       }
 
-      return { 
-        role: data?.role || 'employee', 
-        profile: data || null 
+      return {
+        role: data?.role || "employee",
+        profile: data || null,
       };
     } catch (err) {
-      console.warn('Unexpected error in fetchUserProfile:', err);
-      return { role: 'employee', profile: null };
+      console.warn("Unexpected error in fetchUserProfile:", err);
+      return { role: "employee", profile: null };
     }
   };
 
@@ -60,22 +64,22 @@ export function useAuthFixed() {
     if (initialized) return;
 
     let timeoutId: NodeJS.Timeout;
-    
+
     const initAuth = async () => {
       try {
         // Set timeout for auth initialization
         timeoutId = setTimeout(() => {
           setLoading(false);
           setInitialized(true);
-          setError('Authentication timeout. Please refresh the page.');
-          console.error('Authentication initialization timeout');
+          setError("Authentication timeout. Please refresh the page.");
+          console.error("Authentication initialization timeout");
         }, 5000);
 
         // Get current session
         const { data, error } = await supabase.auth.getSession();
-        
+
         if (error) {
-          console.error('Session error:', error.message);
+          console.error("Session error:", error.message);
           setError(error.message);
           setUser(null);
           setRole(null);
@@ -89,14 +93,16 @@ export function useAuthFixed() {
           // Session exists, set user
           const supabaseUser = convertSupabaseUser(data.session.user);
           setUser(supabaseUser);
-          
+
           // Get profile data
           try {
-            const { role: userRole } = await fetchUserProfile(data.session.user.id);
-            setRole(userRole || 'employee');
+            const { role: userRole } = await fetchUserProfile(
+              data.session.user.id,
+            );
+            setRole(userRole || "employee");
           } catch (profileError) {
-            console.warn('Error fetching initial profile:', profileError);
-            setRole('employee');
+            console.warn("Error fetching initial profile:", profileError);
+            setRole("employee");
           }
         } else {
           // No session, clear user state
@@ -104,8 +110,8 @@ export function useAuthFixed() {
           setRole(null);
         }
       } catch (e) {
-        console.error('Auth initialization error:', e);
-        setError('Authentication initialization failed');
+        console.error("Auth initialization error:", e);
+        setError("Authentication initialization failed");
       } finally {
         setLoading(false);
         setInitialized(true);
@@ -119,7 +125,7 @@ export function useAuthFixed() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         handleAuthChange(event, session);
-      }
+      },
     );
 
     return () => {
@@ -134,14 +140,14 @@ export function useAuthFixed() {
       if (session?.user) {
         const supabaseUser = convertSupabaseUser(session.user);
         setUser(supabaseUser);
-        
+
         // Get profile
         try {
           const { role: userRole } = await fetchUserProfile(session.user.id);
-          setRole(userRole || 'employee');
+          setRole(userRole || "employee");
         } catch (err) {
-          console.warn('Error in auth change profile fetch:', err);
-          setRole('employee');
+          console.warn("Error in auth change profile fetch:", err);
+          setRole("employee");
         }
       } else {
         setUser(null);
@@ -149,8 +155,8 @@ export function useAuthFixed() {
       }
       setError(null);
     } catch (error) {
-      console.error('Error handling auth state change:', error);
-      setError('Authentication state change failed');
+      console.error("Error handling auth state change:", error);
+      setError("Authentication state change failed");
     }
   };
 
@@ -159,7 +165,7 @@ export function useAuthFixed() {
     try {
       setError(null);
       setLoading(true);
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -172,7 +178,7 @@ export function useAuthFixed() {
 
       return { success: true, user: data.user };
     } catch (error: any) {
-      const errorMessage = error.message || 'Sign in failed';
+      const errorMessage = error.message || "Sign in failed";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -185,13 +191,13 @@ export function useAuthFixed() {
     try {
       setError(null);
       setLoading(true);
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: metadata || {}
-        }
+          data: metadata || {},
+        },
       });
 
       if (error) {
@@ -201,7 +207,7 @@ export function useAuthFixed() {
 
       return { success: true, user: data.user };
     } catch (error: any) {
-      const errorMessage = error.message || 'Sign up failed';
+      const errorMessage = error.message || "Sign up failed";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -214,9 +220,9 @@ export function useAuthFixed() {
     try {
       setError(null);
       setLoading(true);
-      
+
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         setError(error.message);
         return { success: false, error: error.message };
@@ -226,7 +232,7 @@ export function useAuthFixed() {
       setRole(null);
       return { success: true };
     } catch (error: any) {
-      const errorMessage = error.message || 'Sign out failed';
+      const errorMessage = error.message || "Sign out failed";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -238,9 +244,9 @@ export function useAuthFixed() {
   const resetPassword = async (email: string) => {
     try {
       setError(null);
-      
+
       const { error } = await supabase.auth.resetPasswordForEmail(email);
-      
+
       if (error) {
         setError(error.message);
         return { success: false, error: error.message };
@@ -248,7 +254,7 @@ export function useAuthFixed() {
 
       return { success: true };
     } catch (error: any) {
-      const errorMessage = error.message || 'Password reset failed';
+      const errorMessage = error.message || "Password reset failed";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -264,7 +270,7 @@ export function useAuthFixed() {
     signOut,
     resetPassword,
     isAuthenticated: !!user,
-    isAdmin: role === 'admin',
-    isManager: role === 'manager' || role === 'admin',
+    isAdmin: role === "admin",
+    isManager: role === "manager" || role === "admin",
   };
-} 
+}

@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import React from 'react';
+import React from "react";
+
 import {
   Menu,
   MenuButton,
@@ -8,25 +9,29 @@ import {
   MenuItem,
   MenuGroup,
   MenuDivider,
-  Button
-} from '@chakra-ui/react';
+  Button,
+} from "@chakra-ui/react";
 
 // Simplified dropdown menu for basic use cases
 const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <Menu>
-      {children}
-    </Menu>
-  );
+  return <Menu>{children}</Menu>;
 };
 
-const DropdownMenuTrigger = ({ asChild, children, ...props }: { asChild?: boolean; children: React.ReactNode; [key: string]: any }) => {
+const DropdownMenuTrigger = ({
+  asChild,
+  children,
+  ...props
+}: {
+  asChild?: boolean;
+  children: React.ReactNode;
+  [key: string]: any;
+}) => {
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement, {
-      as: MenuButton
+      as: MenuButton,
     });
   }
-  
+
   return (
     <MenuButton as={Button} {...props}>
       {children}
@@ -34,26 +39,36 @@ const DropdownMenuTrigger = ({ asChild, children, ...props }: { asChild?: boolea
   );
 };
 
-const DropdownMenuContent = ({ align, children, ...props }: { align?: string; children: React.ReactNode; [key: string]: any }) => {
-  return (
-    <MenuList {...props}>
-      {children}
-    </MenuList>
-  );
+const DropdownMenuContent = ({
+  align,
+  children,
+  ...props
+}: {
+  align?: string;
+  children: React.ReactNode;
+  [key: string]: any;
+}) => {
+  return <MenuList {...props}>{children}</MenuList>;
 };
 
-const DropdownMenuItem = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  return (
-    <MenuItem {...props}>
-      {children}
-    </MenuItem>
-  );
+const DropdownMenuItem = ({
+  children,
+  ...props
+}: {
+  children: React.ReactNode;
+  [key: string]: any;
+}) => {
+  return <MenuItem {...props}>{children}</MenuItem>;
 };
 
-const DropdownMenuLabel = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  return (
-    <MenuGroup title={children as string} {...props} />
-  );
+const DropdownMenuLabel = ({
+  children,
+  ...props
+}: {
+  children: React.ReactNode;
+  [key: string]: any;
+}) => {
+  return <MenuGroup title={children as string} {...props} />;
 };
 
 const DropdownMenuSeparator = (props: any) => {
@@ -63,9 +78,13 @@ const DropdownMenuSeparator = (props: any) => {
 // For compatibility but simplified
 const DropdownMenuCheckboxItem = DropdownMenuItem;
 const DropdownMenuRadioItem = DropdownMenuItem;
-const DropdownMenuShortcut = ({ children }: { children: React.ReactNode }) => <span>{children}</span>;
+const DropdownMenuShortcut = ({ children }: { children: React.ReactNode }) => (
+  <span>{children}</span>
+);
 const DropdownMenuGroup = MenuGroup;
-const DropdownMenuPortal = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+const DropdownMenuPortal = ({ children }: { children: React.ReactNode }) => (
+  <>{children}</>
+);
 const DropdownMenuSub = DropdownMenu;
 const DropdownMenuSubContent = DropdownMenuContent;
 const DropdownMenuSubTrigger = DropdownMenuTrigger;
@@ -87,4 +106,4 @@ export {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
-}; 
+};

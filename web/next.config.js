@@ -4,7 +4,7 @@ const nextConfig = {
   webpack: (config, { dev }) => {
     if (dev) {
       config.infrastructureLogging = {
-        level: 'error'
+        level: "error",
       };
     }
     return config;
@@ -25,21 +25,21 @@ const nextConfig = {
   swcMinify: true,
   // Ensure proper static generation
   generateBuildId: async () => {
-    return 'build-' + Date.now();
+    return "build-" + Date.now();
   },
   // Headers for better caching and security
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
         ],
       },

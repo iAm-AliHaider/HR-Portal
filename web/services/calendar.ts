@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client';
+import { supabase } from "@/lib/supabase/client";
 
 // Types for calendar service
 export interface CalendarEvent {
@@ -6,7 +6,7 @@ export interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
-  type: 'meeting' | 'interview' | 'deadline' | 'review' | 'event';
+  type: "meeting" | "interview" | "deadline" | "review" | "event";
   description?: string;
   location?: string;
   attendees?: string[];
@@ -17,18 +17,18 @@ export interface CalendarEvent {
 // Mock data for when Supabase isn't available
 const mockEvents: CalendarEvent[] = [
   {
-    id: '1',
-    title: 'Team Meeting',
+    id: "1",
+    title: "Team Meeting",
     start: new Date(new Date().setHours(10, 0, 0, 0)),
     end: new Date(new Date().setHours(11, 30, 0, 0)),
-    type: 'meeting',
-    description: 'Weekly team sync meeting',
-    location: 'Conference Room A',
-    attendees: ['john@example.com', 'sarah@example.com']
+    type: "meeting",
+    description: "Weekly team sync meeting",
+    location: "Conference Room A",
+    attendees: ["john@example.com", "sarah@example.com"],
   },
   {
-    id: '2',
-    title: 'Interview: Senior Developer',
+    id: "2",
+    title: "Interview: Senior Developer",
     start: (() => {
       const date = new Date();
       date.setDate(date.getDate() + 1);
@@ -41,14 +41,14 @@ const mockEvents: CalendarEvent[] = [
       date.setHours(14, 0, 0, 0);
       return date;
     })(),
-    type: 'interview',
-    description: 'Interview with candidate for senior developer position',
-    location: 'Meeting Room B',
-    attendees: ['hr@example.com', 'tech.lead@example.com']
+    type: "interview",
+    description: "Interview with candidate for senior developer position",
+    location: "Meeting Room B",
+    attendees: ["hr@example.com", "tech.lead@example.com"],
   },
   {
-    id: '3',
-    title: 'Project Deadline',
+    id: "3",
+    title: "Project Deadline",
     start: (() => {
       const date = new Date();
       date.setDate(date.getDate() + 2);
@@ -61,14 +61,14 @@ const mockEvents: CalendarEvent[] = [
       date.setHours(17, 0, 0, 0);
       return date;
     })(),
-    type: 'deadline',
-    description: 'Submission deadline for Phase 1',
-    location: '',
-    attendees: []
+    type: "deadline",
+    description: "Submission deadline for Phase 1",
+    location: "",
+    attendees: [],
   },
   {
-    id: '4',
-    title: 'Performance Review',
+    id: "4",
+    title: "Performance Review",
     start: (() => {
       const date = new Date();
       date.setDate(date.getDate() + 3);
@@ -81,14 +81,14 @@ const mockEvents: CalendarEvent[] = [
       date.setHours(15, 0, 0, 0);
       return date;
     })(),
-    type: 'review',
-    description: 'Quarterly performance review',
-    location: 'HR Office',
-    attendees: ['manager@example.com']
+    type: "review",
+    description: "Quarterly performance review",
+    location: "HR Office",
+    attendees: ["manager@example.com"],
   },
   {
-    id: '5',
-    title: 'Offsite Team Building',
+    id: "5",
+    title: "Offsite Team Building",
     start: (() => {
       const date = new Date();
       date.setDate(date.getDate() + 5);
@@ -101,11 +101,11 @@ const mockEvents: CalendarEvent[] = [
       date.setHours(17, 0, 0, 0);
       return date;
     })(),
-    type: 'event',
-    description: 'Full day team building activity',
-    location: 'Downtown Recreation Center',
-    attendees: ['team@example.com']
-  }
+    type: "event",
+    description: "Full day team building activity",
+    location: "Downtown Recreation Center",
+    attendees: ["team@example.com"],
+  },
 ];
 
 // Check if Supabase is properly configured
@@ -127,24 +127,24 @@ export const CalendarService = {
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
-          .from('events')
-          .select('*')
-          .order('start', { ascending: true });
+          .from("events")
+          .select("*")
+          .order("start", { ascending: true });
 
         if (error) throw error;
 
-        return data.map(event => ({
+        return data.map((event) => ({
           ...event,
           start: new Date(event.start),
           end: new Date(event.end),
-          attendees: event.attendees || []
+          attendees: event.attendees || [],
         }));
       } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error("Error fetching events:", error);
         return inMemoryEvents;
       }
     } else {
-      console.log('Using mock calendar data (Supabase not configured)');
+      console.log("Using mock calendar data (Supabase not configured)");
       return inMemoryEvents;
     }
   },
@@ -154,44 +154,46 @@ export const CalendarService = {
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
-          .from('events')
-          .select('*')
-          .gte('start', start.toISOString())
-          .lte('end', end.toISOString())
-          .order('start', { ascending: true });
+          .from("events")
+          .select("*")
+          .gte("start", start.toISOString())
+          .lte("end", end.toISOString())
+          .order("start", { ascending: true });
 
         if (error) throw error;
 
-        return data.map(event => ({
+        return data.map((event) => ({
           ...event,
           start: new Date(event.start),
           end: new Date(event.end),
-          attendees: event.attendees || []
+          attendees: event.attendees || [],
         }));
       } catch (error) {
-        console.error('Error fetching events by date range:', error);
-        return inMemoryEvents.filter(event => 
-          event.start >= start && event.end <= end
+        console.error("Error fetching events by date range:", error);
+        return inMemoryEvents.filter(
+          (event) => event.start >= start && event.end <= end,
         );
       }
     } else {
-      return inMemoryEvents.filter(event => 
-        event.start >= start && event.end <= end
+      return inMemoryEvents.filter(
+        (event) => event.start >= start && event.end <= end,
       );
     }
   },
 
   // Create a new event
-  async createEvent(event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent | null> {
+  async createEvent(
+    event: Omit<CalendarEvent, "id">,
+  ): Promise<CalendarEvent | null> {
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
-          .from('events')
+          .from("events")
           .insert({
             ...event,
             start: event.start.toISOString(),
             end: event.end.toISOString(),
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
           })
           .select()
           .single();
@@ -202,10 +204,10 @@ export const CalendarService = {
           ...data,
           start: new Date(data.start),
           end: new Date(data.end),
-          attendees: data.attendees || []
+          attendees: data.attendees || [],
         };
       } catch (error) {
-        console.error('Error creating event:', error);
+        console.error("Error creating event:", error);
         return null;
       }
     } else {
@@ -213,7 +215,7 @@ export const CalendarService = {
       const newEvent: CalendarEvent = {
         ...event,
         id: `mock-${Date.now()}`,
-        created_at: new Date()
+        created_at: new Date(),
       };
       inMemoryEvents.push(newEvent);
       return newEvent;
@@ -225,13 +227,13 @@ export const CalendarService = {
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
-          .from('events')
+          .from("events")
           .update({
             ...event,
             start: event.start.toISOString(),
-            end: event.end.toISOString()
+            end: event.end.toISOString(),
           })
-          .eq('id', event.id)
+          .eq("id", event.id)
           .select()
           .single();
 
@@ -241,15 +243,15 @@ export const CalendarService = {
           ...data,
           start: new Date(data.start),
           end: new Date(data.end),
-          attendees: data.attendees || []
+          attendees: data.attendees || [],
         };
       } catch (error) {
-        console.error('Error updating event:', error);
+        console.error("Error updating event:", error);
         return null;
       }
     } else {
       // Update in mock implementation
-      const index = inMemoryEvents.findIndex(e => e.id === event.id);
+      const index = inMemoryEvents.findIndex((e) => e.id === event.id);
       if (index >= 0) {
         inMemoryEvents[index] = event;
         return event;
@@ -262,21 +264,18 @@ export const CalendarService = {
   async deleteEvent(id: string): Promise<boolean> {
     if (isSupabaseConfigured()) {
       try {
-        const { error } = await supabase
-          .from('events')
-          .delete()
-          .eq('id', id);
+        const { error } = await supabase.from("events").delete().eq("id", id);
 
         if (error) throw error;
         return true;
       } catch (error) {
-        console.error('Error deleting event:', error);
+        console.error("Error deleting event:", error);
         return false;
       }
     } else {
       // Delete in mock implementation
       const initialLength = inMemoryEvents.length;
-      inMemoryEvents = inMemoryEvents.filter(e => e.id !== id);
+      inMemoryEvents = inMemoryEvents.filter((e) => e.id !== id);
       return inMemoryEvents.length < initialLength;
     }
   },
@@ -286,13 +285,13 @@ export const CalendarService = {
     try {
       // This would integrate with external calendar APIs
       // For example, Google Calendar API
-      
+
       // Mock implementation for now
       console.log(`Syncing calendar for user ${userId}`);
       return true;
     } catch (error) {
-      console.error('Error syncing with external calendar:', error);
+      console.error("Error syncing with external calendar:", error);
       return false;
     }
-  }
-} 
+  },
+};
