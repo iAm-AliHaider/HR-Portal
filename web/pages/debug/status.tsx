@@ -266,10 +266,11 @@ export default function SystemStatusPage() {
                           <CardDescription className="mb-1">Latency</CardDescription>
                           <p className="font-medium">{formatLatency(check.latency)}</p>
                           <div className="mt-2">
-                            <Progress 
-                              value={getLatencyProgress(check.latency)} 
-                              className={`h-2 ${getLatencyColor(check.latency)}`}
-                            />
+                            <div className={`h-2 ${getLatencyColor(check.latency)}`}>
+                              <Progress 
+                                value={getLatencyProgress(check.latency)} 
+                              />
+                            </div>
                           </div>
                         </div>
                       )}

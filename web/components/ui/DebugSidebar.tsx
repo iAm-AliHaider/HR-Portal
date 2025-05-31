@@ -1,7 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthFixed } from '@/lib/supabase/useAuthFixes';
 import {
   Home,
   Database,
@@ -26,7 +26,7 @@ export default function DebugSidebar({
   isMobile?: boolean;
 }) {
   const router = useRouter();
-  const { user, role, logout } = useAuth();
+  const { user, role, logout } = useAuthFixed();
   
   const isActiveLink = (href: string) => {
     return router.pathname === href || router.pathname.startsWith(`${href}/`);
