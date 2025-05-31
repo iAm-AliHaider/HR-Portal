@@ -1115,17 +1115,21 @@ export class SupabaseAdminManager {
       const row: Record<string, any> = {};
 
       headers.forEach((header, index) => {
-        let value = values[index] || '';
+        let value: any = values[index] || '';
         
         // Remove quotes if present
-        if (value.startsWith('"') && value.endsWith('"')) {
+        if (typeof value === 'string' && value.startsWith('"') && value.endsWith('"')) {
           value = value.slice(1, -1);
         }
         
         // Try to parse as number or boolean
-        if (value === 'true') value = true;
-        else if (value === 'false') value = false;
-        else if (value && !isNaN(Number(value))) value = Number(value);
+        if (value === 'true') {
+          value = true;
+        } else if (value === 'false') {
+          value = false;
+        } else if (value && typeof value === 'string' && !isNaN(Number(value))) {
+          value = Number(value);
+        }
         
         row[header] = value;
       });
@@ -1173,8 +1177,8 @@ export class SupabaseAdminManager {
 
 // Export default credentials with the provided password
 export const defaultCredentials: DatabaseCredentials = {
-  url: 'https://tqtwdkobrzzrhrqdxprs.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyOTU0MTgsImV4cCI6MjA2Mzg3MTQxOH0.xM1V6pUAOIrALa8E1o8Ma8j7csavI2kPjIfS6RPu15s',
-  serviceKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODI5NTQxOCwiZXhwIjoyMDYzODcxNDE4fQ.V4mrfOQm4kiIRBl0a7WduyKuYAR96ZoIjWq_deNX_94',
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tqtwdkobrzzrhrqdxprs.supabase.co',
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyOTU0MTgsImV4cCI6MjA2Mzg3MTQxOH0.xM1V6pUAOIrALa8E1o8Ma8j7csavI2kPjIfS6RPu15s',
+  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxdHdka29icnp6cmhycWR4cHJzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODI5NTQxOCwiZXhwIjoyMDYzODcxNDE4fQ.V4mrfOQm4kiIRBl0a7WduyKuYAR96ZoIjWq_deNX_94',
   password: 'pqADSqP6fm8TseVH'
 }; 
