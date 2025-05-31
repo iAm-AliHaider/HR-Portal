@@ -4,6 +4,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/router';
 import ModernDashboardLayout from '@/components/layout/ModernDashboardLayout';
 import { supabase } from '../../lib/supabase/client';
+import { PlusIcon, DownloadIcon, SearchIcon, FilterIcon, UserPlusIcon, MailIcon, TrashIcon, LockIcon } from 'lucide-react';
+import { PageLayout, StatsCard, DataTable, TableHeader, TableHeaderCell, TableCell, SearchFilterBar, UserAvatar, StatusBadge } from '@/components/layout/PageLayout';
 
 interface AuthUser {
   id: string;
@@ -29,22 +31,26 @@ interface UnlinkedUser {
   profile: Profile | null;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  department: string;
+  status: 'active' | 'inactive' | 'pending';
+  lastLogin?: string;
+  createdAt: string;
+}
+
 export default function UserManagementPage() {
   const { user, role } = useAuth();
   const router = useRouter();
-  const [unlinkedUsers, setUnlinkedUsers] = useState<UnlinkedUser[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState<string | null>(null);
-  const [linkingMode, setLinkingMode] = useState<{ userId: string; mode: 'create' | 'link' } | null>(null);
-  const [linkForm, setLinkForm] = useState({
-    firstName: '',
-    lastName: '',
-    role: 'employee',
-    department: '',
-    position: '',
-    existingProfileId: ''
-  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Ensure admin access
   useEffect(() => {
@@ -53,168 +59,140 @@ export default function UserManagementPage() {
     }
   }, [role, router]);
 
-  // Load data
+  // Load user data
   useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    setLoading(true);
-    try {
-      // In development mode, simulate data
-      if (process.env.NODE_ENV === 'development') {
-        // Mock unlinked users
-        const mockUnlinkedUsers: UnlinkedUser[] = [
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        // In a real app, you would fetch from an API
+        // For demo, using mock data
+        const mockUsers: User[] = [
           {
-            auth_user: {
-              id: 'auth-user-1',
-              email: 'newuser@example.com',
-              created_at: new Date().toISOString(),
-              raw_user_meta_data: { full_name: 'New User' },
-              email_confirmed_at: new Date().toISOString()
-            },
-            profile: null
-          },
-          {
-            auth_user: {
-              id: 'auth-user-2',
-              email: 'candidate@example.com',
-              created_at: new Date().toISOString(),
-              raw_user_meta_data: { full_name: 'John Candidate' },
-              email_confirmed_at: new Date().toISOString()
-            },
-            profile: null
-          }
-        ];
-
-        // Mock profiles
-        const mockProfiles: Profile[] = [
-          {
-            id: 'profile-1',
-            first_name: 'John',
-            last_name: 'Doe',
+            id: '1',
+            name: 'John Doe',
             email: 'john.doe@company.com',
-            role: 'employee',
-            department: 'Engineering',
-            position: 'Developer',
-            created_at: new Date().toISOString()
+            role: 'admin',
+            department: 'Executive',
+            status: 'active',
+            lastLogin: '2023-05-30T15:24:33Z',
+            createdAt: '2023-01-01T09:00:00Z'
           },
           {
-            id: 'profile-2',
-            first_name: 'Jane',
-            last_name: 'Smith',
+            id: '2',
+            name: 'Jane Smith',
             email: 'jane.smith@company.com',
             role: 'manager',
             department: 'HR',
-            position: 'HR Manager',
-            created_at: new Date().toISOString()
+            status: 'active',
+            lastLogin: '2023-05-29T10:15:00Z',
+            createdAt: '2023-01-15T09:00:00Z'
+          },
+          {
+            id: '3',
+            name: 'Robert Johnson',
+            email: 'robert.johnson@company.com',
+            role: 'employee',
+            department: 'Engineering',
+            status: 'inactive',
+            lastLogin: '2023-05-01T08:30:00Z',
+            createdAt: '2023-02-01T09:00:00Z'
+          },
+          {
+            id: '4',
+            name: 'Alice Brown',
+            email: 'alice.brown@company.com',
+            role: 'employee',
+            department: 'Marketing',
+            status: 'pending',
+            createdAt: '2023-05-25T09:00:00Z'
+          },
+          {
+            id: '5',
+            name: 'Michael Wilson',
+            email: 'michael.wilson@company.com',
+            role: 'manager',
+            department: 'Sales',
+            status: 'active',
+            lastLogin: '2023-05-30T09:45:00Z',
+            createdAt: '2023-03-01T09:00:00Z'
+          },
+          {
+            id: '6',
+            name: 'Emily Davis',
+            email: 'emily.davis@company.com',
+            role: 'employee',
+            department: 'Customer Support',
+            status: 'active',
+            lastLogin: '2023-05-29T16:20:00Z',
+            createdAt: '2023-03-15T09:00:00Z'
+          },
+          {
+            id: '7',
+            name: 'David Martinez',
+            email: 'david.martinez@company.com',
+            role: 'employee',
+            department: 'Engineering',
+            status: 'active',
+            lastLogin: '2023-05-30T11:10:00Z',
+            createdAt: '2023-04-01T09:00:00Z'
+          },
+          {
+            id: '8',
+            name: 'Sarah Taylor',
+            email: 'sarah.taylor@company.com',
+            role: 'employee',
+            department: 'Finance',
+            status: 'pending',
+            createdAt: '2023-05-28T09:00:00Z'
           }
         ];
-
-        setUnlinkedUsers(mockUnlinkedUsers);
-        setProfiles(mockProfiles);
+        
+        setUsers(mockUsers);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
         setLoading(false);
-        return;
       }
+    };
 
-      // Production mode - load from Supabase
-      // This would require admin access to auth.users table
-      // For now, we'll use a simplified approach with profiles table only
-      
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+    fetchUsers();
+  }, []);
 
-      if (profilesError) {
-        console.error('Error loading profiles:', profilesError);
-      } else {
-        setProfiles(profilesData || []);
-      }
+  // Filter users based on search term and filters
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.department.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = filterRole === 'all' || user.role === filterRole;
+    const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
+    
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    } finally {
-      setLoading(false);
-    }
+  // Handle user actions
+  const handleUserAction = (userId: string, action: string) => {
+    // In a real app, this would call the appropriate API endpoint
+    console.log(`Action ${action} on user ${userId}`);
+    alert(`${action} user with ID: ${userId}`);
   };
 
-  const handleCreateProfile = async (userId: string) => {
-    setProcessing(userId);
-    try {
-      const response = await fetch('/api/admin/create-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          firstName: linkForm.firstName,
-          lastName: linkForm.lastName,
-          role: linkForm.role,
-          department: linkForm.department,
-          position: linkForm.position
-        })
-      });
-
-      if (response.ok) {
-        alert('Profile created successfully!');
-        loadUserData();
-        setLinkingMode(null);
-        resetLinkForm();
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      alert('Failed to create profile');
-    } finally {
-      setProcessing(null);
-    }
+  const inviteUser = () => {
+    setShowInviteModal(true);
   };
 
-  const handleLinkProfile = async (userId: string) => {
-    setProcessing(userId);
-    try {
-      const response = await fetch('/api/admin/link-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          profileId: linkForm.existingProfileId
-        })
-      });
-
-      if (response.ok) {
-        alert('Profile linked successfully!');
-        loadUserData();
-        setLinkingMode(null);
-        resetLinkForm();
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Error linking profile:', error);
-      alert('Failed to link profile');
-    } finally {
-      setProcessing(null);
-    }
-  };
-
-  const resetLinkForm = () => {
-    setLinkForm({
-      firstName: '',
-      lastName: '',
-      role: 'employee',
-      department: '',
-      position: '',
-      existingProfileId: ''
-    });
-  };
-
-  const startLinking = (userId: string, mode: 'create' | 'link') => {
-    setLinkingMode({ userId, mode });
-    resetLinkForm();
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   if (role !== 'admin') {
@@ -222,226 +200,178 @@ export default function UserManagementPage() {
   }
 
   return (
-    <ModernDashboardLayout>
-      <Head>
-        <title>User Management - HR Portal</title>
-      </Head>
+    <PageLayout
+      title="User Management"
+      description="Manage user accounts and access permissions"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Administration", href: "/admin" },
+        { label: "User Management" },
+      ]}
+      actionButton={{
+        label: "Add User",
+        onClick: inviteUser,
+        icon: <UserPlusIcon className="h-4 w-4" />,
+      }}
+      secondaryButton={{
+        label: "Export Users",
+        onClick: () => alert("Export users functionality would be implemented here"),
+        icon: <DownloadIcon className="h-4 w-4" />,
+      }}
+    >
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <StatsCard
+          title="Total Users"
+          value={users.length}
+          description="User accounts"
+        />
+        <StatsCard
+          title="Active Users"
+          value={users.filter(u => u.status === 'active').length}
+          description="Currently active"
+        />
+        <StatsCard
+          title="Pending Users"
+          value={users.filter(u => u.status === 'pending').length}
+          description="Awaiting activation"
+        />
+        <StatsCard
+          title="Inactive Users"
+          value={users.filter(u => u.status === 'inactive').length}
+          description="Deactivated accounts"
+        />
+      </div>
 
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600">Manage user accounts and profile linking</p>
+      {/* Filters */}
+      <SearchFilterBar>
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <SearchIcon className="h-4 w-4 text-zinc-400" />
           </div>
-          <button
-            onClick={loadUserData}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-zinc-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          />
+        </div>
+        
+        <div className="w-full md:w-48">
+          <select
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            className="w-full border border-zinc-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
           >
-            Refresh
-          </button>
+            <option value="all">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="employee">Employee</option>
+          </select>
+        </div>
+        
+        <div className="w-full md:w-48">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="w-full border border-zinc-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+      </SearchFilterBar>
+
+      {/* Users Table */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-sm text-zinc-500">
+            Showing {filteredUsers.length} of {users.length} users
+          </p>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* Unlinked Users Section */}
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold">Unlinked Authentication Users</h2>
-                <p className="text-sm text-gray-600">Users who have authentication accounts but no employee profiles</p>
-              </div>
-              
-              <div className="p-6">
-                {unlinkedUsers.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No unlinked users found</p>
-                ) : (
-                  <div className="space-y-4">
-                    {unlinkedUsers.map((unlinkedUser) => (
-                      <div key={unlinkedUser.auth_user.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-medium">{unlinkedUser.auth_user.email}</h3>
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                unlinkedUser.auth_user.email_confirmed_at 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {unlinkedUser.auth_user.email_confirmed_at ? 'Verified' : 'Unverified'}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              Created: {new Date(unlinkedUser.auth_user.created_at).toLocaleDateString()}
-                            </p>
-                            {unlinkedUser.auth_user.raw_user_meta_data && (
-                              <p className="text-sm text-gray-600">
-                                Metadata: {JSON.stringify(unlinkedUser.auth_user.raw_user_meta_data)}
-                              </p>
-                            )}
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => startLinking(unlinkedUser.auth_user.id, 'create')}
-                              className="bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700"
-                              disabled={processing === unlinkedUser.auth_user.id}
-                            >
-                              Create Profile
-                            </button>
-                            <button
-                              onClick={() => startLinking(unlinkedUser.auth_user.id, 'link')}
-                              className="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
-                              disabled={processing === unlinkedUser.auth_user.id}
-                            >
-                              Link Existing
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Linking Form */}
-                        {linkingMode?.userId === unlinkedUser.auth_user.id && (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            {linkingMode.mode === 'create' ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input
-                                  type="text"
-                                  placeholder="First Name"
-                                  value={linkForm.firstName}
-                                  onChange={(e) => setLinkForm({...linkForm, firstName: e.target.value})}
-                                  className="border border-gray-300 rounded px-3 py-2"
-                                />
-                                <input
-                                  type="text"
-                                  placeholder="Last Name"
-                                  value={linkForm.lastName}
-                                  onChange={(e) => setLinkForm({...linkForm, lastName: e.target.value})}
-                                  className="border border-gray-300 rounded px-3 py-2"
-                                />
-                                <select
-                                  value={linkForm.role}
-                                  onChange={(e) => setLinkForm({...linkForm, role: e.target.value})}
-                                  className="border border-gray-300 rounded px-3 py-2"
-                                >
-                                  <option value="employee">Employee</option>
-                                  <option value="manager">Manager</option>
-                                  <option value="hr">HR</option>
-                                  <option value="admin">Admin</option>
-                                  <option value="recruiter">Recruiter</option>
-                                </select>
-                                <input
-                                  type="text"
-                                  placeholder="Department"
-                                  value={linkForm.department}
-                                  onChange={(e) => setLinkForm({...linkForm, department: e.target.value})}
-                                  className="border border-gray-300 rounded px-3 py-2"
-                                />
-                                <input
-                                  type="text"
-                                  placeholder="Position"
-                                  value={linkForm.position}
-                                  onChange={(e) => setLinkForm({...linkForm, position: e.target.value})}
-                                  className="border border-gray-300 rounded px-3 py-2 md:col-span-2"
-                                />
-                                <div className="md:col-span-2 flex gap-2">
-                                  <button
-                                    onClick={() => handleCreateProfile(unlinkedUser.auth_user.id)}
-                                    disabled={!linkForm.firstName || !linkForm.lastName}
-                                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
-                                  >
-                                    Create Profile
-                                  </button>
-                                  <button
-                                    onClick={() => setLinkingMode(null)}
-                                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div>
-                                <select
-                                  value={linkForm.existingProfileId}
-                                  onChange={(e) => setLinkForm({...linkForm, existingProfileId: e.target.value})}
-                                  className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-                                >
-                                  <option value="">Select existing profile</option>
-                                  {profiles.map((profile) => (
-                                    <option key={profile.id} value={profile.id}>
-                                      {profile.first_name} {profile.last_name} ({profile.email})
-                                    </option>
-                                  ))}
-                                </select>
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => handleLinkProfile(unlinkedUser.auth_user.id)}
-                                    disabled={!linkForm.existingProfileId}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                                  >
-                                    Link Profile
-                                  </button>
-                                  <button
-                                    onClick={() => setLinkingMode(null)}
-                                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* All Profiles Section */}
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold">All Employee Profiles</h2>
-                <p className="text-sm text-gray-600">Complete list of employee profiles in the system</p>
-              </div>
-              
-              <div className="p-6">
-                <div className="overflow-x-auto">
-                  <table className="w-full table-auto">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="px-4 py-2 text-left">Name</th>
-                        <th className="px-4 py-2 text-left">Email</th>
-                        <th className="px-4 py-2 text-left">Role</th>
-                        <th className="px-4 py-2 text-left">Department</th>
-                        <th className="px-4 py-2 text-left">Created</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {profiles.map((profile) => (
-                        <tr key={profile.id} className="border-t border-gray-200">
-                          <td className="px-4 py-2">{profile.first_name} {profile.last_name}</td>
-                          <td className="px-4 py-2">{profile.email}</td>
-                          <td className="px-4 py-2">
-                            <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                              {profile.role}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2">{profile.department || 'N/A'}</td>
-                          <td className="px-4 py-2">{new Date(profile.created_at).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DataTable>
+            <TableHeader>
+              <TableHeaderCell>User</TableHeaderCell>
+              <TableHeaderCell>Role</TableHeaderCell>
+              <TableHeaderCell>Department</TableHeaderCell>
+              <TableHeaderCell>Status</TableHeaderCell>
+              <TableHeaderCell>Last Login</TableHeaderCell>
+              <TableHeaderCell>Actions</TableHeaderCell>
+            </TableHeader>
+            <tbody className="divide-y divide-zinc-200">
+              {filteredUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-zinc-50">
+                  <TableCell>
+                    <UserAvatar
+                      name={user.name}
+                      email={user.email}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-sm ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                      user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
+                      'bg-zinc-100 text-zinc-800'
+                    }`}>
+                      {user.role}
+                    </span>
+                  </TableCell>
+                  <TableCell>{user.department}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={user.status} />
+                  </TableCell>
+                  <TableCell className="text-zinc-500">
+                    {formatDate(user.lastLogin)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleUserAction(user.id, 'edit')}
+                        className="text-zinc-500 hover:text-zinc-900"
+                        title="Edit User"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleUserAction(user.id, 'reset-password')}
+                        className="text-zinc-500 hover:text-zinc-900"
+                        title="Reset Password"
+                      >
+                        <LockIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleUserAction(user.id, 'email')}
+                        className="text-zinc-500 hover:text-zinc-900"
+                        title="Send Email"
+                      >
+                        <MailIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleUserAction(user.id, 'delete')}
+                        className="text-zinc-500 hover:text-red-600"
+                        title="Delete User"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </tr>
+              ))}
+            </tbody>
+          </DataTable>
         )}
       </div>
-    </ModernDashboardLayout>
+    </PageLayout>
   );
 } 

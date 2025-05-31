@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Shield, Lock, Eye, EyeOff, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Shield, Lock, Eye, EyeOff, CheckCircle, XCircle, AlertCircle, Clock, Save } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { PageLayout, StatsCard, CardGrid } from '@/components/layout/PageLayout';
 
 interface PasswordPolicy {
   min_length: number;
@@ -17,6 +18,7 @@ interface PasswordPolicy {
   require_numbers: boolean;
   require_symbols: boolean;
   expiry_days: number;
+  prevent_reuse: number;
 }
 
 interface AuthenticationSettings {
@@ -38,6 +40,10 @@ interface AccessControlSettings {
   default_role: string;
   permission_inheritance: boolean;
   role_hierarchy: RoleHierarchy[];
+  ip_restrictions: boolean;
+  allowed_ips: string[];
+  geo_restrictions: boolean;
+  blocked_countries: string[];
 }
 
 interface DataProtectionSettings {
@@ -68,13 +74,11 @@ interface SecuritySettings {
   network_security: NetworkSecuritySettings;
 }
 
-export default function SecuritySettings() {
+const SecuritySettings = () => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [showSecretKeys, setShowSecretKeys] = useState<{ [key: string]: boolean }>({});
   const [testStatus, setTestStatus] = useState<{ [key: string]: 'idle' | 'testing' | 'success' | 'error' }>({});
-  
-  // Mock security settings data
   const [settings, setSettings] = useState<SecuritySettings>({
     authentication: {
       password_policy: {
@@ -83,7 +87,8 @@ export default function SecuritySettings() {
         require_lowercase: true,
         require_numbers: true,
         require_symbols: false,
-        expiry_days: 90
+        expiry_days: 90,
+        prevent_reuse: 5
       },
       mfa_enabled: true,
       session_timeout: 30,
@@ -99,7 +104,11 @@ export default function SecuritySettings() {
         { role: 'manager', inherits_from: 'employee', permissions: ['read:all', 'write:team', 'approve:requests'] },
         { role: 'employee', inherits_from: 'user', permissions: ['read:own', 'write:own'] },
         { role: 'user', inherits_from: '', permissions: ['read:basic'] }
-      ]
+      ],
+      ip_restrictions: false,
+      allowed_ips: [],
+      geo_restrictions: false,
+      blocked_countries: []
     },
     data_protection: {
       encryption_at_rest: true,
@@ -121,6 +130,9 @@ export default function SecuritySettings() {
       ]
     }
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [newIP, setNewIP] = useState('');
+  const [newBlockedCountry, setNewBlockedCountry] = useState('');
 
   // Security status overview
   const securityStatus = {
@@ -130,12 +142,12 @@ export default function SecuritySettings() {
     network_security: settings.network_security.ssl_required && settings.network_security.security_headers.filter(h => h.enabled).length >= 3 ? 'secure' : 'warning'
   };
 
-  // Role permission check
+  // Ensure admin access
   useEffect(() => {
-    if (user && user.role !== 'admin') {
+    if (role !== 'admin') {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [role, router]);
 
   const handleTestSecurity = async (component: string) => {
     setTestStatus({ ...testStatus, [component]: 'testing' });
@@ -148,14 +160,12 @@ export default function SecuritySettings() {
   };
 
   const handleSaveSettings = async () => {
-    try {
-      // TODO: Replace with actual API call
-      console.log('Saving security settings:', settings);
-      alert('Security settings saved successfully!');
-    } catch (error) {
-      console.error('Failed to save security settings:', error);
-      alert('Failed to save security settings');
-    }
+    setIsLoading(true);
+    // In a real app, you would call an API here
+    setTimeout(() => {
+      alert('Settings saved successfully!');
+      setIsLoading(false);
+    }, 1000);
   };
 
   const toggleSecretVisibility = (key: string) => {
@@ -180,6 +190,52 @@ export default function SecuritySettings() {
     }
   };
 
+  const addIP = () => {
+    if (newIP && !settings.access_control.allowed_ips.includes(newIP)) {
+      setSettings({
+        ...settings,
+        access_control: {
+          ...settings.access_control,
+          allowed_ips: [...settings.access_control.allowed_ips, newIP]
+        }
+      });
+      setNewIP('');
+    }
+  };
+
+  const removeIP = (ip: string) => {
+    setSettings({
+      ...settings,
+      access_control: {
+        ...settings.access_control,
+        allowed_ips: settings.access_control.allowed_ips.filter(i => i !== ip)
+      }
+    });
+  };
+
+  const addBlockedCountry = () => {
+    if (newBlockedCountry && !settings.access_control.blocked_countries.includes(newBlockedCountry)) {
+      setSettings({
+        ...settings,
+        access_control: {
+          ...settings.access_control,
+          blocked_countries: [...settings.access_control.blocked_countries, newBlockedCountry]
+        }
+      });
+      setNewBlockedCountry('');
+    }
+  };
+
+  const removeBlockedCountry = (country: string) => {
+    setSettings({
+      ...settings,
+      access_control: {
+        ...settings.access_control,
+        blocked_countries: settings.access_control.blocked_countries.filter(c => c !== country)
+      }
+    });
+  };
+
   if (!user || user.role !== 'admin') {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -193,694 +249,395 @@ export default function SecuritySettings() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Shield className="w-6 h-6" />
-            Security Settings
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Configure authentication, access control, and security policies
-          </p>
-        </div>
-        <Button onClick={handleSaveSettings} className="bg-blue-600 hover:bg-blue-700">
-          Save Changes
-        </Button>
+    <PageLayout
+      title="Security Settings"
+      description="Configure security policies and access controls"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Settings", href: "/settings" },
+        { label: "Security" }
+      ]}
+      actionButton={{
+        label: "Save Changes",
+        onClick: handleSaveSettings,
+        icon: <Save className="h-4 w-4" />,
+      }}
+    >
+      {/* System Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <StatsCard
+          title="Security Score"
+          value="92%"
+          description="Overall security rating"
+        />
+        <StatsCard
+          title="MFA Adoption"
+          value="78%"
+          description="Users with MFA enabled"
+        />
+        <StatsCard
+          title="Security Alerts"
+          value="2"
+          description="Active security issues"
+        />
       </div>
 
-      {/* Security Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Authentication</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {getStatusIcon(securityStatus.authentication)}
-                  {getStatusBadge(securityStatus.authentication)}
-                </div>
-              </div>
+      {/* Security Settings Form */}
+      <div className="space-y-8">
+        {/* Password Policy */}
+        <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Lock className="h-5 w-5 mr-2 text-zinc-700" />
+            <h2 className="text-lg font-medium text-zinc-900">Password Policy</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Minimum Password Length
+              </label>
+              <input
+                type="number"
+                min="8"
+                max="32"
+                value={settings.authentication.password_policy.min_length}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  authentication: {
+                    ...settings.authentication,
+                    password_policy: { ...settings.authentication.password_policy, min_length: parseInt(e.target.value) }
+                  }
+                })}
+                className="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Access Control</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {getStatusIcon(securityStatus.access_control)}
-                  {getStatusBadge(securityStatus.access_control)}
-                </div>
-              </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Password Expiry (Days)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="365"
+                value={settings.authentication.password_policy.expiry_days}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  authentication: {
+                    ...settings.authentication,
+                    password_policy: { ...settings.authentication.password_policy, expiry_days: parseInt(e.target.value) }
+                  }
+                })}
+                className="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              />
+              <p className="text-xs text-zinc-500 mt-1">Set to 0 to disable password expiry</p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Data Protection</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {getStatusIcon(securityStatus.data_protection)}
-                  {getStatusBadge(securityStatus.data_protection)}
-                </div>
-              </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Previous Passwords to Prevent Reuse
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="24"
+                value={settings.authentication.password_policy.prevent_reuse}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  authentication: {
+                    ...settings.authentication,
+                    password_policy: { ...settings.authentication.password_policy, prevent_reuse: parseInt(e.target.value) }
+                  }
+                })}
+                className="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Network Security</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {getStatusIcon(securityStatus.network_security)}
-                  {getStatusBadge(securityStatus.network_security)}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="authentication" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="authentication">Authentication</TabsTrigger>
-          <TabsTrigger value="access-control">Access Control</TabsTrigger>
-          <TabsTrigger value="data-protection">Data Protection</TabsTrigger>
-          <TabsTrigger value="network-security">Network Security</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="authentication" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Password Policy</CardTitle>
-                <CardDescription>Configure password requirements and expiration</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="min-length">Minimum Length</Label>
-                    <Input
-                      id="min-length"
-                      type="number"
-                      value={settings.authentication.password_policy.min_length}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        authentication: {
-                          ...settings.authentication,
-                          password_policy: {
-                            ...settings.authentication.password_policy,
-                            min_length: parseInt(e.target.value)
-                          }
-                        }
-                      })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="expiry-days">Expiry (Days)</Label>
-                    <Input
-                      id="expiry-days"
-                      type="number"
-                      value={settings.authentication.password_policy.expiry_days}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        authentication: {
-                          ...settings.authentication,
-                          password_policy: {
-                            ...settings.authentication.password_policy,
-                            expiry_days: parseInt(e.target.value)
-                          }
-                        }
-                      })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.authentication.password_policy.require_uppercase}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          authentication: {
-                            ...settings.authentication,
-                            password_policy: {
-                              ...settings.authentication.password_policy,
-                              require_uppercase: e.target.checked
-                            }
-                          }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                    <Label htmlFor="require-uppercase">Require Uppercase</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.authentication.password_policy.require_lowercase}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          authentication: {
-                            ...settings.authentication,
-                            password_policy: {
-                              ...settings.authentication.password_policy,
-                              require_lowercase: e.target.checked
-                            }
-                          }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                    <Label htmlFor="require-lowercase">Require Lowercase</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.authentication.password_policy.require_numbers}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          authentication: {
-                            ...settings.authentication,
-                            password_policy: {
-                              ...settings.authentication.password_policy,
-                              require_numbers: e.target.checked
-                            }
-                          }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                    <Label htmlFor="require-numbers">Require Numbers</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.authentication.password_policy.require_symbols}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          authentication: {
-                            ...settings.authentication,
-                            password_policy: {
-                              ...settings.authentication.password_policy,
-                              require_symbols: e.target.checked
-                            }
-                          }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                    <Label htmlFor="require-symbols">Require Symbols</Label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Session & Login Security</CardTitle>
-                <CardDescription>Configure session timeouts and login protection</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.authentication.mfa_enabled}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        authentication: { ...settings.authentication, mfa_enabled: e.target.checked }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="mfa-enabled">Multi-Factor Authentication</Label>
-                </div>
-
-                <div>
-                  <Label htmlFor="session-timeout">Session Timeout (minutes)</Label>
-                  <Input
-                    id="session-timeout"
-                    type="number"
-                    value={settings.authentication.session_timeout}
+            
+            <div>
+              <p className="block text-sm font-medium text-zinc-700 mb-2">Password Requirements</p>
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={settings.authentication.password_policy.require_uppercase}
                     onChange={(e) => setSettings({
                       ...settings,
                       authentication: {
                         ...settings.authentication,
-                        session_timeout: parseInt(e.target.value)
+                        password_policy: { ...settings.authentication.password_policy, require_uppercase: e.target.checked }
                       }
                     })}
+                    className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="login-attempts">Max Login Attempts</Label>
-                    <Input
-                      id="login-attempts"
-                      type="number"
-                      value={settings.authentication.login_attempts}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        authentication: {
-                          ...settings.authentication,
-                          login_attempts: parseInt(e.target.value)
-                        }
-                      })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="lockout-duration">Lockout Duration (minutes)</Label>
-                    <Input
-                      id="lockout-duration"
-                      type="number"
-                      value={settings.authentication.lockout_duration}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        authentication: {
-                          ...settings.authentication,
-                          lockout_duration: parseInt(e.target.value)
-                        }
-                      })}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => handleTestSecurity('authentication')}
-                  disabled={testStatus.authentication === 'testing'}
-                  className="w-full"
-                >
-                  {testStatus.authentication === 'testing' ? 'Testing...' : 'Test Authentication'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="access-control" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>RBAC Configuration</CardTitle>
-                <CardDescription>Role-based access control settings</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.access_control.rbac_enabled}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        access_control: { ...settings.access_control, rbac_enabled: e.target.checked }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="rbac-enabled">Enable Role-Based Access Control</Label>
-                </div>
-
-                <div>
-                  <Label htmlFor="default-role">Default Role for New Users</Label>
-                  <select
-                    id="default-role"
-                    value={settings.access_control.default_role}
+                  <span className="ml-2 text-sm text-zinc-700">Require uppercase letter</span>
+                </label>
+                
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={settings.authentication.password_policy.require_lowercase}
                     onChange={(e) => setSettings({
                       ...settings,
-                      access_control: { ...settings.access_control, default_role: e.target.value }
+                      authentication: {
+                        ...settings.authentication,
+                        password_policy: { ...settings.authentication.password_policy, require_lowercase: e.target.checked }
+                      }
                     })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="user">User</option>
-                    <option value="employee">Employee</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
+                    className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                  />
+                  <span className="ml-2 text-sm text-zinc-700">Require lowercase letter</span>
+                </label>
+                
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={settings.authentication.password_policy.require_numbers}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      authentication: {
+                        ...settings.authentication,
+                        password_policy: { ...settings.authentication.password_policy, require_numbers: e.target.checked }
+                      }
+                    })}
+                    className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                  />
+                  <span className="ml-2 text-sm text-zinc-700">Require number</span>
+                </label>
+                
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={settings.authentication.password_policy.require_symbols}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      authentication: {
+                        ...settings.authentication,
+                        password_policy: { ...settings.authentication.password_policy, require_symbols: e.target.checked }
+                      }
+                    })}
+                    className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                  />
+                  <span className="ml-2 text-sm text-zinc-700">Require special character</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Session Settings */}
+        <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Clock className="h-5 w-5 mr-2 text-zinc-700" />
+            <h2 className="text-lg font-medium text-zinc-900">Session Settings</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Session Timeout (Minutes)
+              </label>
+              <input
+                type="number"
+                min="5"
+                max="480"
+                value={settings.authentication.session_timeout}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  authentication: {
+                    ...settings.authentication,
+                    session_timeout: parseInt(e.target.value)
+                  }
+                })}
+                className="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Maximum Concurrent Sessions
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={settings.authentication.login_attempts}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  authentication: {
+                    ...settings.authentication,
+                    login_attempts: parseInt(e.target.value)
+                  }
+                })}
+                className="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={settings.authentication.mfa_enabled}
+                  onChange={(e) => setSettings({
+                    ...settings,
+                    authentication: { ...settings.authentication, mfa_enabled: e.target.checked }
+                  })}
+                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                />
+                <span className="ml-2 text-sm text-zinc-700">Enable Multi-Factor Authentication</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        {/* Access Control */}
+        <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center mb-4">
+            <Shield className="h-5 w-5 mr-2 text-zinc-700" />
+            <h2 className="text-lg font-medium text-zinc-900">Access Control</h2>
+          </div>
+          <div className="space-y-6">
+            <div>
+              <label className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  checked={settings.access_control.ip_restrictions}
+                  onChange={(e) => setSettings({
+                    ...settings,
+                    access_control: { 
+                      ...settings.access_control, 
+                      ip_restrictions: e.target.checked 
+                    }
+                  })}
+                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                />
+                <span className="ml-2 text-sm text-zinc-700">Enable IP address restrictions</span>
+              </label>
+              
+              {settings.access_control.ip_restrictions && (
+                <div className="pl-6 space-y-2">
+                  <div className="flex space-x-2">
                     <input
-                      type="checkbox"
-                      checked={settings.access_control.permission_inheritance}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        access_control: { ...settings.access_control, permission_inheritance: e.target.checked }
-                      })}
-                      className="sr-only peer"
+                      type="text"
+                      value={newIP}
+                      onChange={(e) => setNewIP(e.target.value)}
+                      placeholder="Enter IP address"
+                      className="flex-1 border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="permission-inheritance">Enable Permission Inheritance</Label>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Role Hierarchy</CardTitle>
-                <CardDescription>Current role structure and permissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {settings.access_control.role_hierarchy.map((role, index) => (
-                    <div key={index} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium capitalize">{role.role}</span>
-                        <Badge variant="outline">{role.permissions.length} permissions</Badge>
-                      </div>
-                      {role.inherits_from && (
-                        <p className="text-sm text-gray-600 mb-2">
-                          Inherits from: <span className="font-medium">{role.inherits_from}</span>
-                        </p>
-                      )}
-                      <div className="flex flex-wrap gap-1">
-                        {role.permissions.slice(0, 3).map((permission, permIndex) => (
-                          <Badge key={permIndex} variant="solid" className="text-xs">
-                            {permission}
-                          </Badge>
+                    <button
+                      onClick={addIP}
+                      className="px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  
+                  <div className="mt-2">
+                    {settings.access_control.allowed_ips.length > 0 ? (
+                      <div className="space-y-1">
+                        <p className="text-sm text-zinc-500">Allowed IP addresses:</p>
+                        {settings.access_control.allowed_ips.map((ip) => (
+                          <div key={ip} className="flex items-center justify-between bg-zinc-50 px-3 py-2 rounded-md">
+                            <span className="text-sm">{ip}</span>
+                            <button
+                              onClick={() => removeIP(ip)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              Remove
+                            </button>
+                          </div>
                         ))}
-                        {role.permissions.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{role.permissions.length - 3} more
-                          </Badge>
-                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="data-protection" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Encryption Settings</CardTitle>
-                <CardDescription>Data encryption and security policies</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.data_protection.encryption_at_rest}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        data_protection: { ...settings.data_protection, encryption_at_rest: e.target.checked }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="encryption-rest">Encryption at Rest</Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.data_protection.encryption_in_transit}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        data_protection: { ...settings.data_protection, encryption_in_transit: e.target.checked }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="encryption-transit">Encryption in Transit</Label>
-                </div>
-
-                <div>
-                  <Label htmlFor="retention-days">Data Retention (Days)</Label>
-                  <Input
-                    id="retention-days"
-                    type="number"
-                    value={settings.data_protection.data_retention_days}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      data_protection: {
-                        ...settings.data_protection,
-                        data_retention_days: parseInt(e.target.value)
-                      }
-                    })}
-                  />
-                  <p className="text-sm text-gray-600 mt-1">
-                    Current: {Math.floor(settings.data_protection.data_retention_days / 365)} years
-                  </p>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.data_protection.gdpr_compliance}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        data_protection: { ...settings.data_protection, gdpr_compliance: e.target.checked }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="gdpr-compliance">GDPR Compliance Mode</Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.data_protection.audit_logging}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        data_protection: { ...settings.data_protection, audit_logging: e.target.checked }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="audit-logging">Audit Logging</Label>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Compliance Overview</CardTitle>
-                <CardDescription>Current compliance status and recommendations</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">GDPR Compliance</span>
-                    {settings.data_protection.gdpr_compliance ? (
-                      <Badge variant="solid" className="bg-green-100 text-green-800">Enabled</Badge>
                     ) : (
-                      <Badge variant="outline" className="border-red-500 text-red-700">Disabled</Badge>
+                      <p className="text-sm text-zinc-500">No allowed IP addresses added. All IPs will be blocked.</p>
                     )}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <label className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  checked={settings.access_control.geo_restrictions}
+                  onChange={(e) => setSettings({
+                    ...settings,
+                    access_control: { 
+                      ...settings.access_control, 
+                      geo_restrictions: e.target.checked 
+                    }
+                  })}
+                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                />
+                <span className="ml-2 text-sm text-zinc-700">Enable geographic restrictions</span>
+              </label>
+              
+              {settings.access_control.geo_restrictions && (
+                <div className="pl-6 space-y-2">
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={newBlockedCountry}
+                      onChange={(e) => setNewBlockedCountry(e.target.value)}
+                      placeholder="Enter country code (e.g., US)"
+                      className="flex-1 border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                    />
+                    <button
+                      onClick={addBlockedCountry}
+                      className="px-4 py-2 bg-zinc-900 text-white rounded-md hover:bg-zinc-800"
+                    >
+                      Block
+                    </button>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Data Encryption</span>
-                    {settings.data_protection.encryption_at_rest && settings.data_protection.encryption_in_transit ? (
-                      <Badge variant="solid" className="bg-green-100 text-green-800">Full</Badge>
+                  <div className="mt-2">
+                    {settings.access_control.blocked_countries.length > 0 ? (
+                      <div className="space-y-1">
+                        <p className="text-sm text-zinc-500">Blocked countries:</p>
+                        {settings.access_control.blocked_countries.map((country) => (
+                          <div key={country} className="flex items-center justify-between bg-zinc-50 px-3 py-2 rounded-md">
+                            <span className="text-sm">{country}</span>
+                            <button
+                              onClick={() => removeBlockedCountry(country)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <Badge variant="outline" className="border-yellow-500 text-yellow-700">Partial</Badge>
+                      <p className="text-sm text-zinc-500">No countries blocked. Access allowed from all countries.</p>
                     )}
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Audit Trail</span>
-                    {settings.data_protection.audit_logging ? (
-                      <Badge variant="solid" className="bg-green-100 text-green-800">Active</Badge>
-                    ) : (
-                      <Badge variant="outline" className="border-red-500 text-red-700">Inactive</Badge>
-                    )}
-                  </div>
                 </div>
-
-                <Button
-                  onClick={() => handleTestSecurity('data-protection')}
-                  disabled={testStatus['data-protection'] === 'testing'}
-                  className="w-full"
-                >
-                  {testStatus['data-protection'] === 'testing' ? 'Testing...' : 'Test Data Protection'}
-                </Button>
-              </CardContent>
-            </Card>
+              )}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-2">
+                Default Role for New Users
+              </label>
+              <select
+                value={settings.access_control.default_role}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  access_control: { 
+                    ...settings.access_control, 
+                    default_role: e.target.value 
+                  }
+                })}
+                className="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+              >
+                <option value="user">User</option>
+                <option value="employee">Employee</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
           </div>
-        </TabsContent>
-
-        <TabsContent value="network-security" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Network Access Control</CardTitle>
-                <CardDescription>IP whitelist and CORS configuration</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="ip-whitelist">IP Whitelist (one per line)</Label>
-                  <textarea
-                    id="ip-whitelist"
-                    className="w-full min-h-[100px] p-2 border rounded-md"
-                    value={settings.network_security.ip_whitelist.join('\n')}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      network_security: {
-                        ...settings.network_security,
-                        ip_whitelist: e.target.value.split('\n').filter(ip => ip.trim())
-                      }
-                    })}
-                    placeholder="192.168.1.0/24&#10;10.0.0.0/8"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="cors-origins">CORS Origins (one per line)</Label>
-                  <textarea
-                    id="cors-origins"
-                    className="w-full min-h-[100px] p-2 border rounded-md"
-                    value={settings.network_security.cors_origins.join('\n')}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      network_security: {
-                        ...settings.network_security,
-                        cors_origins: e.target.value.split('\n').filter(origin => origin.trim())
-                      }
-                    })}
-                    placeholder="https://yourcompany.com&#10;https://app.yourcompany.com"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.network_security.ssl_required}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        network_security: { ...settings.network_security, ssl_required: e.target.checked }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                  <Label htmlFor="ssl-required">Require SSL/TLS</Label>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Headers</CardTitle>
-                <CardDescription>HTTP security headers configuration</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {settings.network_security.security_headers.map((header, index) => (
-                  <div key={index} className="border rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{header.name}</span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={header.enabled}
-                          onChange={(e) => {
-                            const updatedHeaders = [...settings.network_security.security_headers];
-                            updatedHeaders[index] = { ...header, enabled: e.target.checked };
-                            setSettings({
-                              ...settings,
-                              network_security: {
-                                ...settings.network_security,
-                                security_headers: updatedHeaders
-                              }
-                            });
-                          }}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                    <Input
-                      value={header.value}
-                      onChange={(e) => {
-                        const updatedHeaders = [...settings.network_security.security_headers];
-                        updatedHeaders[index] = { ...header, value: e.target.value };
-                        setSettings({
-                          ...settings,
-                          network_security: {
-                            ...settings.network_security,
-                            security_headers: updatedHeaders
-                          }
-                        });
-                      }}
-                      placeholder="Header value"
-                      className="text-sm"
-                    />
-                  </div>
-                ))}
-
-                <Button
-                  onClick={() => handleTestSecurity('network-security')}
-                  disabled={testStatus['network-security'] === 'testing'}
-                  className="w-full"
-                >
-                  {testStatus['network-security'] === 'testing' ? 'Testing...' : 'Test Network Security'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      {/* Quick Actions Sidebar */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Security Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" size="sm">
-              <Lock className="w-4 h-4 mr-2" />
-              Reset MFA
-            </Button>
-            <Button variant="outline" size="sm">
-              <Shield className="w-4 h-4 mr-2" />
-              Security Audit
-            </Button>
-            <Button variant="outline" size="sm">
-              <AlertTriangle className="w-4 h-4 mr-2" />
-              View Alerts
-            </Button>
-            <Button variant="outline" size="sm">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Test All
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </PageLayout>
   );
-} 
+};
+
+export default SecuritySettings; 
