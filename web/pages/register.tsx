@@ -8,10 +8,16 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
+    role: "employee" as "admin" | "hr" | "manager" | "employee" | "recruiter",
+    department: "",
+    position: "",
+    hireDate: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +33,7 @@ export default function RegisterPage() {
     }
   }, [user, router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -52,6 +58,25 @@ export default function RegisterPage() {
       return;
     }
 
+    // Check for required fields
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      setError("First name and last name are required");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.department.trim() || !formData.position.trim()) {
+      setError("Department and position are required");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.hireDate) {
+      setError("Hire date is required");
+      setLoading(false);
+      return;
+    }
+
     try {
       // Try the registration API first
       const response = await fetch('/api/auth/register', {
@@ -62,10 +87,12 @@ export default function RegisterPage() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          fullName: formData.name,
-          role: 'admin', // Default to admin for initial setup
-          department: 'Administration',
-          position: 'Administrator'
+          fullName: formData.firstName + " " + formData.lastName,
+          role: formData.role,
+          department: formData.department,
+          position: formData.position,
+          phone: formData.phone,
+          hireDate: formData.hireDate,
         }),
       });
 
@@ -90,7 +117,7 @@ export default function RegisterPage() {
         const result = await signUp(
           formData.email,
           formData.password,
-          formData.name,
+          formData.firstName + " " + formData.lastName,
         );
 
         if (result.success) {
@@ -116,7 +143,12 @@ export default function RegisterPage() {
             body: JSON.stringify({
               email: formData.email,
               password: formData.password,
-              name: formData.name
+              name: formData.firstName + " " + formData.lastName,
+              role: formData.role,
+              department: formData.department,
+              position: formData.position,
+              phone: formData.phone,
+              hireDate: formData.hireDate
             }),
           });
 
@@ -160,7 +192,7 @@ export default function RegisterPage() {
           <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <div className="text-center">
               <p className="text-lg text-gray-900 mb-4">
-                Welcome to HR Portal, {formData.name}!
+                Welcome to HR Portal, {formData.firstName} {formData.lastName}!
               </p>
               <p className="text-sm text-gray-600 mb-6">
                 Your account has been created successfully. You can now sign in
@@ -204,22 +236,44 @@ export default function RegisterPage() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
-                htmlFor="name"
+                htmlFor="firstName"
                 className="block text-sm font-medium text-gray-700"
               >
-                Full Name
+                First Name
               </label>
               <div className="mt-1">
                 <input
-                  id="name"
-                  name="name"
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  autoComplete="name"
+                  autoComplete="given-name"
                   required
-                  value={formData.name}
+                  value={formData.firstName}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your full name"
+                  placeholder="Enter your first name"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Last Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  autoComplete="family-name"
+                  required
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your last name"
                 />
               </div>
             </div>
@@ -242,6 +296,28 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Enter your email address"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Phone
+              </label>
+              <div className="mt-1">
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  required
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your phone number"
                 />
               </div>
             </div>
@@ -286,6 +362,96 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Confirm your password"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Role
+              </label>
+              <div className="mt-1">
+                <select
+                  id="role"
+                  name="role"
+                  required
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="hr">HR</option>
+                  <option value="manager">Manager</option>
+                  <option value="employee">Employee</option>
+                  <option value="recruiter">Recruiter</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="department"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Department
+              </label>
+              <div className="mt-1">
+                <input
+                  id="department"
+                  name="department"
+                  type="text"
+                  autoComplete="organization"
+                  required
+                  value={formData.department}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your department"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="position"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Position
+              </label>
+              <div className="mt-1">
+                <input
+                  id="position"
+                  name="position"
+                  type="text"
+                  autoComplete="organization"
+                  required
+                  value={formData.position}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your position"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="hireDate"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Hire Date
+              </label>
+              <div className="mt-1">
+                <input
+                  id="hireDate"
+                  name="hireDate"
+                  type="date"
+                  autoComplete="bday"
+                  required
+                  value={formData.hireDate}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
             </div>

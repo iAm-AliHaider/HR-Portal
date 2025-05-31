@@ -11,28 +11,20 @@ export default async function handler(
   }
 
   try {
-    const {
-      email,
-      password,
-      firstName,
-      lastName,
-      fullName,
-      role = "employee",
-      department = "",
-      position = "",
-      companyName = "",
-    } = req.body;
+    const { email, password, fullName, role, department, position, phone, hireDate } = req.body;
 
-    // Validate required fields
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ error: "Password must be at least 6 characters" });
+    if (!fullName || !department || !position) {
+      return res.status(400).json({ error: "Full name, department, and position are required" });
     }
+
+    // Parse full name into first and last name
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
     // Development mode - simulate registration
     if (
@@ -48,7 +40,7 @@ export default async function handler(
         role,
         department,
         position,
-        company: companyName,
+        company: "",
         created_at: new Date().toISOString(),
       };
 
@@ -81,75 +73,47 @@ export default async function handler(
       return res.status(400).json({ error: "Email is already registered" });
     }
 
-    // Production mode - use Supabase
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Create user
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: {
-          first_name:
-            firstName || fullName?.split(" ")[0] || email.split("@")[0],
-          last_name: lastName || fullName?.split(" ").slice(1).join(" ") || "",
-          full_name:
-            fullName || `${firstName} ${lastName}` || email.split("@")[0],
-          role,
-          department,
-          position,
-          company: companyName,
-          user_type: "employee",
-        },
-      },
+      email_confirm: true,
+      user_metadata: {
+        firstName,
+        lastName,
+        role: role || 'employee',
+        department,
+        position,
+        phone,
+        hireDate
+      }
     });
 
     if (authError) {
-      console.error("Supabase auth signup error:", authError);
+      console.error('Auth creation failed:', authError);
       return res.status(400).json({ error: authError.message });
     }
 
-    if (!authData.user) {
-      console.error("User was not created by Supabase");
-      return res.status(500).json({ error: "Failed to create user account" });
-    }
-
-    // Wait a moment for the trigger to create the profile
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Verify profile was created and update if needed
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", authData.user.id)
-      .single();
-
-    if (profileError || !profile) {
-      console.error("Profile fetch error or profile not found:", profileError);
-
-      // Manually create profile if trigger failed
-      const userProfile = {
+    // Create profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
         id: authData.user.id,
         email,
-        first_name: firstName || fullName?.split(" ")[0] || email.split("@")[0],
-        last_name: lastName || fullName?.split(" ").slice(1).join(" ") || "",
-        role,
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone || null,
+        role: role || 'employee',
         department,
         position,
+        hire_date: hireDate || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+        updated_at: new Date().toISOString()
+      });
 
-      const { error: insertError } = await supabase
-        .from("profiles")
-        .insert(userProfile);
-
-      if (insertError) {
-        console.error("Profile creation failed:", insertError);
-        // If the profile creation fails, we should delete the auth user to avoid orphaned auth users
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        return res.status(500).json({
-          error: "Database error saving new user profile",
-          details: insertError.message,
-        });
-      }
+    if (profileError) {
+      console.error('Profile creation failed:', profileError);
+      return res.status(500).json({ error: "Failed to create user profile" });
     }
 
     // Create employee record if role is employee
@@ -176,14 +140,13 @@ export default async function handler(
 
     return res.status(200).json({
       success: true,
-      message:
-        "Registration successful. Please check your email to verify your account.",
+      message: "User registered successfully",
       user: authData.user,
     });
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({
-      error: "Registration failed. Please try again.",
+      error: "Registration failed",
       details: error instanceof Error ? error.message : "Unknown error",
     });
   }

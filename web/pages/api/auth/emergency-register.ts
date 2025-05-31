@@ -10,11 +10,20 @@ export default async function handler(
   }
 
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, role, department, position, phone, hireDate } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
+
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+
+    // Parse name into first and last name
+    const nameParts = name.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
     // Use service role key for admin operations
     const supabase = createClient(
@@ -30,8 +39,13 @@ export default async function handler(
       password,
       email_confirm: true,
       user_metadata: {
-        name: name || email.split('@')[0],
-        role: 'admin'
+        firstName,
+        lastName,
+        role: role || 'admin',
+        department: department || 'Administration',
+        position: position || 'Administrator',
+        phone,
+        hireDate
       }
     });
 
@@ -41,9 +55,6 @@ export default async function handler(
     }
 
     // Manually create profile (bypassing trigger)
-    const firstName = name ? name.split(' ')[0] : email.split('@')[0];
-    const lastName = name ? name.split(' ').slice(1).join(' ') : '';
-
     const { error: profileError } = await supabase
       .from('profiles')
       .insert({
@@ -51,9 +62,11 @@ export default async function handler(
         email,
         first_name: firstName,
         last_name: lastName,
-        role: 'admin',
-        department: 'Administration',
-        position: 'Administrator',
+        phone: phone || null,
+        role: role || 'admin',
+        department: department || 'Administration',
+        position: position || 'Administrator',
+        hire_date: hireDate || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
