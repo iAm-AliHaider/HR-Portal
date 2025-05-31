@@ -190,6 +190,8 @@ const navigationItems: NavItem[] = [
       { name: 'Admin Panel', href: '/admin' },
       { name: 'User Management', href: '/admin/user-management' },
       { name: 'Settings', href: '/settings' },
+      { name: 'Workflow Manager', href: '/settings/workflow-manager' },
+      { name: 'Eligibility Manager', href: '/settings/eligibility-manager' },
       { name: 'Logs', href: '/logs' },
       { name: 'Setup Validation', href: '/setup-validation' },
     ]

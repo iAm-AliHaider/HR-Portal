@@ -33,6 +33,10 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
+// Import the new components
+import DynamicRequestForm from '@/components/employee/DynamicRequestForm';
+import EmployeeInfoPanel from '@/components/employee/EmployeeInfoPanel';
+
 // Expand RequestFormData
 interface RequestFormData {
   // Employee info
@@ -69,10 +73,41 @@ interface RequestFormData {
   additionalApprovers?: string;
   customFields?: Record<string, string>;
   comments?: string;
+  
+  // Allow dynamic fields
+  [key: string]: any;
 }
 
 interface FormErrors {
   [key: string]: string;
+}
+
+// Add interfaces for workflow and eligibility
+interface WorkflowStep {
+  stepNumber: number;
+  stepName: string;
+  approverType: string;
+  approverName?: string;
+  estimatedTime?: string;
+  isRequired: boolean;
+}
+
+interface EligibilityRequirement {
+  name: string;
+  description: string;
+  isMet: boolean;
+  metReason?: string;
+  notMetReason?: string;
+}
+
+interface RequestType {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  description?: string;
+  fields?: string[];
+  workflow?: WorkflowStep[];
+  eligibility?: EligibilityRequirement[];
 }
 
 // Force Server-Side Rendering to prevent static generation
@@ -81,7 +116,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {}
   };
 };
-
 
 export default function RequestPanel() {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -130,6 +164,10 @@ export default function RequestPanel() {
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [step, setStep] = useState<'select' | 'form'>('select');
   const newRequestDrawer = useDrawerDisclosure();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showWorkflow, setShowWorkflow] = useState(false);
+  const [showEligibility, setShowEligibility] = useState(false);
+  const [eligibilityMet, setEligibilityMet] = useState(true);
   
   // Request types grouped by category
   const requestTypes = {
@@ -193,7 +231,53 @@ export default function RequestPanel() {
   // Load requests on component mount
   useEffect(() => {
     loadRequests();
+    loadCurrentUser();
   }, []);
+  
+  // Load the current user data
+  const loadCurrentUser = async () => {
+    try {
+      // Try to fetch user data from API
+      const response = await fetch('/api/me');
+      if (response.ok) {
+        const userData = await response.json();
+        setCurrentUser(userData);
+      } else {
+        // Mock user data for development
+        setCurrentUser({
+          id: 'user-1',
+          name: 'John Doe',
+          email: 'john.doe@company.com',
+          department: 'Engineering',
+          manager: 'Sarah Johnson',
+          managerEmail: 'sarah.johnson@company.com',
+          position: 'Senior Developer',
+          phone: '+1234567890',
+          location: 'New York Office',
+          costCenter: 'ENG-1234',
+          joinDate: '2020-03-15'
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+  
+  // Auto-fill form with user data when selected request type changes
+  useEffect(() => {
+    if (currentUser && selectedRequestType) {
+      setFormData(prev => ({
+        ...prev,
+        employeeName: currentUser.name,
+        employeeEmail: currentUser.email,
+        department: currentUser.department,
+        manager: currentUser.manager,
+        phone: currentUser.phone,
+        location: currentUser.location,
+        costCenter: currentUser.costCenter
+      }));
+    }
+  }, [currentUser, selectedRequestType]);
 
   const loadRequests = async () => {
     try {
@@ -347,39 +431,483 @@ export default function RequestPanel() {
     setSelectedRequestType(requestType);
   };
 
-  // Form validation
-  const validateForm = () => {
-    const errors: Partial<RequestFormData> & { [key: string]: string } = {};
+  // Get workflow steps for a request type
+  const getWorkflowSteps = (typeId: string): WorkflowStep[] => {
+    // These would be fetched from a workflow configuration in a real implementation
+    const workflowMap = {
+      'leave': [
+        { stepNumber: 1, stepName: 'Initial Submission', approverType: 'System', isRequired: true },
+        { stepNumber: 2, stepName: 'Manager Approval', approverType: 'Manager', approverName: currentUser?.manager, estimatedTime: '1-2 business days', isRequired: true },
+        { stepNumber: 3, stepName: 'HR Verification', approverType: 'HR', estimatedTime: '1 business day', isRequired: true }
+      ],
+      'remote': [
+        { stepNumber: 1, stepName: 'Initial Submission', approverType: 'System', isRequired: true },
+        { stepNumber: 2, stepName: 'Manager Approval', approverType: 'Manager', approverName: currentUser?.manager, estimatedTime: '1 business day', isRequired: true }
+      ],
+      'equipment': [
+        { stepNumber: 1, stepName: 'Initial Submission', approverType: 'System', isRequired: true },
+        { stepNumber: 2, stepName: 'Manager Approval', approverType: 'Manager', approverName: currentUser?.manager, estimatedTime: '1-2 business days', isRequired: true },
+        { stepNumber: 3, stepName: 'IT Department Approval', approverType: 'IT Department', estimatedTime: '1-3 business days', isRequired: true },
+        { stepNumber: 4, stepName: 'Procurement Processing', approverType: 'Procurement', estimatedTime: '3-5 business days', isRequired: false }
+      ],
+      'training': [
+        { stepNumber: 1, stepName: 'Initial Submission', approverType: 'System', isRequired: true },
+        { stepNumber: 2, stepName: 'Manager Approval', approverType: 'Manager', approverName: currentUser?.manager, estimatedTime: '1-2 business days', isRequired: true },
+        { stepNumber: 3, stepName: 'Budget Approval', approverType: 'Finance', estimatedTime: '2-3 business days', isRequired: currentUser?.costCenter ? true : false },
+        { stepNumber: 4, stepName: 'HR Processing', approverType: 'HR', estimatedTime: '1-2 business days', isRequired: true }
+      ]
+    };
     
-    if (selectedRequestType?.id === 'leave') {
-      if (!formData.leaveType) errors.leaveType = 'Leave type is required';
-      if (!formData.startDate) errors.startDate = 'Start date is required';
-      if (!formData.endDate) errors.endDate = 'End date is required';
-      if (!formData.reason) errors.reason = 'Reason is required';
+    return workflowMap[typeId] || [
+      { stepNumber: 1, stepName: 'Initial Submission', approverType: 'System', isRequired: true },
+      { stepNumber: 2, stepName: 'Manager Approval', approverType: 'Manager', approverName: currentUser?.manager, estimatedTime: '1-2 business days', isRequired: true }
+    ];
+  };
+  
+  // Check eligibility for a request type
+  const checkEligibility = (typeId: string) => {
+    // This would be fetched from an eligibility service in a real implementation
+    const eligibilityMap = {
+      'leave': [
+        { name: 'Employment Duration', description: 'Must be employed for at least 90 days', isMet: true, metReason: 'Employed since ' + currentUser?.joinDate },
+        { name: 'Leave Balance', description: 'Must have sufficient leave balance', isMet: true, metReason: '15 days available' },
+        { name: 'Prior Notice', description: 'Request must be made at least 2 weeks in advance for planned leave', isMet: true }
+      ],
+      'remote': [
+        { name: 'Position Eligibility', description: 'Role must be eligible for remote work', isMet: true, metReason: 'Your role is eligible for remote work' },
+        { name: 'Manager Approval', description: 'Your manager must pre-approve remote work', isMet: true }
+      ],
+      'equipment': [
+        { name: 'Budget Availability', description: 'Department must have available budget', isMet: true, metReason: 'Budget available for equipment requests' },
+        { name: 'Replacement Cycle', description: 'Equipment must be due for replacement', isMet: true, metReason: 'Last equipment provided > 24 months ago' }
+      ],
+      'training': [
+        { name: 'Budget Availability', description: 'Department must have training budget', isMet: true, metReason: 'Training budget available' },
+        { name: 'Position Relevance', description: 'Training must be relevant to current role', isMet: true },
+        { name: 'Manager Approval', description: 'Your manager must pre-approve training requests', isMet: true }
+      ],
+      'conference': [
+        { name: 'Budget Availability', description: 'Department must have conference budget', isMet: false, notMetReason: 'Conference budget exhausted for current quarter' },
+        { name: 'Business Justification', description: 'Must provide clear business justification', isMet: true }
+      ]
+    };
+    
+    const eligibility = eligibilityMap[typeId] || [
+      { name: 'Employment Status', description: 'Must be an active employee', isMet: true, metReason: 'You are an active employee' }
+    ];
+    
+    // Check if any requirements are not met
+    const allRequirementsMet = eligibility.every(req => req.isMet);
+    setEligibilityMet(allRequirementsMet);
+    
+    return eligibility;
+  };
+  
+  // Get fields to display for a specific request type
+  const getFormFieldsForRequestType = (typeId: string): string[] => {
+    // Define which fields should be shown for each request type
+    const fieldMap = {
+      'leave': ['leaveType', 'startDate', 'endDate', 'returnDate', 'totalDays', 'reason', 'handoverNotes'],
+      'remote': ['startDate', 'endDate', 'location', 'reason'],
+      'equipment': ['equipmentType', 'specifications', 'dateNeeded', 'urgency', 'reason', 'costCenter'],
+      'expense': ['expenseDate', 'expenseType', 'amount', 'description', 'costCenter', 'attachments'],
+      'training': ['trainingType', 'provider', 'startDate', 'endDate', 'cost', 'justification', 'costCenter'],
+      'conference': ['conferenceName', 'location', 'startDate', 'endDate', 'cost', 'justification', 'costCenter'],
+      'travel': ['destination', 'purpose', 'startDate', 'endDate', 'transportationType', 'estimatedCost', 'costCenter']
+    };
+    
+    return fieldMap[typeId] || ['title', 'description', 'dateNeeded', 'priority', 'justification'];
+  };
+  
+  // Render form fields based on the selected request type
+  const renderDynamicFormFields = () => {
+    if (!selectedRequestType) return null;
+    
+    const fields = getFormFieldsForRequestType(selectedRequestType.id);
+    
+    return (
+      <div className="space-y-4">
+        {fields.map(field => {
+          switch(field) {
+            case 'leaveType':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Leave Type*</label>
+                  <Select value={formData.leaveType ?? ''} onChange={(e) => handleFormChange('leaveType', e.target.value)}>
+                    <SelectTrigger className={formErrors.leaveType ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select leave type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="annual">Annual Leave</SelectItem>
+                      <SelectItem value="sick">Sick Leave</SelectItem>
+                      <SelectItem value="personal">Personal Leave</SelectItem>
+                      <SelectItem value="bereavement">Bereavement Leave</SelectItem>
+                      <SelectItem value="maternity">Maternity Leave</SelectItem>
+                      <SelectItem value="paternity">Paternity Leave</SelectItem>
+                      <SelectItem value="unpaid">Unpaid Leave</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formErrors.leaveType && <p className="text-xs text-red-500 mt-1">{formErrors.leaveType}</p>}
+                </div>
+              );
+            case 'startDate':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Start Date*</label>
+                  <Input 
+                    type="date" 
+                    value={formData.startDate ?? ''} 
+                    onChange={(e) => handleFormChange('startDate', e.target.value)}
+                    className={formErrors.startDate ? 'border-red-500' : ''}
+                  />
+                  {formErrors.startDate && <p className="text-xs text-red-500 mt-1">{formErrors.startDate}</p>}
+                </div>
+              );
+            case 'endDate':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">End Date*</label>
+                  <Input 
+                    type="date" 
+                    value={formData.endDate ?? ''} 
+                    onChange={(e) => handleFormChange('endDate', e.target.value)}
+                    className={formErrors.endDate ? 'border-red-500' : ''}
+                  />
+                  {formErrors.endDate && <p className="text-xs text-red-500 mt-1">{formErrors.endDate}</p>}
+                </div>
+              );
+            case 'returnDate':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Return Date</label>
+                  <Input 
+                    type="date" 
+                    value={formData.returnDate ?? ''} 
+                    onChange={(e) => handleFormChange('returnDate', e.target.value)}
+                  />
+                </div>
+              );
+            case 'totalDays':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Total Days</label>
+                  <Input 
+                    type="number" 
+                    value={formData.totalDays ?? ''} 
+                    onChange={(e) => handleFormChange('totalDays', e.target.value)}
+                    readOnly
+                    min="0"
+                    step="0.5"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">This is calculated automatically from start and end dates</p>
+                </div>
+              );
+            case 'reason':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Reason*</label>
+                  <Textarea 
+                    placeholder="Please provide details" 
+                    value={formData.reason ?? ''} 
+                    onChange={(e) => handleFormChange('reason', e.target.value)}
+                    className={formErrors.reason ? 'border-red-500' : ''}
+                  />
+                  {formErrors.reason && <p className="text-xs text-red-500 mt-1">{formErrors.reason}</p>}
+                </div>
+              );
+            case 'handoverNotes':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Handover Notes</label>
+                  <Textarea 
+                    placeholder="Tasks to be handled during your absence" 
+                    value={formData.handoverNotes ?? ''} 
+                    onChange={(e) => handleFormChange('handoverNotes', e.target.value)}
+                  />
+                </div>
+              );
+            case 'equipmentType':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Equipment Type*</label>
+                  <Select value={formData.equipmentType ?? ''} onChange={(e) => handleFormChange('equipmentType', e.target.value)}>
+                    <SelectTrigger className={formErrors.equipmentType ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select equipment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="laptop">Laptop</SelectItem>
+                      <SelectItem value="desktop">Desktop</SelectItem>
+                      <SelectItem value="monitor">Monitor</SelectItem>
+                      <SelectItem value="keyboard">Keyboard</SelectItem>
+                      <SelectItem value="mouse">Mouse</SelectItem>
+                      <SelectItem value="headset">Headset</SelectItem>
+                      <SelectItem value="phone">Phone</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formErrors.equipmentType && <p className="text-xs text-red-500 mt-1">{formErrors.equipmentType}</p>}
+                </div>
+              );
+            case 'specifications':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Specifications</label>
+                  <Textarea 
+                    placeholder="Describe the specifications needed" 
+                    value={formData.specifications ?? ''} 
+                    onChange={(e) => handleFormChange('specifications', e.target.value)}
+                  />
+                </div>
+              );
+            case 'urgency':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Urgency*</label>
+                  <Select value={formData.urgency ?? ''} onChange={(e) => handleFormChange('urgency', e.target.value)}>
+                    <SelectTrigger className={formErrors.urgency ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select urgency level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low - Within 4 weeks</SelectItem>
+                      <SelectItem value="medium">Medium - Within 2 weeks</SelectItem>
+                      <SelectItem value="high">High - Within 1 week</SelectItem>
+                      <SelectItem value="critical">Critical - Within 48 hours</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formErrors.urgency && <p className="text-xs text-red-500 mt-1">{formErrors.urgency}</p>}
+                </div>
+              );
+            case 'dateNeeded':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Date Needed</label>
+                  <Input 
+                    type="date" 
+                    value={formData.dateNeeded ?? ''} 
+                    onChange={(e) => handleFormChange('dateNeeded', e.target.value)}
+                  />
+                </div>
+              );
+            case 'title':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Title*</label>
+                  <Input 
+                    placeholder="Enter request title" 
+                    value={formData.title ?? ''} 
+                    onChange={(e) => handleFormChange('title', e.target.value)}
+                    className={formErrors.title ? 'border-red-500' : ''}
+                  />
+                  {formErrors.title && <p className="text-xs text-red-500 mt-1">{formErrors.title}</p>}
+                </div>
+              );
+            case 'description':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Description*</label>
+                  <Textarea 
+                    placeholder="Please provide details" 
+                    value={formData.description ?? ''} 
+                    onChange={(e) => handleFormChange('description', e.target.value)}
+                    className={formErrors.description ? 'border-red-500' : ''}
+                  />
+                  {formErrors.description && <p className="text-xs text-red-500 mt-1">{formErrors.description}</p>}
+                </div>
+              );
+            case 'priority':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Priority</label>
+                  <Select value={formData.priority ?? ''} onChange={(e) => handleFormChange('priority', e.target.value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select priority level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            case 'justification':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Justification*</label>
+                  <Textarea 
+                    placeholder="Why is this request necessary?" 
+                    value={formData.justification ?? ''} 
+                    onChange={(e) => handleFormChange('justification', e.target.value)}
+                    className={formErrors.justification ? 'border-red-500' : ''}
+                  />
+                  {formErrors.justification && <p className="text-xs text-red-500 mt-1">{formErrors.justification}</p>}
+                </div>
+              );
+            case 'attachments':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Attachments</label>
+                  <Input 
+                    type="file" 
+                    onChange={(e) => handleFormChange('attachments', e.target.files)} 
+                    multiple
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Accepted formats: PDF, JPG, PNG (max 5MB)</p>
+                </div>
+              );
+            case 'costCenter':
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">Cost Center</label>
+                  <Input 
+                    placeholder="Enter cost center" 
+                    value={formData.costCenter ?? ''} 
+                    onChange={(e) => handleFormChange('costCenter', e.target.value)}
+                  />
+                </div>
+              );
+            default:
+              // Handle custom fields
+              return (
+                <div key={field} className="mb-4">
+                  <label className="text-sm font-medium">{field.replace(/([A-Z])/g, ' $1').trim()}*</label>
+                  <Input 
+                    placeholder={`Enter ${field.replace(/([A-Z])/g, ' $1').trim().toLowerCase()}`}
+                    value={formData[field] ?? ''} 
+                    onChange={(e) => handleFormChange(field, e.target.value)}
+                    className={formErrors[field] ? 'border-red-500' : ''}
+                  />
+                  {formErrors[field] && <p className="text-xs text-red-500 mt-1">{formErrors[field]}</p>}
+                </div>
+              );
+          }
+        })}
+      </div>
+    );
+  };
+  
+  // Show workflow steps for the current request type
+  const renderWorkflowSteps = () => {
+    if (!selectedRequestType) return null;
+    
+    const workflow = getWorkflowSteps(selectedRequestType.id);
+    
+    return (
+      <div className="border rounded-md p-4 bg-gray-50 mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-semibold text-lg">Approval Workflow</h3>
+          <Button variant="ghost" size="sm" onClick={() => setShowWorkflow(!showWorkflow)}>
+            {showWorkflow ? 'Hide' : 'Show'}
+          </Button>
+        </div>
+        
+        {showWorkflow && (
+          <div className="space-y-4">
+            {workflow.map((step, index) => (
+              <div key={index} className="flex items-start">
+                <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5">
+                  {step.stepNumber}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">{step.stepName}</div>
+                  <div className="text-sm text-gray-500">
+                    Approver: {step.approverName || step.approverType}
+                    {step.estimatedTime && <span> • Estimated time: {step.estimatedTime}</span>}
+                    {!step.isRequired && <span> • (Optional)</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // Show eligibility requirements for the current request type
+  const renderEligibilityRequirements = () => {
+    if (!selectedRequestType) return null;
+    
+    const eligibility = checkEligibility(selectedRequestType.id);
+    
+    return (
+      <div className="border rounded-md p-4 bg-gray-50 mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-semibold text-lg">Eligibility Check</h3>
+          <Button variant="ghost" size="sm" onClick={() => setShowEligibility(!showEligibility)}>
+            {showEligibility ? 'Hide' : 'Show'}
+          </Button>
+        </div>
+        
+        {!eligibilityMet && (
+          <div className="bg-red-100 text-red-800 p-2 rounded mb-2">
+            You do not meet all eligibility requirements for this request type.
+          </div>
+        )}
+        
+        {showEligibility && (
+          <div className="space-y-3">
+            {eligibility.map((req, index) => (
+              <div key={index} className="flex items-start">
+                {req.isMet ? (
+                  <Check className="h-5 w-5 text-green-500 mr-2" />
+                ) : (
+                  <X className="h-5 w-5 text-red-500 mr-2" />
+                )}
+                <div className="flex-1">
+                  <div className="font-medium">{req.name}</div>
+                  <div className="text-sm text-gray-500">{req.description}</div>
+                  {req.isMet && req.metReason && (
+                    <div className="text-sm text-green-600">{req.metReason}</div>
+                  )}
+                  {!req.isMet && req.notMetReason && (
+                    <div className="text-sm text-red-600">{req.notMetReason}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // Update the validateForm function to handle dynamic fields
+  const validateForm = () => {
+    const errors: FormErrors = {};
+    
+    if (!selectedRequestType) {
+      return false;
+    }
+    
+    // Get required fields for this request type
+    const fields = getFormFieldsForRequestType(selectedRequestType.id);
+    
+    // Validate each field
+    fields.forEach(field => {
+      // Skip validation for certain fields
+      if (['totalDays', 'returnDate', 'handoverNotes', 'specifications', 'attachments'].includes(field)) {
+        return;
+      }
       
-      // Validate date logic
-      if (formData.startDate && formData.endDate) {
-        const start = new Date(formData.startDate);
-        const end = new Date(formData.endDate);
-        if (start > end) {
-          errors.endDate = 'End date must be after start date';
-        }
-        if (start < new Date()) {
-          errors.startDate = 'Start date cannot be in the past';
-        }
+      if (!formData[field]) {
+        errors[field] = `${field.replace(/([A-Z])/g, ' $1').trim()} is required`;
+      }
+    });
+    
+    // Specific validations for date fields
+    if (formData.startDate && formData.endDate) {
+      const start = new Date(formData.startDate);
+      const end = new Date(formData.endDate);
+      if (start > end) {
+        errors.endDate = 'End date must be after start date';
       }
     }
     
-    if (selectedRequestType?.id === 'equipment') {
-      if (!formData.equipmentType) errors.equipmentType = 'Equipment type is required';
-      if (!formData.reason) errors.reason = 'Reason for request is required';
-      if (!formData.urgency) errors.urgency = 'Urgency level is required';
-    }
-    
-    // Generic validation for other types
-    if (!['leave', 'equipment'].includes(selectedRequestType?.id)) {
-      if (!formData.title) errors.title = 'Request title is required';
-      if (!formData.description) errors.description = 'Description is required';
+    // Check eligibility
+    if (!eligibilityMet) {
+      errors._general = 'You do not meet the eligibility requirements for this request type';
     }
     
     setFormErrors(errors);
@@ -505,7 +1033,7 @@ export default function RequestPanel() {
     return emailMap[typeId] || 'manager@company.com';
   };
 
-  const handleFormChange = (field: keyof RequestFormData, value: any) => {
+  const handleFormChange = (field: string, value: any) => {
     setFormData((prev: RequestFormData) => ({ ...prev, [field]: value }));
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
@@ -591,15 +1119,19 @@ export default function RequestPanel() {
         </Card>
         
         {/* Requests Tabs */}
-        <Tabs index={activeTabIndex} onChange={setActiveTabIndex}>
+        <Tabs 
+          defaultIndex={activeTabIndex} 
+          onChange={(index) => setActiveTabIndex(index)}
+        >
           <TabsList className="mb-4">
-            {['all', 'pending', 'approved', 'rejected'].map((tab, idx) => (
-              <TabsTrigger key={tab} value={tab}>{tab.charAt(0).toUpperCase() + tab.slice(1)} Requests</TabsTrigger>
-            ))}
+            <TabsTrigger>All Requests</TabsTrigger>
+            <TabsTrigger>Pending Requests</TabsTrigger>
+            <TabsTrigger>Approved Requests</TabsTrigger>
+            <TabsTrigger>Rejected Requests</TabsTrigger>
           </TabsList>
           
-          {['all', 'pending', 'approved', 'rejected'].map((tab, idx) => (
-            <TabsContent key={tab} value={tab}>
+          {['all', 'pending', 'approved', 'rejected'].map((tab, index) => (
+            <TabsContent key={tab} display={activeTabIndex === index ? 'block' : 'none'}>
               {filteredRequests.length > 0 ? (
                 <div className="space-y-4">
                   {filteredRequests.map(request => (
@@ -768,46 +1300,17 @@ export default function RequestPanel() {
             {/* Step 2: Fill Form */}
             {step === 'form' && selectedRequestType && (
               <div className="mt-4 space-y-6">
-                {/* Employee Information */}
-                <div className="mb-4">
-                  <h3 className="font-semibold text-lg mb-2">Employee Information</h3>
-                  <label className="text-sm font-medium">Employee Name</label>
-                  <Input placeholder="Enter your name" value={formData.employeeName ?? ''} onChange={e => handleFormChange('employeeName', e.target.value)} required />
-                  <label className="text-sm font-medium">Employee Email</label>
-                  <Input placeholder="Enter your email" value={formData.employeeEmail ?? ''} onChange={e => handleFormChange('employeeEmail', e.target.value)} required type="email" />
-                  <label className="text-sm font-medium">Department</label>
-                  <Input placeholder="Enter your department" value={formData.department ?? ''} onChange={e => handleFormChange('department', e.target.value)} required />
-                  <label className="text-sm font-medium">Manager</label>
-                  <Input placeholder="Enter your manager's name" value={formData.manager ?? ''} onChange={e => handleFormChange('manager', e.target.value)} />
-                  <label className="text-sm font-medium">Phone</label>
-                  <Input placeholder="Enter your phone number" value={formData.phone ?? ''} onChange={e => handleFormChange('phone', e.target.value)} />
-                  <label className="text-sm font-medium">Location</label>
-                  <Input placeholder="Enter your location" value={formData.location ?? ''} onChange={e => handleFormChange('location', e.target.value)} />
-                </div>
-                {/* Justification / Comments */}
-                <div className="mb-4">
-                  <h3 className="font-semibold text-lg mb-2">Justification / Comments</h3>
-                  <label className="text-sm font-medium">Justification</label>
-                  <Textarea placeholder="Why are you making this request?" value={formData.justification ?? ''} onChange={e => handleFormChange('justification', e.target.value)} isRequired />
-                  <label className="text-sm font-medium">Comments</label>
-                  <Textarea placeholder="Additional comments (optional)" value={formData.comments ?? ''} onChange={e => handleFormChange('comments', e.target.value)} />
-                </div>
-                {/* Cost Center / Project */}
-                <div className="mb-4">
-                  <h3 className="font-semibold text-lg mb-2">Cost Center / Project</h3>
-                  <label className="text-sm font-medium">Cost Center</label>
-                  <Input placeholder="Enter cost center (if applicable)" value={formData.costCenter ?? ''} onChange={e => handleFormChange('costCenter', e.target.value)} />
-                  <label className="text-sm font-medium">Project</label>
-                  <Input placeholder="Enter project (if applicable)" value={formData.project ?? ''} onChange={e => handleFormChange('project', e.target.value)} />
-                </div>
-                {/* Additional Approvers */}
-                <div className="mb-4">
-                  <h3 className="font-semibold text-lg mb-2">Additional Approvers</h3>
-                  <label className="text-sm font-medium">Additional Approvers</label>
-                  <Input placeholder="Enter additional approvers (comma separated)" value={formData.additionalApprovers ?? ''} onChange={e => handleFormChange('additionalApprovers', e.target.value)} />
-                </div>
-                {/* Custom Fields (future extensibility) */}
-                {/* ... type-specific fields follow here ... */}
+                {/* Employee Information Panel */}
+                <EmployeeInfoPanel employee={currentUser || {}} />
+                
+                {/* Dynamic Request Form */}
+                <DynamicRequestForm 
+                  requestType={selectedRequestType}
+                  formData={formData}
+                  formErrors={formErrors}
+                  onChange={handleFormChange}
+                  currentUser={currentUser}
+                />
               </div>
             )}
           </DrawerBody>
@@ -821,14 +1324,18 @@ export default function RequestPanel() {
                 )}
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => { setSelectedRequestType(null); setStep('select'); setDialogError(null); }}>Back</Button>
-                <Button onClick={async () => {
-                  try {
-                    await handleSubmitRequest();
-                  } catch (e) {
-                    setDialogError('Failed to submit request. Please try again.');
-                  }
-                }}>Submit Request</Button>
+                {step === 'form' && (
+                  <Button variant="outline" onClick={() => { setSelectedRequestType(null); setStep('select'); setDialogError(null); }}>Back</Button>
+                )}
+                {step === 'form' && (
+                  <Button onClick={async () => {
+                    try {
+                      await handleSubmitRequest();
+                    } catch (e) {
+                      setDialogError('Failed to submit request. Please try again.');
+                    }
+                  }}>Submit Request</Button>
+                )}
                 <Button variant="ghost" onClick={() => { newRequestDrawer.onClose(); setSelectedRequestType(null); setStep('select'); setDialogError(null); setFormData(initialFormData); setFormErrors({}); }}>Reset</Button>
               </div>
             </div>
@@ -838,7 +1345,10 @@ export default function RequestPanel() {
       
       {/* Request Details Dialog */}
       {selectedRequest && (
-        <Dialog isOpen={isDetailDialogOpen} onClose={() => setIsDetailDialogOpen(false)}>
+        <Dialog 
+          isOpen={isDetailDialogOpen} 
+          onClose={() => setIsDetailDialogOpen(false)}
+        >
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Request Details</DialogTitle>

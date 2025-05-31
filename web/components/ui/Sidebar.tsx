@@ -152,7 +152,8 @@ const navCategories: NavCategory[] = [
       { name: 'Company Settings', href: '/settings/company' },
       { name: 'General Settings', href: '/settings/general' },
       { name: 'User Roles & Permissions', href: '/settings/roles' },
-      { name: 'Workflow Management', href: '/settings/workflows' },
+      { name: 'Workflow Management', href: '/settings/workflow-manager' },
+      { name: 'Eligibility Management', href: '/settings/eligibility-manager' },
       { name: 'Role-Workflow Integration', href: '/role-workflow-management' },
       { name: 'Policy Management', href: '/settings/policies' },
       { name: 'Security Settings', href: '/settings/security' },
@@ -303,8 +304,7 @@ export default function Sidebar({
 
           <Accordion 
             type="multiple" 
-            value={activeCategories}
-            onValueChange={setActiveCategories}
+            defaultValue={activeCategories}
             className="w-full"
           >
             {navCategories.filter(category => hasAccess(category.roleAccess)).map((category) => (
