@@ -67,17 +67,76 @@ export default async function handler(
       });
     }
 
-    // Check if user already exists before signup attempt
-    const { data: existingUsers, error: checkError } = await supabase
+    // Check if user already exists in auth.users
+    const { data: existingAuthUsers, error: authCheckError } = await supabase.auth.admin.listUsers();
+    
+    if (authCheckError) {
+      console.error("Error checking auth users:", authCheckError);
+    } else {
+      const existingAuthUser = existingAuthUsers.users.find(u => u.email === email);
+      if (existingAuthUser) {
+        console.log('🔍 User exists in auth.users, checking profile...');
+        
+        // Check if profile exists
+        const { data: existingProfile, error: profileCheckError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", existingAuthUser.id)
+          .single();
+        
+        if (existingProfile) {
+          return res.status(400).json({ 
+            error: "Email is already registered. Please use the login page.", 
+            loginUrl: "/login" 
+          });
+        } else if (!profileCheckError || profileCheckError.code === 'PGRST116') {
+          // User exists in auth but no profile - create profile
+          console.log('🔧 Creating missing profile for existing user...');
+          
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: existingAuthUser.id,
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              phone: phone || null,
+              role: role || 'employee',
+              department,
+              position,
+              hire_date: hireDate || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (profileError) {
+            console.error('Profile creation failed:', profileError);
+            return res.status(500).json({ error: "Failed to create user profile" });
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: "Profile created for existing user. You can now login.",
+            user: existingAuthUser,
+          });
+        }
+      }
+    }
+
+    // Check if user already exists in profiles (backup check)
+    const { data: existingProfiles, error: profilesCheckError } = await supabase
       .from("profiles")
       .select("email")
       .eq("email", email)
       .limit(1);
 
-    if (checkError) {
-      console.error("Error checking for existing user:", checkError);
-    } else if (existingUsers && existingUsers.length > 0) {
-      return res.status(400).json({ error: "Email is already registered" });
+    if (profilesCheckError) {
+      console.error("Error checking for existing profiles:", profilesCheckError);
+    } else if (existingProfiles && existingProfiles.length > 0) {
+      return res.status(400).json({ 
+        error: "Email is already registered. Please use the login page.", 
+        loginUrl: "/login" 
+      });
     }
 
     // Create user
