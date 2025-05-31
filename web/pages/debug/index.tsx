@@ -13,7 +13,9 @@ import {
   AlertTriangle,
   Bug,
   Layers,
-  Lock
+  Lock,
+  Upload,
+  Server
 } from 'lucide-react';
 
 export default function DebugPage() {
@@ -30,6 +32,13 @@ export default function DebugPage() {
         ]}
       >
         <CardGrid columns={3}>
+          <Card
+            title="Supabase Admin"
+            description="Manage database connections, view tables, and upload data"
+            icon={<Server className="h-8 w-8" strokeWidth={1.5} />}
+            onClick={() => router.push('/debug/supabase-admin')}
+          />
+          
           <Card
             title="Authentication"
             description="Test and debug authentication flows"
