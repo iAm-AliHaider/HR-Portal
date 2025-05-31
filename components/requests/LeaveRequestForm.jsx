@@ -37,6 +37,12 @@ const LeaveRequestForm = ({ onSubmit, onCancel, isSubmitting }) => {
     handoverNotes: '',
   });
   const [errors, setErrors] = useState({});
+  
+  // Clear the leaveType error immediately on component mount
+  useEffect(() => {
+    // Immediately clear any leaveType error since we have a default value
+    setErrors(prev => ({ ...prev, leaveType: undefined }));
+  }, []);
 
   // Fetch leave types from the database
   useEffect(() => {
@@ -67,13 +73,6 @@ const LeaveRequestForm = ({ onSubmit, onCancel, isSubmitting }) => {
     };
 
     fetchLeaveTypes();
-    
-    // Clear any initial errors after a short delay
-    const timer = setTimeout(() => {
-      setErrors({});
-    }, 300);
-    
-    return () => clearTimeout(timer);
   }, []);
 
   // Calculate days between dates
@@ -113,7 +112,7 @@ const LeaveRequestForm = ({ onSubmit, onCancel, isSubmitting }) => {
     });
     
     // Clear error when field is updated
-    if (errors[field]) {
+    if (field in errors) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
@@ -121,13 +120,19 @@ const LeaveRequestForm = ({ onSubmit, onCancel, isSubmitting }) => {
   // Handle leave type selection specifically
   const handleLeaveTypeChange = (value) => {
     console.log('Leave type selected:', value);
-    handleChange('leaveType', value);
+    
+    // Update form data
+    setFormData(prev => ({ ...prev, leaveType: value }));
+    
+    // Explicitly clear the leaveType error
+    setErrors(prev => ({ ...prev, leaveType: undefined }));
   };
 
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.leaveType) {
+    // Only add leaveType error if it's actually empty
+    if (!formData.leaveType || formData.leaveType.trim() === '') {
       newErrors.leaveType = 'Leave type is required';
     }
     
@@ -175,13 +180,6 @@ const LeaveRequestForm = ({ onSubmit, onCancel, isSubmitting }) => {
       });
     }
   };
-
-  // Immediately clear the error when leaveType has a value
-  useEffect(() => {
-    if (formData.leaveType && errors.leaveType) {
-      setErrors(prev => ({ ...prev, leaveType: undefined }));
-    }
-  }, [formData.leaveType, errors.leaveType]);
 
   return (
     <Box as="form" onSubmit={handleSubmit} width="100%">
