@@ -56,6 +56,99 @@ export default function SupabaseAdminPage() {
   const [allTemplates, setAllTemplates] = useState<UploadTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
+  // Setup Wizard State
+  const [currentStep, setCurrentStep] = useState(1);
+  const [setupProgress, setSetupProgress] = useState(0);
+  const [setupStatus, setSetupStatus] = useState<{ [key: string]: 'pending' | 'completed' | 'error' }>({});
+  const [stepData, setStepData] = useState<{ [key: string]: string }>({});
+
+  // Setup steps configuration
+  const setupSteps = [
+    {
+      id: 'company',
+      title: 'Company Information',
+      description: 'Basic company details and settings',
+      template: 'Company Settings',
+      required: true,
+      fields: ['name', 'industry', 'size', 'address', 'phone', 'email'],
+      sampleData: {
+        name: 'Your Company Inc.',
+        industry: 'Technology',
+        size: 'Medium (50-200 employees)',
+        address: '123 Business Ave, City, State 12345',
+        phone: '+1-555-123-4567',
+        email: 'info@yourcompany.com',
+        website: 'https://yourcompany.com',
+        timezone: 'America/New_York',
+        currency: 'USD'
+      }
+    },
+    {
+      id: 'departments',
+      title: 'Departments',
+      description: 'Organizational departments and structure',
+      template: 'Departments',
+      required: true,
+      fields: ['name', 'description', 'budget', 'location'],
+      sampleData: [
+        { name: 'Engineering', description: 'Software development and engineering', budget: 500000, location: 'Building A, Floor 3' },
+        { name: 'Human Resources', description: 'HR management and employee relations', budget: 200000, location: 'Building A, Floor 1' },
+        { name: 'Sales', description: 'Sales and business development', budget: 300000, location: 'Building B, Floor 2' }
+      ]
+    },
+    {
+      id: 'roles',
+      title: 'Job Roles',
+      description: 'Employee roles and position definitions',
+      template: 'Roles',
+      required: true,
+      fields: ['name', 'description', 'level'],
+      sampleData: [
+        { name: 'Software Engineer', description: 'Software development role', level: 'mid', permissions: '["read", "write"]' },
+        { name: 'Senior Software Engineer', description: 'Senior software development role', level: 'senior', permissions: '["read", "write", "review"]' },
+        { name: 'HR Manager', description: 'Human resources management', level: 'manager', permissions: '["read", "write", "manage"]' }
+      ]
+    },
+    {
+      id: 'employees',
+      title: 'Employee Data',
+      description: 'Import your existing employee information',
+      template: 'Employees',
+      required: true,
+      fields: ['employee_id', 'first_name', 'last_name', 'email', 'department', 'position'],
+      sampleData: [
+        { employee_id: 'EMP001', first_name: 'John', last_name: 'Doe', email: 'john.doe@company.com', department: 'Engineering', position: 'Software Engineer', hire_date: '2024-01-15', status: 'active' },
+        { employee_id: 'EMP002', first_name: 'Jane', last_name: 'Smith', email: 'jane.smith@company.com', department: 'Human Resources', position: 'HR Manager', hire_date: '2023-06-01', status: 'active' }
+      ]
+    },
+    {
+      id: 'leave_types',
+      title: 'Leave Types',
+      description: 'Configure your leave policies and types',
+      template: 'Leave Types',
+      required: true,
+      fields: ['name', 'description', 'default_days'],
+      sampleData: [
+        { name: 'Annual Leave', description: 'Yearly vacation leave', default_days: 25, requires_approval: true, color: '#4F46E5' },
+        { name: 'Sick Leave', description: 'Medical leave', default_days: 10, requires_approval: false, color: '#EF4444' },
+        { name: 'Personal Leave', description: 'Personal time off', default_days: 5, requires_approval: true, color: '#10B981' }
+      ]
+    },
+    {
+      id: 'optional',
+      title: 'Optional Data',
+      description: 'Additional data to enhance your HR system',
+      template: null,
+      required: false,
+      options: [
+        { name: 'Skills', template: 'Skills', description: 'Employee skills and competencies' },
+        { name: 'Training Categories', template: 'Training Categories', description: 'Training and development categories' },
+        { name: 'Meeting Rooms', template: 'Meeting Rooms', description: 'Conference rooms and facilities' },
+        { name: 'Equipment Inventory', template: 'Equipment Inventory', description: 'Company equipment and assets' }
+      ]
+    }
+  ];
+
   // Load all templates
   const loadAllTemplates = async () => {
     if (!adminManager) return;
@@ -294,6 +387,93 @@ export default function SupabaseAdminPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Setup Wizard Functions
+  const downloadSetupTemplate = (stepId: string) => {
+    const step = setupSteps.find(s => s.id === stepId);
+    if (!step || !step.template || !adminManager) return;
+
+    const template = templates.find(t => t.name === step.template);
+    if (template) {
+      downloadTemplate(template);
+    }
+  };
+
+  const processSetupUpload = async (stepId: string, data: string) => {
+    const step = setupSteps.find(s => s.id === stepId);
+    if (!step || !step.template || !adminManager) return;
+
+    const template = templates.find(t => t.name === step.template);
+    if (!template) return;
+
+    try {
+      setLoading(true);
+      setSetupStatus(prev => ({ ...prev, [stepId]: 'pending' }));
+
+      // Parse and validate data
+      const parsedData = adminManager.parseCSV(data);
+      const validation = adminManager.validateUploadData(parsedData, template);
+
+      if (!validation.valid) {
+        setSetupStatus(prev => ({ ...prev, [stepId]: 'error' }));
+        return { success: false, message: validation.errors.join(', ') };
+      }
+
+      // Upload data
+      const result = await adminManager.uploadData(template.table, parsedData);
+      
+      if (result.success) {
+        setSetupStatus(prev => ({ ...prev, [stepId]: 'completed' }));
+        // Update progress
+        const completedSteps = Object.values({ ...setupStatus, [stepId]: 'completed' }).filter(status => status === 'completed').length;
+        setSetupProgress((completedSteps / setupSteps.filter(s => s.required).length) * 100);
+      } else {
+        setSetupStatus(prev => ({ ...prev, [stepId]: 'error' }));
+      }
+
+      return result;
+    } catch (error: any) {
+      setSetupStatus(prev => ({ ...prev, [stepId]: 'error' }));
+      return { success: false, message: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const nextStep = () => {
+    if (currentStep < setupSteps.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const generateSetupSampleCSV = (stepId: string) => {
+    const step = setupSteps.find(s => s.id === stepId);
+    if (!step || !step.template || !adminManager) return '';
+
+    const template = templates.find(t => t.name === step.template);
+    if (!template) return '';
+
+    // Create custom sample data if provided in step
+    if (step.sampleData && Array.isArray(step.sampleData)) {
+      const headers = template.columns.join(',');
+      const sampleRows = step.sampleData
+        .map(row => template.columns.map(col => String(row[col] || '')).join(','))
+        .join('\n');
+      return `${headers}\n${sampleRows}`;
+    } else if (step.sampleData && typeof step.sampleData === 'object') {
+      const headers = template.columns.join(',');
+      const sampleRow = template.columns.map(col => String(step.sampleData[col] || '')).join(',');
+      return `${headers}\n${sampleRow}`;
+    }
+
+    return adminManager.generateCSVTemplate(template);
+  };
+
   // Auto-connect on mount
   useEffect(() => {
     testConnection();
@@ -389,8 +569,12 @@ export default function SupabaseAdminPage() {
           </Card>
 
           {connected && (
-            <Tabs defaultValue="tables" className="space-y-6">
+            <Tabs defaultValue="setup" className="space-y-6">
               <TabsList>
+                <TabsTrigger value="setup">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Setup Wizard
+                </TabsTrigger>
                 <TabsTrigger value="tables">
                   <Database className="h-4 w-4 mr-2" />
                   Database Tables
@@ -400,6 +584,265 @@ export default function SupabaseAdminPage() {
                   Upload Data
                 </TabsTrigger>
               </TabsList>
+
+              {/* Setup Wizard Tab */}
+              <TabsContent value="setup" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="h-5 w-5" />
+                      HR Portal Setup Wizard
+                    </CardTitle>
+                    <div className="text-sm text-gray-600">
+                      Get your HR Portal up and running by uploading essential company data in the correct order.
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Progress Bar */}
+                    <div className="mb-6">
+                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Setup Progress</span>
+                        <span>{Math.round(setupProgress)}% Complete</span>
+                      </div>
+                      <Progress value={setupProgress} className="h-2" />
+                    </div>
+
+                    {/* Step Navigation */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-4">
+                        {setupSteps.map((step, index) => (
+                          <div
+                            key={step.id}
+                            className={`flex items-center space-x-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                              currentStep === index + 1
+                                ? 'bg-blue-100 text-blue-700'
+                                : setupStatus[step.id] === 'completed'
+                                ? 'bg-green-100 text-green-700'
+                                : setupStatus[step.id] === 'error'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}
+                            onClick={() => setCurrentStep(index + 1)}
+                          >
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                              setupStatus[step.id] === 'completed' ? 'bg-green-500 text-white' :
+                              setupStatus[step.id] === 'error' ? 'bg-red-500 text-white' :
+                              currentStep === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'
+                            }`}>
+                              {setupStatus[step.id] === 'completed' ? '✓' : 
+                               setupStatus[step.id] === 'error' ? '✗' : index + 1}
+                            </div>
+                            <span className="hidden md:block font-medium">{step.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Current Step Content */}
+                    {setupSteps[currentStep - 1] && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-xl font-semibold">{setupSteps[currentStep - 1].title}</h3>
+                              <p className="text-sm text-gray-600 mt-1">{setupSteps[currentStep - 1].description}</p>
+                            </div>
+                            {setupSteps[currentStep - 1].required && (
+                              <Badge variant="destructive">Required</Badge>
+                            )}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {setupSteps[currentStep - 1].template ? (
+                            <>
+                              {/* Download Template Section */}
+                              <div className="bg-blue-50 p-4 rounded-lg">
+                                <h4 className="font-medium mb-2 flex items-center gap-2">
+                                  <Download className="h-4 w-4" />
+                                  Step 1: Download Template
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-3">
+                                  Download the CSV template, fill it with your company data, and upload it below.
+                                </p>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    onClick={() => downloadSetupTemplate(setupSteps[currentStep - 1].id)}
+                                    size="sm"
+                                    variant="outline"
+                                  >
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Download {setupSteps[currentStep - 1].title} Template
+                                  </Button>
+                                  <Button 
+                                    onClick={() => {
+                                      const csv = generateSetupSampleCSV(setupSteps[currentStep - 1].id);
+                                      if (csv) {
+                                        const blob = new Blob([csv], { type: 'text/csv' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `${setupSteps[currentStep - 1].id}_sample.csv`;
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                      }
+                                    }}
+                                    size="sm"
+                                    variant="ghost"
+                                  >
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    Download Sample Data
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Upload Section */}
+                              <div className="bg-green-50 p-4 rounded-lg">
+                                <h4 className="font-medium mb-2 flex items-center gap-2">
+                                  <Upload className="h-4 w-4" />
+                                  Step 2: Upload Your Data
+                                </h4>
+                                <div className="space-y-3">
+                                  <div>
+                                    <Label htmlFor={`setup-file-${setupSteps[currentStep - 1].id}`}>Choose CSV File</Label>
+                                    <Input
+                                      id={`setup-file-${setupSteps[currentStep - 1].id}`}
+                                      type="file"
+                                      accept=".csv"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          const reader = new FileReader();
+                                          reader.onload = (e) => {
+                                            const data = e.target?.result as string;
+                                            setStepData(prev => ({ ...prev, [setupSteps[currentStep - 1].id]: data }));
+                                          };
+                                          reader.readAsText(file);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <Label htmlFor={`setup-data-${setupSteps[currentStep - 1].id}`}>Or Paste CSV Data</Label>
+                                    <Textarea
+                                      id={`setup-data-${setupSteps[currentStep - 1].id}`}
+                                      value={stepData[setupSteps[currentStep - 1].id] || ''}
+                                      onChange={(e) => setStepData(prev => ({ ...prev, [setupSteps[currentStep - 1].id]: e.target.value }))}
+                                      placeholder="Paste your CSV data here..."
+                                      rows={6}
+                                    />
+                                  </div>
+
+                                  <Button 
+                                    onClick={async () => {
+                                      const result = await processSetupUpload(
+                                        setupSteps[currentStep - 1].id, 
+                                        stepData[setupSteps[currentStep - 1].id] || ''
+                                      );
+                                      if (result?.success) {
+                                        // Auto-advance to next step if this was successful and required
+                                        if (setupSteps[currentStep - 1].required && currentStep < setupSteps.length) {
+                                          setTimeout(() => nextStep(), 1000);
+                                        }
+                                      }
+                                    }}
+                                    disabled={!stepData[setupSteps[currentStep - 1].id] || loading}
+                                    className="w-full"
+                                  >
+                                    {loading ? (
+                                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : setupStatus[setupSteps[currentStep - 1].id] === 'completed' ? (
+                                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                                    ) : (
+                                      <Upload className="h-4 w-4 mr-2" />
+                                    )}
+                                    {loading ? 'Uploading...' : 
+                                     setupStatus[setupSteps[currentStep - 1].id] === 'completed' ? 'Completed' : 
+                                     `Upload ${setupSteps[currentStep - 1].title}`}
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Status Display */}
+                              {setupStatus[setupSteps[currentStep - 1].id] && (
+                                <div className={`p-3 rounded border ${
+                                  setupStatus[setupSteps[currentStep - 1].id] === 'completed' 
+                                    ? 'border-green-200 bg-green-50 text-green-800' 
+                                    : setupStatus[setupSteps[currentStep - 1].id] === 'error'
+                                    ? 'border-red-200 bg-red-50 text-red-800'
+                                    : 'border-blue-200 bg-blue-50 text-blue-800'
+                                }`}>
+                                  <div className="flex items-center gap-2">
+                                    {setupStatus[setupSteps[currentStep - 1].id] === 'completed' && <CheckCircle2 className="h-4 w-4" />}
+                                    {setupStatus[setupSteps[currentStep - 1].id] === 'error' && <AlertTriangle className="h-4 w-4" />}
+                                    <span className="font-medium">
+                                      {setupStatus[setupSteps[currentStep - 1].id] === 'completed' ? 'Data uploaded successfully!' :
+                                       setupStatus[setupSteps[currentStep - 1].id] === 'error' ? 'Upload failed. Please check your data format.' :
+                                       'Processing...'}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            /* Optional Step - Multiple Templates */
+                            <div className="space-y-4">
+                              <p className="text-sm text-gray-600">
+                                These are optional enhancements you can add later. Select any that apply to your organization:
+                              </p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {setupSteps[currentStep - 1].options?.map((option) => (
+                                  <Card key={option.name} className="cursor-pointer hover:shadow-md transition-shadow">
+                                    <CardContent className="p-4">
+                                      <h4 className="font-medium mb-2">{option.name}</h4>
+                                      <p className="text-sm text-gray-600 mb-3">{option.description}</p>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline"
+                                        onClick={() => {
+                                          const template = templates.find(t => t.name === option.template);
+                                          if (template) downloadTemplate(template);
+                                        }}
+                                      >
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Download Template
+                                      </Button>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between mt-6">
+                      <Button 
+                        onClick={prevStep} 
+                        disabled={currentStep === 1}
+                        variant="outline"
+                      >
+                        Previous
+                      </Button>
+                      <div className="flex gap-2">
+                        {currentStep < setupSteps.length ? (
+                          <Button onClick={nextStep}>
+                            Next Step
+                          </Button>
+                        ) : (
+                          <Button onClick={() => {
+                            alert('Setup completed! Your HR Portal is ready to use.');
+                          }} className="bg-green-600 hover:bg-green-700">
+                            Complete Setup
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               {/* Tables Tab */}
               <TabsContent value="tables" className="space-y-6">
