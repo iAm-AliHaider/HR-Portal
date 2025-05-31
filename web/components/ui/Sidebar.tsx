@@ -592,6 +592,7 @@ export default function Sidebar({
             themeClasses.border
           )} 
           onClick={logout}
+          data-logout-button="true"
         >
           <LogOut className="mr-3 h-4 w-4" />
           Sign Out

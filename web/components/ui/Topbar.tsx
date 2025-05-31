@@ -59,11 +59,21 @@ export default function Topbar({ theme = 'light', onMobileMenuToggle }: TopbarPr
     try {
       console.log('Logout button clicked');
       
+      // Disable the button to prevent multiple clicks
+      const button = document.querySelector('[data-logout-button="true"]');
+      if (button) {
+        (button as HTMLButtonElement).disabled = true;
+      }
+      
       // Call signOut from useAuth hook
       await signOut();
       
-      // Note: The signOut function now handles the redirect internally
-      // so we don't need to call router.push here
+      // If the signOut function doesn't redirect within 2 seconds, force redirect
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }, 2000);
     } catch (error) {
       console.error('Logout error:', error);
       // Force redirect even if there's an error
@@ -355,7 +365,7 @@ export default function Topbar({ theme = 'light', onMobileMenuToggle }: TopbarPr
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive" data-logout-button="true">
                 <LogOutIcon className="mr-2 h-4 w-4" />
                 <span>Sign Out</span>
               </DropdownMenuItem>
