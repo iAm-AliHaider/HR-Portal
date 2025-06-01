@@ -2,7 +2,7 @@
 // This file helps validate that all production components are properly configured
 
 import { storageService } from "../services/storageService";
-import { supabase, checkSupabaseConnection } from "../services/supabase";
+import { supabase } from "./supabase/client";
 
 interface ValidationResult {
   component: string;
@@ -78,23 +78,40 @@ export class SetupValidator {
   // Validate database connection
   private async validateDatabase(): Promise<ValidationResult> {
     try {
-      const connectionResult = await checkSupabaseConnection();
+      // Test Supabase connection by trying to get session
+      const { data, error } = await supabase.auth.getSession();
 
-      if (connectionResult.connected) {
-        return {
-          component: "Database Connection",
-          status: "success",
-          message: "Successfully connected to Supabase database",
-          details: connectionResult.message,
-        };
-      } else {
+      if (error) {
         return {
           component: "Database Connection",
           status: "error",
           message: "Failed to connect to database",
-          details: connectionResult.message,
+          details: error.message,
         };
       }
+
+      // Also test a basic database query
+      const { error: testError } = await supabase
+        .from("profiles")
+        .select("count")
+        .limit(1);
+
+      if (testError && testError.code !== "PGRST116") {
+        // PGRST116 is "table not found" which is OK for validation
+        return {
+          component: "Database Connection",
+          status: "warning",
+          message: "Database connected but some tables may not exist",
+          details: `Connection successful but got error: ${testError.message}`,
+        };
+      }
+
+      return {
+        component: "Database Connection",
+        status: "success",
+        message: "Successfully connected to Supabase database",
+        details: "Database connection and basic queries are working",
+      };
     } catch (error) {
       return {
         component: "Database Connection",

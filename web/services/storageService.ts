@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase } from "../lib/supabase/client";
 
 // File upload configuration
 interface FileUploadConfig {

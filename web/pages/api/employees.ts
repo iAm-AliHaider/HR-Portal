@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-
-import { supabase } from "../../services/supabase";
+import { supabase } from "../../lib/supabase/client";
 
 // Employee interface
 interface Employee {

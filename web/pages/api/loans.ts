@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
+import { supabase } from "../../lib/supabase/client";
 import { emailService } from "../../services/emailService";
-import { supabase } from "../../services/supabase";
 
 // Mock data for development/fallback
 const mockLoanApplications = [

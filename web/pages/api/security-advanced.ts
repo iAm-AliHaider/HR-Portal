@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { supabase } from "../../services/supabase";
-
 // Advanced security interfaces
 interface SecurityConfig {
   id: string;

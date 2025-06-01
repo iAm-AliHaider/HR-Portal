@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Flow Debug</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; }
+        button { padding: 10px 20px; margin: 10px 0; background: #0066cc; color: white; border: none; cursor: pointer; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-left: 4px solid #0066cc; }
+        .error { border-left-color: #cc0000; background: #ffe6e6; }
+        .success { border-left-color: #00cc00; background: #e6ffe6; }
+        input { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Authentication Flow Debug</h1>
+        
+        <div>
+            <h3>Test Credentials:</h3>
+            <input type="email" id="email" value="admin@company.com" placeholder="Email">
+            <input type="password" id="password" value="admin123" placeholder="Password">
+            <button onclick="testLogin()">🔑 Test Login</button>
+            <button onclick="checkSession()">📋 Check Current Session</button>
+            <button onclick="clearLogs()">🧹 Clear Logs</button>
+        </div>
+
+        <div>
+            <h3>Auth State:</h3>
+            <div id="authState">Not checked</div>
+        </div>
+
+        <div>
+            <h3>Debug Logs:</h3>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase (using same config as app)
+        const supabaseUrl = 'https://xhfxhhmlcrhkkyfxvnqy.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoZnhoaG1sY3Joa2t5Znh2bnF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MDA3MTksImV4cCI6MjA1NDE3NjcxOX0.v8PHbzLPrSFJv7_0jyVfqAcFKZX5FHkl-6-q4OL5I4o'
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString()
+            const logDiv = document.createElement('div')
+            logDiv.className = `log ${type}`
+            logDiv.innerHTML = `<strong>${timestamp}:</strong> ${message}`
+            document.getElementById('logs').appendChild(logDiv)
+            logDiv.scrollIntoView()
+            console.log(`[${type.toUpperCase()}] ${message}`)
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = ''
+        }
+
+        function updateAuthState(state) {
+            document.getElementById('authState').innerHTML = state
+        }
+
+        // Set up auth listener
+        supabase.auth.onAuthStateChange((event, session) => {
+            log(`🔄 Auth State Change: ${event}`, 'info')
+            if (session?.user) {
+                log(`✅ User authenticated: ${session.user.email}`, 'success')
+                updateAuthState(`✅ Logged in as: ${session.user.email}`)
+                
+                // Simulate what the app would do - redirect
+                setTimeout(() => {
+                    log(`🚀 Simulating redirect to dashboard...`, 'success')
+                    log(`🎯 In real app, this would: window.location.href = '/dashboard'`, 'success')
+                }, 1000)
+            } else {
+                log(`❌ No user session`, 'error')
+                updateAuthState(`❌ Not logged in`)
+            }
+        })
+
+        async function checkSession() {
+            log('🔍 Checking current session...', 'info')
+            try {
+                const { data, error } = await supabase.auth.getSession()
+                if (error) {
+                    log(`❌ Session error: ${error.message}`, 'error')
+                } else if (data.session) {
+                    log(`✅ Active session found for: ${data.session.user.email}`, 'success')
+                    updateAuthState(`✅ Active session: ${data.session.user.email}`)
+                } else {
+                    log(`ℹ️ No active session`, 'info')
+                    updateAuthState(`❌ No active session`)
+                }
+            } catch (err) {
+                log(`❌ Session check failed: ${err.message}`, 'error')
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            
+            log(`🔑 Starting login attempt for: ${email}`, 'info')
+            updateAuthState('🔄 Logging in...')
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                })
+
+                if (error) {
+                    log(`❌ Login failed: ${error.message}`, 'error')
+                    updateAuthState(`❌ Login failed: ${error.message}`)
+                } else if (data.user) {
+                    log(`✅ Login successful for: ${data.user.email}`, 'success')
+                    log(`📧 User ID: ${data.user.id}`, 'info')
+                    
+                    // Try to fetch profile like the app does
+                    try {
+                        const { data: profile, error: profileError } = await supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', data.user.id)
+                            .single()
+                        
+                        if (profileError) {
+                            log(`⚠️ Profile fetch error: ${profileError.message}`, 'error')
+                        } else {
+                            log(`✅ Profile loaded: ${profile.name || 'No name'} (${profile.role || 'No role'})`, 'success')
+                        }
+                    } catch (profileErr) {
+                        log(`❌ Profile fetch failed: ${profileErr.message}`, 'error')
+                    }
+                } else {
+                    log(`❌ Login failed: No user data returned`, 'error')
+                    updateAuthState('❌ Login failed: No user data')
+                }
+            } catch (err) {
+                log(`❌ Login exception: ${err.message}`, 'error')
+                updateAuthState(`❌ Login exception: ${err.message}`)
+            }
+        }
+
+        // Check session on load
+        window.addEventListener('load', () => {
+            log('🚀 Debug page loaded', 'info')
+            checkSession()
+        })
+    </script>
+</body>
+</html> 

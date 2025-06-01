@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { supabase } from "../../services/supabase";
-
 // AI Insights interfaces
 interface AIInsight {
   id: string;
