@@ -283,52 +283,35 @@ export class SupabaseAdminManager {
     console.log("Using fallback method with anon client for known tables");
 
     const knownTables = [
-      "profiles",
+      // Core tables from actual schema
+      "profiles", // Auth integration table
       "employees",
-      "departments",
       "roles",
-      "skills",
-      "employee_skills",
       "employee_roles",
+      // Leave management
       "leave_types",
-      "leave_balances",
       "leave_requests",
+      // Training & Learning
       "training_categories",
       "training_courses",
-      "course_enrollments",
-      "jobs",
-      "applications",
+      "training_enrollments", // Correct name from schema
+      // Recruitment
+      "job_postings", // Correct name from schema
+      "job_applications", // Correct name from schema
       "interviews",
-      "offers",
-      "loan_programs",
-      "loan_applications",
-      "loan_repayments",
-      "meeting_rooms",
-      "room_bookings",
-      "equipment_inventory",
-      "equipment_bookings",
-      "request_categories",
-      "request_types",
-      "requests",
-      "safety_incidents",
-      "safety_equipment_checks",
-      "safety_checks",
-      "equipment_inspections",
+      // Expenses
       "expense_categories",
       "expense_reports",
       "expenses",
-      "performance_reviews",
-      "workflows",
-      "workflow_instances",
-      "compliance_requirements",
-      "audits",
-      "company_settings",
+      // Facilities
+      "meeting_rooms",
+      "room_bookings",
+      // System
+      "document_categories",
+      "documents",
       "notifications",
       "activity_logs",
-      "documents",
-      "document_categories",
-      "teams",
-      "attendance",
+      "company_settings",
     ];
 
     const tableInfos: TableInfo[] = [];
