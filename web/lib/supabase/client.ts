@@ -31,12 +31,6 @@ if (
 // Global singleton to prevent multiple GoTrue clients
 declare global {
   var __supabase: SupabaseClient | undefined;
-  var __supabaseAuthListeners: Set<any> | undefined;
-}
-
-// Initialize auth listeners tracking
-if (typeof window !== "undefined" && !globalThis.__supabaseAuthListeners) {
-  globalThis.__supabaseAuthListeners = new Set();
 }
 
 // Singleton pattern to prevent multiple client instances
@@ -56,7 +50,7 @@ function createSupabaseClient(): SupabaseClient {
 
   try {
     console.log("🔧 Creating new Supabase client...");
-    
+
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
@@ -123,49 +117,6 @@ function createSupabaseClient(): SupabaseClient {
   }
 }
 
-// Enhanced auth listener management to prevent multiple listeners
-export const createAuthListener = (callback: (event: string, session: any) => void) => {
-  const client = getSupabaseClient();
-  
-  const { data: listener } = client.auth.onAuthStateChange(callback);
-  
-  // Track listener to prevent leaks
-  if (typeof window !== "undefined" && globalThis.__supabaseAuthListeners) {
-    globalThis.__supabaseAuthListeners.add(listener);
-    
-    // Clean up on page unload
-    const cleanup = () => {
-      listener.subscription.unsubscribe();
-      globalThis.__supabaseAuthListeners?.delete(listener);
-    };
-    
-    window.addEventListener('beforeunload', cleanup);
-    
-    // Return cleanup function
-    return () => {
-      cleanup();
-      window.removeEventListener('beforeunload', cleanup);
-    };
-  }
-  
-  return () => listener.subscription.unsubscribe();
-};
-
-// Cleanup function for development hot reloads
-export const cleanupAuthListeners = () => {
-  if (typeof window !== "undefined" && globalThis.__supabaseAuthListeners) {
-    console.log(`🧹 Cleaning up ${globalThis.__supabaseAuthListeners.size} auth listeners`);
-    globalThis.__supabaseAuthListeners.forEach(listener => {
-      try {
-        listener.subscription.unsubscribe();
-      } catch (error) {
-        console.warn("Error cleaning up auth listener:", error);
-      }
-    });
-    globalThis.__supabaseAuthListeners.clear();
-  }
-};
-
 // Get the singleton instance
 export const getSupabaseClient = () => {
   return createSupabaseClient();
@@ -178,17 +129,6 @@ export const supabase = createSupabaseClient();
 if (isDevelopment) {
   console.log("Supabase client initialized with URL:", supabaseUrl);
   console.log("Environment:", process.env.NODE_ENV);
-  
-  // Cleanup on hot reload
-  if (typeof window !== "undefined") {
-    // @ts-ignore
-    if (module.hot) {
-      // @ts-ignore
-      module.hot.dispose(() => {
-        cleanupAuthListeners();
-      });
-    }
-  }
 }
 
 // Production validation
@@ -199,9 +139,8 @@ if (isProduction) {
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
   try {
-    return !!(supabaseUrl && supabaseAnonKey && supabase);
-  } catch (error) {
-    console.error("Supabase configuration check failed:", error);
+    return !!(supabaseUrl && supabaseAnonKey);
+  } catch {
     return false;
   }
 };
@@ -269,7 +208,6 @@ export const validateUserSession = async () => {
 // Cleanup function for development only
 export const resetSupabaseClient = () => {
   if (isDevelopment) {
-    cleanupAuthListeners();
     supabaseInstance = null;
     if (typeof window !== "undefined") {
       globalThis.__supabase = undefined;
