@@ -28,9 +28,17 @@ if (
   );
 }
 
-// Global singleton to prevent multiple GoTrue clients
+// Global singleton to prevent multiple GoTrue clients - use a more robust approach
 declare global {
+  // eslint-disable-next-line no-var
   var __supabase: SupabaseClient | undefined;
+  // eslint-disable-next-line no-var
+  var __supabaseInitialized: boolean | undefined;
+}
+
+// Prevent multiple initialization attempts
+if (typeof window !== "undefined" && !globalThis.__supabaseInitialized) {
+  console.log("🔧 Initializing Supabase client singleton...");
 }
 
 // Singleton pattern to prevent multiple client instances
@@ -38,18 +46,33 @@ let supabaseInstance: SupabaseClient | null = null;
 
 // Create Supabase client with production configuration
 function createSupabaseClient(): SupabaseClient {
-  // Use global singleton in development to survive hot reloads
-  if (isDevelopment && typeof window !== "undefined" && globalThis.__supabase) {
-    console.log("♻️ Reusing existing Supabase client (hot reload)");
+  // Check for existing global instance first (most important for hot reloads)
+  if (typeof window !== "undefined" && globalThis.__supabase) {
+    console.log("♻️ Reusing existing global Supabase client");
     return globalThis.__supabase;
   }
 
+  // Check for existing module instance
   if (supabaseInstance) {
+    console.log("♻️ Reusing existing module Supabase client");
     return supabaseInstance;
+  }
+
+  // Prevent concurrent initialization
+  if (typeof window !== "undefined" && globalThis.__supabaseInitialized) {
+    // Wait a bit and check again for the global instance
+    if (globalThis.__supabase) {
+      return globalThis.__supabase;
+    }
   }
 
   try {
     console.log("🔧 Creating new Supabase client...");
+
+    // Mark as initializing to prevent race conditions
+    if (typeof window !== "undefined") {
+      globalThis.__supabaseInitialized = true;
+    }
 
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
@@ -80,8 +103,8 @@ function createSupabaseClient(): SupabaseClient {
       },
     });
 
-    // Store globally in development to survive hot reloads
-    if (isDevelopment && typeof window !== "undefined") {
+    // Store globally for hot reloads and cross-module access
+    if (typeof window !== "undefined") {
       globalThis.__supabase = supabaseInstance;
     }
 
@@ -111,6 +134,10 @@ function createSupabaseClient(): SupabaseClient {
     return supabaseInstance;
   } catch (error) {
     console.error("Failed to initialize Supabase client:", error);
+    // Reset initialization flag on error
+    if (typeof window !== "undefined") {
+      globalThis.__supabaseInitialized = false;
+    }
     throw new Error(
       "Database connection failed. Please check your configuration.",
     );

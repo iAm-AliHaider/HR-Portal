@@ -208,149 +208,158 @@ export class SupabaseAdminManager {
 
   // Get all tables in the database
   async getTables(): Promise<TableInfo[]> {
-    if (!this.serviceClient) {
-      throw new Error("Service client not initialized");
-    }
-
-    try {
-      // Try to get table information from information_schema
-      const { data: basicTables, error: basicError } = await this.serviceClient
-        .from("information_schema.tables")
-        .select("table_name")
-        .eq("table_schema", "public")
-        .eq("table_type", "BASE TABLE");
-
-      if (basicError) {
-        console.error("Failed to fetch from information_schema:", basicError);
-        throw basicError;
-      }
-
-      const tableInfos: TableInfo[] = [];
-
-      // Get row count and column info for each table
-      for (const table of basicTables || []) {
-        try {
-          // Get row count for each table
-          const { count } = await this.serviceClient
-            .from(table.table_name)
-            .select("*", { count: "exact", head: true });
-
-          // Get column information
-          const { data: columns } = await this.serviceClient
-            .from("information_schema.columns")
-            .select("column_name, data_type, is_nullable, column_default")
+    // First try with service client for full access
+    if (this.serviceClient) {
+      try {
+        // Try to get table information from information_schema
+        const { data: basicTables, error: basicError } =
+          await this.serviceClient
+            .from("information_schema.tables")
+            .select("table_name")
             .eq("table_schema", "public")
-            .eq("table_name", table.table_name)
-            .order("ordinal_position");
+            .eq("table_type", "BASE TABLE");
 
-          const columnInfos: ColumnInfo[] = (columns || []).map((col) => ({
-            name: col.column_name,
-            type: col.data_type,
-            nullable: col.is_nullable === "YES",
-            default: col.column_default,
-          }));
+        if (!basicError && basicTables) {
+          const tableInfos: TableInfo[] = [];
 
-          tableInfos.push({
-            name: table.table_name,
-            schema: "public",
-            rowCount: count || 0,
-            columns: columnInfos,
-          });
-        } catch (tableError) {
-          console.warn(
-            `Failed to get info for table ${table.table_name}:`,
-            tableError,
+          // Get row count and column info for each table
+          for (const table of basicTables) {
+            try {
+              // Get row count for each table
+              const { count } = await this.serviceClient
+                .from(table.table_name)
+                .select("*", { count: "exact", head: true });
+
+              // Get column information
+              const { data: columns } = await this.serviceClient
+                .from("information_schema.columns")
+                .select("column_name, data_type, is_nullable, column_default")
+                .eq("table_schema", "public")
+                .eq("table_name", table.table_name)
+                .order("ordinal_position");
+
+              const columnInfos: ColumnInfo[] = (columns || []).map((col) => ({
+                name: col.column_name,
+                type: col.data_type,
+                nullable: col.is_nullable === "YES",
+                default: col.column_default,
+              }));
+
+              tableInfos.push({
+                name: table.table_name,
+                schema: "public",
+                rowCount: count || 0,
+                columns: columnInfos,
+              });
+            } catch (tableError) {
+              console.warn(
+                `Failed to get info for table ${table.table_name}:`,
+                tableError,
+              );
+              // Still add the table but with minimal info
+              tableInfos.push({
+                name: table.table_name,
+                schema: "public",
+                rowCount: 0,
+                columns: [],
+              });
+            }
+          }
+
+          console.log(
+            `Successfully fetched ${tableInfos.length} tables from database via service client`,
           );
-          // Still add the table but with minimal info
-          tableInfos.push({
-            name: table.table_name,
-            schema: "public",
-            rowCount: 0,
-            columns: [],
-          });
+          return tableInfos.sort((a, b) => a.name.localeCompare(b.name));
         }
+      } catch (error: any) {
+        console.warn(
+          "Service client failed, falling back to anon client:",
+          error.message,
+        );
       }
-
-      console.log(
-        `Successfully fetched ${tableInfos.length} tables from database`,
-      );
-      return tableInfos.sort((a, b) => a.name.localeCompare(b.name));
-    } catch (error: any) {
-      console.error("Failed to fetch tables from database:", error);
-
-      // Enhanced fallback: try direct table queries for known tables
-      const knownTables = [
-        "profiles",
-        "employees",
-        "departments",
-        "roles",
-        "skills",
-        "employee_skills",
-        "employee_roles",
-        "leave_types",
-        "leave_balances",
-        "leave_requests",
-        "training_categories",
-        "training_courses",
-        "course_enrollments",
-        "jobs",
-        "applications",
-        "interviews",
-        "offers",
-        "loan_programs",
-        "loan_applications",
-        "loan_repayments",
-        "meeting_rooms",
-        "room_bookings",
-        "equipment_inventory",
-        "equipment_bookings",
-        "request_categories",
-        "request_types",
-        "requests",
-        "safety_incidents",
-        "safety_equipment_checks",
-        "safety_checks",
-        "equipment_inspections",
-        "expense_categories",
-        "expense_reports",
-        "expenses",
-        "performance_reviews",
-        "workflows",
-        "workflow_instances",
-        "compliance_requirements",
-        "audits",
-        "company_settings",
-        "notifications",
-        "activity_logs",
-        "documents",
-        "document_categories",
-        "teams",
-        "attendance",
-      ];
-
-      const tableInfos: TableInfo[] = [];
-
-      for (const tableName of knownTables) {
-        try {
-          const { count } = await (this.serviceClient || this.client!)
-            .from(tableName)
-            .select("*", { count: "exact", head: true });
-
-          tableInfos.push({
-            name: tableName,
-            schema: "public",
-            rowCount: count || 0,
-            columns: [],
-          });
-        } catch (err) {
-          // Table doesn't exist, skip it
-          console.log(`Table ${tableName} not found, skipping`);
-        }
-      }
-
-      console.log(`Fallback method found ${tableInfos.length} tables`);
-      return tableInfos.sort((a, b) => a.name.localeCompare(b.name));
     }
+
+    // Fallback: use anon client with known table list
+    console.log("Using fallback method with anon client for known tables");
+
+    const knownTables = [
+      "profiles",
+      "employees",
+      "departments",
+      "roles",
+      "skills",
+      "employee_skills",
+      "employee_roles",
+      "leave_types",
+      "leave_balances",
+      "leave_requests",
+      "training_categories",
+      "training_courses",
+      "course_enrollments",
+      "jobs",
+      "applications",
+      "interviews",
+      "offers",
+      "loan_programs",
+      "loan_applications",
+      "loan_repayments",
+      "meeting_rooms",
+      "room_bookings",
+      "equipment_inventory",
+      "equipment_bookings",
+      "request_categories",
+      "request_types",
+      "requests",
+      "safety_incidents",
+      "safety_equipment_checks",
+      "safety_checks",
+      "equipment_inspections",
+      "expense_categories",
+      "expense_reports",
+      "expenses",
+      "performance_reviews",
+      "workflows",
+      "workflow_instances",
+      "compliance_requirements",
+      "audits",
+      "company_settings",
+      "notifications",
+      "activity_logs",
+      "documents",
+      "document_categories",
+      "teams",
+      "attendance",
+    ];
+
+    const tableInfos: TableInfo[] = [];
+    const client = this.client;
+
+    if (!client) {
+      console.error("No client available for table discovery");
+      return [];
+    }
+
+    // Test each known table with anon client
+    for (const tableName of knownTables) {
+      try {
+        const { count } = await client
+          .from(tableName)
+          .select("*", { count: "exact", head: true });
+
+        tableInfos.push({
+          name: tableName,
+          schema: "public",
+          rowCount: count || 0,
+          columns: [], // Cannot get detailed column info with anon key
+        });
+      } catch (err) {
+        // Table doesn't exist or access denied, skip it
+        console.log(`Table ${tableName} not accessible with anon key`);
+      }
+    }
+
+    console.log(`Fallback method found ${tableInfos.length} accessible tables`);
+    return tableInfos.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   // Get data from a specific table
@@ -1811,6 +1820,10 @@ export class SupabaseAdminManager {
 export const defaultCredentials: DatabaseCredentials = {
   url: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
   anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-  serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+  // Service key should only be available server-side for security
+  serviceKey:
+    typeof window === "undefined"
+      ? process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+      : "",
   password: undefined, // Remove password as Supabase uses JWT tokens
 };
