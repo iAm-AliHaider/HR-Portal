@@ -17,7 +17,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showTestAccounts, setShowTestAccounts] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
-  const [hasNavigated, setHasNavigated] = useState(false); // Track if we've already navigated
 
   const router = useRouter();
   const { user, signIn } = useAuth();
@@ -47,18 +46,18 @@ export default function LoginPage() {
     employee: "Employees",
   };
 
-  // Handle redirection if the user is already logged in
+  // Handle redirection if the user is already logged in when page loads
   useEffect(() => {
-    if (user && !hasNavigated) {
-      console.log("User detected in useEffect, redirecting to:", redirectUrl);
-      setHasNavigated(true);
+    if (user) {
+      console.log("User already logged in, redirecting to:", redirectUrl);
 
-      // Use window.location for more reliable navigation
-      if (typeof window !== "undefined") {
+      // Use Next.js router for initial redirects
+      router.push(redirectUrl).catch((err) => {
+        console.error("Router push failed, using window.location:", err);
         window.location.href = redirectUrl;
-      }
+      });
     }
-  }, [user, redirectUrl, hasNavigated]);
+  }, [user, redirectUrl, router]);
 
   // Test Supabase connection
   const testConnection = async () => {
@@ -89,49 +88,36 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    setHasNavigated(false); // Reset navigation flag
 
     try {
-      console.log("Login form submitted for:", email);
+      console.log("🔐 Starting login process for:", email);
       const result = await signIn(email, password);
-      console.log("SignIn result:", result);
+      console.log("📋 SignIn result:", result);
 
-      if (result.success) {
-        console.log("✅ Login successful! Preparing to navigate...");
-        console.log("📍 Redirect URL:", redirectUrl);
-        console.log("👤 User data:", result.user);
+      if (result.success && result.user) {
+        console.log("✅ Login successful! User data:", result.user.email);
+        console.log("🎯 Redirecting to:", redirectUrl);
 
-        // If we got user data back immediately, navigate right away
-        if (result.user) {
-          console.log("🚀 User data received immediately, navigating now!");
-          setHasNavigated(true);
-
-          // Add a small delay to ensure state is set
-          setTimeout(() => {
-            console.log("🔄 Executing navigation to:", redirectUrl);
-            if (typeof window !== "undefined") {
-              window.location.href = redirectUrl;
-            }
-          }, 100);
-          return;
+        // Immediate navigation after successful login
+        try {
+          // Try Next.js router first (more reliable for client-side routing)
+          await router.push(redirectUrl);
+          console.log("✅ Navigation successful via router.push");
+        } catch (routerError) {
+          console.warn(
+            "⚠️ Router.push failed, using window.location:",
+            routerError,
+          );
+          // Fallback to window.location
+          window.location.href = redirectUrl;
         }
 
-        // Fallback: If navigation doesn't happen within 3 seconds, force navigate
-        setTimeout(() => {
-          if (!hasNavigated) {
-            console.log(
-              "⚠️ Fallback navigation triggered - useEffect didn't fire",
-            );
-            setHasNavigated(true);
-            if (typeof window !== "undefined") {
-              console.log("🔄 Fallback navigation to:", redirectUrl);
-              window.location.href = redirectUrl;
-            }
-          }
-        }, 3000);
+        return; // Exit early on success
       } else {
-        console.error("❌ Login failed:", result.error);
-        setError(result.error || "Invalid credentials");
+        // Handle login failure
+        const errorMsg = result.error || "Login failed - please try again";
+        console.error("❌ Login failed:", errorMsg);
+        setError(errorMsg);
       }
     } catch (err) {
       console.error("💥 Login error:", err);
