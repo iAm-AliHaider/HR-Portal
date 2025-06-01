@@ -363,7 +363,25 @@ export class SupabaseAdminManager {
         .select("*", { count: "exact" })
         .range(offset, offset + limit - 1);
 
-      if (error) throw error;
+      if (error) {
+        // Provide more specific error messages for common issues
+        if (error.code === "PGRST116" || error.message.includes("not found")) {
+          throw new Error(`Table "${tableName}" not found in database`);
+        }
+        if (
+          error.code === "42501" ||
+          error.message.includes("permission denied") ||
+          error.message.includes("insufficient_privilege")
+        ) {
+          throw new Error(
+            `Access denied to table "${tableName}". Authentication required or insufficient permissions.`,
+          );
+        }
+        if (error.code === "PGRST301" || error.message.includes("JWT")) {
+          throw new Error(`Authentication error: ${error.message}`);
+        }
+        throw error;
+      }
 
       return {
         data: data || [],
@@ -372,6 +390,10 @@ export class SupabaseAdminManager {
         offset,
       };
     } catch (error: any) {
+      // Enhanced error message for better debugging
+      if (error.message.includes("Failed to get table data")) {
+        throw error; // Re-throw if already formatted
+      }
       throw new Error(`Failed to get table data: ${error.message}`);
     }
   }

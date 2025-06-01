@@ -1,41 +1,27 @@
-import React, { useState, useEffect, useRef } from "react";
-
 import {
-  Database,
-  Upload,
-  Download,
-  RefreshCw,
-  Eye,
-  Settings,
-  CheckCircle2,
   AlertTriangle,
+  CheckCircle2,
+  Database,
+  Download,
+  Eye,
   FileText,
-  Plus,
-  Trash2,
-  Edit,
+  LogIn,
+  RefreshCw,
+  Settings,
+  Upload,
+  User,
 } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { PageLayout } from "@/components/layout/PageLayout";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectItem } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -47,16 +33,22 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  SupabaseAdminManager,
   DatabaseCredentials,
+  SupabaseAdminManager,
   TableInfo,
   UploadTemplate,
   defaultCredentials,
-} from "@/lib/supabase/admin-utils";
+} from "../../lib/supabase/admin-utils";
 
 import DebugLayout from "./_layout";
 
 export default function SupabaseAdminPage() {
+  // Authentication state
+  const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState<string | null>(null);
+
   const [credentials, setCredentials] =
     useState<DatabaseCredentials>(defaultCredentials);
   const [adminManager, setAdminManager] = useState<SupabaseAdminManager | null>(
@@ -635,10 +627,188 @@ export default function SupabaseAdminPage() {
     return adminManager.generateCSVTemplate(template);
   };
 
+  // Authentication effect
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+
+        // Listen for auth state changes
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
+          setUser(session?.user || null);
+          if (event === "SIGNED_IN") {
+            // Reinitialize admin manager with authenticated client
+            await initializeManager();
+          }
+        });
+
+        return () => subscription.unsubscribe();
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Login function
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginForm.email,
+        password: loginForm.password,
+      });
+
+      if (error) {
+        setLoginError(error.message);
+      } else {
+        setUser(data.user);
+        // Manager will be reinitialized by auth state change
+      }
+    } catch (error: any) {
+      setLoginError("Login failed: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setConnected(false);
+      setTables([]);
+      setTableData([]);
+      setAdminManager(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  // Initialize manager with current auth state
+  const initializeManager = async () => {
+    const manager = new SupabaseAdminManager(credentials);
+    setAdminManager(manager);
+    return manager;
+  };
+
   // Auto-connect on mount
   useEffect(() => {
-    testConnection();
-  }, []);
+    const initialize = async () => {
+      const manager = await initializeManager();
+      if (manager) {
+        await testConnection();
+      }
+    };
+
+    // Only initialize if user is authenticated
+    if (user && !authLoading) {
+      initialize();
+    }
+  }, [user, authLoading]);
+
+  // Login Component
+  const LoginForm = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="flex items-center justify-center gap-2">
+            <Database className="h-6 w-6" />
+            Supabase Admin Panel
+          </CardTitle>
+          <p className="text-sm text-gray-600">
+            Authentication required to access database tables
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@company.com"
+                value={loginForm.email}
+                onChange={(e) =>
+                  setLoginForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter password"
+                value={loginForm.password}
+                onChange={(e) =>
+                  setLoginForm((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
+            {loginError && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{loginError}</AlertDescription>
+              </Alert>
+            )}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <LogIn className="h-4 w-4 mr-2" />
+              )}
+              Sign In
+            </Button>
+          </form>
+
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
+            <strong>Default Test Accounts:</strong>
+            <div className="mt-2 space-y-1 text-xs text-blue-800">
+              <div>• admin@company.com / admin123</div>
+              <div>• hr@company.com / hr123</div>
+              <div>• employee@company.com / employee123</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Show loading during auth check
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login form if not authenticated
+  if (!user) {
+    return <LoginForm />;
+  }
 
   return (
     <DebugLayout>
@@ -1516,6 +1686,29 @@ export default function SupabaseAdminPage() {
               </TabsContent>
             </Tabs>
           )}
+        </div>
+
+        {/* User Status */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Supabase Database Admin
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Database management and configuration tools
+            </p>
+          </div>
+
+          {/* User Status */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <User className="h-4 w-4" />
+              <span>{user?.email}</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </div>
       </PageLayout>
     </DebugLayout>
