@@ -1,17 +1,14 @@
-import React from "react";
+import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
 import {
-  Users,
-  Briefcase,
-  BarChart3,
-  UserSquare,
-  CalendarDays,
   Award,
+  BarChart3,
+  Briefcase,
+  CalendarDays,
   FileText,
-  Building2,
-  Activity,
+  Users,
 } from "lucide-react";
 
 import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
@@ -22,24 +19,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useEmployees, useJobs, useLeaveRequests } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
 
-const summaryStats = [
-  {
-    title: "Total Employees",
-    value: "156",
-    icon: <Users className="h-6 w-6 text-blue-600" />,
-  },
-  {
-    title: "Open Positions",
-    value: "12",
-    icon: <Briefcase className="h-6 w-6 text-green-600" />,
-  },
-  {
-    title: "Pending Approvals",
-    value: "8",
-    icon: <CalendarDays className="h-6 w-6 text-yellow-600" />,
-  },
-];
+interface DashboardStats {
+  totalEmployees: number;
+  openPositions: number;
+  pendingApprovals: number;
+  loading: boolean;
+}
 
 const dashboardModules = [
   {
@@ -89,30 +77,101 @@ const dashboardModules = [
 ];
 
 export default function DashboardIndexPage() {
+  const { user, loading: authLoading } = useAuth();
+  const { jobs, loading: jobsLoading } = useJobs();
+  const { employees, loading: employeesLoading } = useEmployees();
+  const { requests: leaveRequests, loading: leaveLoading } = useLeaveRequests();
+
+  const [stats, setStats] = useState<DashboardStats>({
+    totalEmployees: 0,
+    openPositions: 0,
+    pendingApprovals: 0,
+    loading: true,
+  });
+
+  useEffect(() => {
+    // Calculate real stats from API data
+    if (!jobsLoading && !employeesLoading && !leaveLoading) {
+      const openJobs =
+        jobs?.filter((job) => job.status === "open" || job.status === "active")
+          ?.length || 0;
+      const totalEmps = employees?.length || 0;
+      const pendingLeave =
+        leaveRequests?.filter((req) => req.status === "pending")?.length || 0;
+
+      setStats({
+        totalEmployees: totalEmps,
+        openPositions: openJobs,
+        pendingApprovals: pendingLeave,
+        loading: false,
+      });
+    }
+  }, [
+    jobs,
+    employees,
+    leaveRequests,
+    jobsLoading,
+    employeesLoading,
+    leaveLoading,
+  ]);
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <ModernDashboardLayout title="Dashboard" subtitle="Loading...">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </ModernDashboardLayout>
+    );
+  }
+
+  const summaryStats = [
+    {
+      title: "Total Employees",
+      value: stats.loading ? "..." : stats.totalEmployees.toString(),
+      icon: <Users className="h-6 w-6 text-blue-600" />,
+      href: "/people",
+    },
+    {
+      title: "Open Positions",
+      value: stats.loading ? "..." : stats.openPositions.toString(),
+      icon: <Briefcase className="h-6 w-6 text-green-600" />,
+      href: "/jobs",
+    },
+    {
+      title: "Pending Approvals",
+      value: stats.loading ? "..." : stats.pendingApprovals.toString(),
+      icon: <CalendarDays className="h-6 w-6 text-yellow-600" />,
+      href: "/leave/approvals",
+    },
+  ];
+
   return (
     <ModernDashboardLayout
       title="Dashboard"
-      subtitle="Welcome to your HR Portal dashboard"
+      subtitle={`Welcome back, ${user?.name || "User"}! Here's what's happening in your organization.`}
     >
       <div className="space-y-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {summaryStats.map((stat) => (
-            <Card
-              key={stat.title}
-              className="shadow-sm hover:shadow-md transition-shadow"
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                {stat.icon}
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                {/* <p className="text-xs text-muted-foreground">+20.1% from last month</p> */}
-              </CardContent>
-            </Card>
+            <Link key={stat.title} href={stat.href}>
+              <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer hover:border-primary">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  {stat.icon}
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stats.loading ? "Loading..." : "Click to view details"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
 

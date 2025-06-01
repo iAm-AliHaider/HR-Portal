@@ -1,6 +1,6 @@
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase/client";
+import { cleanupAuthListeners, createAuthListener, supabase } from "../lib/supabase/client";
 
 // Extended user type to include profile information
 export interface User {
@@ -144,6 +144,9 @@ export function useAuth() {
   };
 
   useEffect(() => {
+    // Clean up any existing listeners first
+    cleanupAuthListeners();
+    
     // Set a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       if (loading) {
@@ -238,35 +241,33 @@ export function useAuth() {
 
     getInitialSession();
 
-    // Set up auth state change listener
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        try {
-          console.log("Auth state changed:", event);
+    // Set up auth state change listener using enhanced listener management
+    const unsubscribe = createAuthListener(async (event, session) => {
+      try {
+        console.log("Auth state changed:", event);
 
-          if (session?.user) {
-            const profileData = await fetchUserProfile(session.user.id);
-            if (profileData) {
-              const userWithProfile = convertSupabaseUser(
-                session.user,
-                profileData.profile,
-              );
-              setUser(userWithProfile);
-              setRole(profileData.role);
-              console.log("Auth state change - user set:", userWithProfile.email);
-            }
-          } else {
-            setUser(null);
-            setRole(null);
+        if (session?.user) {
+          const profileData = await fetchUserProfile(session.user.id);
+          if (profileData) {
+            const userWithProfile = convertSupabaseUser(
+              session.user,
+              profileData.profile,
+            );
+            setUser(userWithProfile);
+            setRole(profileData.role);
+            console.log("Auth state change - user set:", userWithProfile.email);
           }
-        } catch (err) {
-          console.error("Auth state change error:", err);
+        } else {
+          setUser(null);
+          setRole(null);
         }
-      },
-    );
+      } catch (err) {
+        console.error("Auth state change error:", err);
+      }
+    });
 
     return () => {
-      listener.subscription.unsubscribe();
+      unsubscribe();
       clearTimeout(timeout);
     };
   }, [isSigningIn]);
@@ -300,6 +301,9 @@ export function useAuth() {
             data.user,
             profileData.profile,
           );
+          
+          // IMMEDIATELY set user state - don't wait for auth listener
+          console.log("Setting user state immediately:", userWithProfile.email);
           setUser(userWithProfile);
           setRole(profileData.role);
 
@@ -309,7 +313,13 @@ export function useAuth() {
             "Role:",
             profileData.role,
           );
-          return { success: true };
+          
+          // Return success with user data for immediate use
+          return { 
+            success: true, 
+            user: userWithProfile,
+            role: profileData.role 
+          };
         } else {
           setError("Failed to load user profile");
           return { success: false, error: "Failed to load user profile" };

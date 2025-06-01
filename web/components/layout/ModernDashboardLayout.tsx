@@ -1,43 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
 import {
-  Menu,
-  X,
-  Home,
-  Users,
-  Briefcase,
-  FileText,
-  Settings,
   BarChart3,
-  Calendar,
-  Building,
-  GraduationCap,
-  Shield,
   Bell,
-  User,
-  LogOut,
+  Briefcase,
+  Building,
+  Calendar,
   ChevronDown,
-  Search,
   DollarSign,
-  CreditCard,
+  GraduationCap,
   Heart,
-  Award,
-  Clock,
-  BookOpen,
-  Target,
-  UserCheck,
+  Home,
+  LogOut,
+  Menu,
+  Search,
+  Settings,
+  Shield,
+  User,
+  Users,
+  X,
   Zap,
-  TrendingUp,
-  Database,
-  AlertTriangle,
-  MessageSquare,
-  FileCheck,
-  Activity,
 } from "lucide-react";
+
+import { useAuth } from "@/hooks/useAuth";
 
 interface ModernDashboardLayoutProps {
   children: React.ReactNode;
@@ -207,8 +196,32 @@ export default function ModernDashboardLayout({
   actions,
 }: ModernDashboardLayoutProps) {
   const router = useRouter();
+  const { user, loading, error, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  // Handle authentication redirect - moved to the top to follow hooks rules
+  useEffect(() => {
+    if (!loading && !user) {
+      // Only redirect on client-side and if not already on login page
+      if (typeof window !== "undefined" && router.pathname !== "/login") {
+        console.log("User not authenticated, redirecting to login...");
+        router.replace(`/login?returnUrl=${encodeURIComponent(router.asPath)}`);
+      }
+    }
+  }, [user, loading, router]);
+
+  // Close sidebar when route changes on mobile
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setSidebarOpen(false);
+    };
+
+    router.events.on("routeChangeComplete", handleRouteChange);
+    return () => {
+      router.events.off("routeChangeComplete", handleRouteChange);
+    };
+  }, [router.events]);
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) =>
@@ -225,17 +238,73 @@ export default function ModernDashboardLayout({
     return router.pathname.startsWith(href);
   };
 
-  // Close sidebar when route changes on mobile
-  useEffect(() => {
-    const handleRouteChange = () => {
-      setSidebarOpen(false);
-    };
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+      // Force redirect to login even if signOut fails
+      router.push("/login");
+    }
+  };
 
-    router.events.on("routeChangeComplete", handleRouteChange);
-    return () => {
-      router.events.off("routeChangeComplete", handleRouteChange);
-    };
-  }, [router.events]);
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <>
+        <Head>
+          <title>{title ? `${title} | HR Portal` : "HR Portal"}</title>
+        </Head>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <>
+        <Head>
+          <title>Error | HR Portal</title>
+        </Head>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center p-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Authentication Error
+            </h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => router.push("/login")}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Don't render anything if user is not authenticated (redirect will happen)
+  if (!user) {
+    return (
+      <>
+        <Head>
+          <title>Redirecting... | HR Portal</title>
+        </Head>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <p className="text-gray-600">Redirecting to login...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -275,6 +344,7 @@ export default function ModernDashboardLayout({
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-1 rounded-md hover:bg-gray-100"
+              aria-label="Close sidebar"
             >
               <X size={20} />
             </button>
@@ -357,20 +427,25 @@ export default function ModernDashboardLayout({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  Demo User
+                  {user?.name || "User"}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
-                  demo@company.com
+                  {user?.email || "user@company.com"}
                 </p>
+                {user?.role && (
+                  <p className="text-xs text-blue-600 truncate capitalize">
+                    {user.role}
+                  </p>
+                )}
               </div>
             </div>
-            <Link
-              href="/login"
-              className="mt-2 flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+            <button
+              onClick={handleSignOut}
+              className="mt-2 w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
               <LogOut size={16} />
               <span>Sign out</span>
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -383,6 +458,7 @@ export default function ModernDashboardLayout({
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+                  aria-label="Open sidebar"
                 >
                   <Menu size={20} />
                 </button>
@@ -403,7 +479,10 @@ export default function ModernDashboardLayout({
 
               <div className="flex items-center space-x-2 sm:space-x-4">
                 {/* Notifications */}
-                <button className="p-2 text-gray-400 hover:text-gray-600 relative">
+                <button
+                  className="p-2 text-gray-400 hover:text-gray-600 relative"
+                  aria-label="View notifications"
+                >
                   <Bell size={20} />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>

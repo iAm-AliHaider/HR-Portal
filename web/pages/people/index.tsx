@@ -1,37 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
 import {
-  User,
-  Search,
-  Filter,
+  Briefcase,
+  Building,
+  Calendar,
+  Edit,
   Grid,
   List,
-  Plus,
-  Edit,
-  Trash2,
-  CheckCircle,
-  AlertCircle,
-  Building,
+  Mail,
   MapPin,
   Phone,
-  Mail,
-  Users,
+  Search,
+  Trash2,
+  User,
   UserPlus,
-  Briefcase,
-  Calendar,
-  Activity,
+  Users,
 } from "lucide-react";
 import { GetServerSideProps } from "next";
 
 import {
-  PageLayout,
-  StatsCard,
   CardGrid,
+  PageLayout,
   SearchFilterBar,
+  StatsCard,
 } from "@/components/layout/PageLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,7 +34,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,15 +43,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 import {
-  useToast,
   useForm,
   useModal,
   usePagination,
   useSearch,
+  useToast,
 } from "../../hooks/useApi";
 
 // Employee form interface

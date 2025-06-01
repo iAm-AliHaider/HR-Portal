@@ -8,6 +8,7 @@ import { GetServerSideProps } from "next";
 
 import RealUserInfo, { RealUser } from "../components/auth/RealUserInfo";
 import { useAuth } from "../hooks/useAuth";
+import { supabase } from "../lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showTestAccounts, setShowTestAccounts] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [hasNavigated, setHasNavigated] = useState(false); // Track if we've already navigated
 
   const router = useRouter();
   const { user, signIn } = useAuth();
@@ -47,33 +49,96 @@ export default function LoginPage() {
 
   // Handle redirection if the user is already logged in
   useEffect(() => {
-    if (user) {
-      console.log("User already logged in, redirecting to", redirectUrl);
-      router.push(redirectUrl);
+    if (user && !hasNavigated) {
+      console.log("User detected in useEffect, redirecting to:", redirectUrl);
+      setHasNavigated(true);
+
+      // Use window.location for more reliable navigation
+      if (typeof window !== "undefined") {
+        window.location.href = redirectUrl;
+      }
     }
-  }, [user, router, redirectUrl]);
+  }, [user, redirectUrl, hasNavigated]);
+
+  // Test Supabase connection
+  const testConnection = async () => {
+    try {
+      console.log("🔍 Testing Supabase connection...");
+      const { data, error } = await supabase.auth.getSession();
+      console.log(
+        "📊 Current session:",
+        data.session?.user?.email || "No active session",
+      );
+
+      if (error) {
+        console.error("❌ Session error:", error);
+      } else {
+        console.log("✅ Supabase connection working");
+      }
+    } catch (err) {
+      console.error("💥 Connection test failed:", err);
+    }
+  };
+
+  // Run connection test on mount
+  useEffect(() => {
+    testConnection();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    setHasNavigated(false); // Reset navigation flag
 
     try {
       console.log("Login form submitted for:", email);
       const result = await signIn(email, password);
       console.log("SignIn result:", result);
-      
+
       if (result.success) {
-        console.log("Login successful, navigating to:", redirectUrl);
-        // Use replace instead of push to prevent going back to login
-        router.replace(redirectUrl);
+        console.log("✅ Login successful! Preparing to navigate...");
+        console.log("📍 Redirect URL:", redirectUrl);
+        console.log("👤 User data:", result.user);
+
+        // If we got user data back immediately, navigate right away
+        if (result.user) {
+          console.log("🚀 User data received immediately, navigating now!");
+          setHasNavigated(true);
+
+          // Add a small delay to ensure state is set
+          setTimeout(() => {
+            console.log("🔄 Executing navigation to:", redirectUrl);
+            if (typeof window !== "undefined") {
+              window.location.href = redirectUrl;
+            }
+          }, 100);
+          return;
+        }
+
+        // Fallback: If navigation doesn't happen within 3 seconds, force navigate
+        setTimeout(() => {
+          if (!hasNavigated) {
+            console.log(
+              "⚠️ Fallback navigation triggered - useEffect didn't fire",
+            );
+            setHasNavigated(true);
+            if (typeof window !== "undefined") {
+              console.log("🔄 Fallback navigation to:", redirectUrl);
+              window.location.href = redirectUrl;
+            }
+          }
+        }, 3000);
       } else {
-        console.error("Login failed:", result.error);
+        console.error("❌ Login failed:", result.error);
         setError(result.error || "Invalid credentials");
       }
     } catch (err) {
-      console.error("Login error:", err);
-      setError("An error occurred during login");
+      console.error("💥 Login error:", err);
+      setError(
+        "An error occurred during login: " +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setLoading(false);
     }
@@ -126,6 +191,26 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        {/* Development Mode Notice */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">
+              🧪 Development Mode - Test Accounts
+            </h3>
+            <div className="text-xs text-blue-700 space-y-1">
+              <div>
+                <strong>Admin:</strong> admin@company.com / admin123
+              </div>
+              <div>
+                <strong>HR:</strong> hr@company.com / hr123
+              </div>
+              <div>
+                <strong>Employee:</strong> employee@company.com / employee123
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
