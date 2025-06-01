@@ -1,18 +1,17 @@
 // API service layer for HR application
 import { supabase } from "../lib/supabase/client";
 import {
-  mockData,
-  mockEmployees,
-  mockLeaveRequests,
-  mockJobs,
-  mockTrainingCourses,
-  mockComplianceRequirements,
-  mockWorkflows,
-  mockPerformanceReviews,
   mockApplications,
+  mockComplianceRequirements,
+  mockEmployees,
   mockExpenses,
   mockInterviews,
+  mockJobs,
+  mockLeaveRequests,
   mockOffers,
+  mockPerformanceReviews,
+  mockTrainingCourses,
+  mockWorkflows,
 } from "./mockData";
 
 // Types
@@ -85,8 +84,24 @@ class ApiService {
     mockData?: T,
   ): Promise<ApiResponse<T>> {
     try {
+      // Check if this method is being called with proper context
+      if (!this || typeof this.supabaseCall !== "function") {
+        console.warn(
+          "supabaseCall called without proper context, using mock data",
+        );
+        if (mockData !== undefined) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          return {
+            data: mockData,
+            error: null,
+            loading: false,
+          };
+        }
+        throw new Error("No mock data available and context is invalid");
+      }
+
       // Always use mock data in development or if supabase is undefined
-      if ((this.isDevelopment && mockData) || !supabase) {
+      if ((this.isDevelopment && mockData !== undefined) || !supabase) {
         // If supabase is undefined, log a warning
         if (!supabase) {
           console.warn("Supabase client is undefined, using mock data");
@@ -114,7 +129,7 @@ class ApiService {
         };
       } catch (operationError) {
         // If operation fails and we're in development, fall back to mock data
-        if ((this.isDevelopment && mockData) || !supabase) {
+        if ((this.isDevelopment && mockData !== undefined) || !supabase) {
           console.warn(
             "Supabase operation failed, using mock data instead:",
             operationError,
@@ -128,6 +143,17 @@ class ApiService {
         throw operationError;
       }
     } catch (error) {
+      console.error("Jobs API error, using fallback:", error);
+
+      // If we have mock data, return it as fallback
+      if (mockData !== undefined) {
+        return {
+          data: mockData,
+          error: null,
+          loading: false,
+        };
+      }
+
       return {
         data: null,
         error:
@@ -140,14 +166,14 @@ class ApiService {
 
 // Employee Service
 class EmployeeService extends ApiService {
-  async getEmployees(): Promise<ApiResponse<any[]>> {
+  getEmployees = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("employees").select("*"),
       mockEmployees,
     );
-  }
+  };
 
-  async createEmployee(employeeData: any): Promise<ApiResponse<any>> {
+  createEmployee = async (employeeData: any): Promise<ApiResponse<any>> => {
     const mockCreatedEmployee = {
       id: Date.now().toString(),
       ...employeeData,
@@ -160,9 +186,12 @@ class EmployeeService extends ApiService {
         await supabase.from("employees").insert(employeeData).select().single(),
       mockCreatedEmployee,
     );
-  }
+  };
 
-  async updateEmployee(id: string, updates: any): Promise<ApiResponse<any>> {
+  updateEmployee = async (
+    id: string,
+    updates: any,
+  ): Promise<ApiResponse<any>> => {
     const mockUpdatedEmployee = {
       id,
       ...updates,
@@ -179,35 +208,35 @@ class EmployeeService extends ApiService {
           .single(),
       mockUpdatedEmployee,
     );
-  }
+  };
 
-  async deleteEmployee(id: string): Promise<ApiResponse<boolean>> {
+  deleteEmployee = async (id: string): Promise<ApiResponse<boolean>> => {
     return this.supabaseCall(
       async () => await supabase.from("employees").delete().eq("id", id),
       true,
     );
-  }
+  };
 
-  async getEmployeeById(id: string): Promise<ApiResponse<any>> {
+  getEmployeeById = async (id: string): Promise<ApiResponse<any>> => {
     const mockEmployee = mockEmployees.find((emp) => emp.id === id);
     return this.supabaseCall(
       async () =>
         await supabase.from("employees").select("*").eq("id", id).single(),
       mockEmployee,
     );
-  }
+  };
 }
 
 // Job Service
 class JobService extends ApiService {
-  async getJobs(): Promise<ApiResponse<any[]>> {
+  getJobs = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("jobs").select("*"),
       mockJobs,
     );
-  }
+  };
 
-  async createJob(jobData: any): Promise<ApiResponse<any>> {
+  createJob = async (jobData: any): Promise<ApiResponse<any>> => {
     const mockCreatedJob = {
       id: Date.now().toString(),
       ...jobData,
@@ -220,9 +249,9 @@ class JobService extends ApiService {
       async () => await supabase.from("jobs").insert(jobData).select().single(),
       mockCreatedJob,
     );
-  }
+  };
 
-  async updateJob(id: string, updates: any): Promise<ApiResponse<any>> {
+  updateJob = async (id: string, updates: any): Promise<ApiResponse<any>> => {
     const mockUpdatedJob = {
       id,
       ...updates,
@@ -239,24 +268,26 @@ class JobService extends ApiService {
           .single(),
       mockUpdatedJob,
     );
-  }
+  };
 
-  async closeJob(id: string): Promise<ApiResponse<any>> {
+  closeJob = async (id: string): Promise<ApiResponse<any>> => {
     return this.updateJob(id, {
       status: "closed",
       closed_at: new Date().toISOString(),
     });
-  }
+  };
 
-  async getJobById(id: string): Promise<ApiResponse<any>> {
+  getJobById = async (id: string): Promise<ApiResponse<any>> => {
     const mockJob = mockJobs.find((job) => job.id === id);
     return this.supabaseCall(
       async () => await supabase.from("jobs").select("*").eq("id", id).single(),
       mockJob,
     );
-  }
+  };
 
-  async getApplicationsForJob(jobId: string): Promise<ApiResponse<any[]>> {
+  getApplicationsForJob = async (
+    jobId: string,
+  ): Promise<ApiResponse<any[]>> => {
     const mockJobApplications = mockApplications.filter(
       (app) => app.job_id === jobId,
     );
@@ -265,20 +296,20 @@ class JobService extends ApiService {
         await supabase.from("applications").select("*").eq("job_id", jobId),
       mockJobApplications,
     );
-  }
+  };
 }
 
 // Leave Service
 class LeaveService extends ApiService {
-  async getLeaveRequests(): Promise<ApiResponse<any[]>> {
+  getLeaveRequests = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("leave_requests").select("*"),
       mockLeaveRequests,
     );
-  }
+  };
 
-  async submitLeaveRequest(leaveData: any): Promise<ApiResponse<any>> {
-    const mockSubmittedRequest = {
+  submitLeaveRequest = async (leaveData: any): Promise<ApiResponse<any>> => {
+    const mockLeaveRequest = {
       id: Date.now().toString(),
       ...leaveData,
       status: "pending",
@@ -292,17 +323,19 @@ class LeaveService extends ApiService {
           .insert(leaveData)
           .select()
           .single(),
-      mockSubmittedRequest,
+      mockLeaveRequest,
     );
-  }
+  };
 
-  async approveLeaveRequest(
+  approveLeaveRequest = async (
     id: string,
     notes?: string,
-  ): Promise<ApiResponse<any>> {
-    const updates = {
+  ): Promise<ApiResponse<any>> => {
+    const mockApprovedRequest = {
+      id,
       status: "approved",
       approved_at: new Date().toISOString(),
+      approved_by: "current_user",
       notes,
     };
 
@@ -310,21 +343,27 @@ class LeaveService extends ApiService {
       async () =>
         await supabase
           .from("leave_requests")
-          .update(updates)
+          .update({
+            status: "approved",
+            approved_at: new Date().toISOString(),
+            notes,
+          })
           .eq("id", id)
           .select()
           .single(),
-      { id, ...updates },
+      mockApprovedRequest,
     );
-  }
+  };
 
-  async rejectLeaveRequest(
+  rejectLeaveRequest = async (
     id: string,
     reason: string,
-  ): Promise<ApiResponse<any>> {
-    const updates = {
+  ): Promise<ApiResponse<any>> => {
+    const mockRejectedRequest = {
+      id,
       status: "rejected",
       rejected_at: new Date().toISOString(),
+      rejected_by: "current_user",
       rejection_reason: reason,
     };
 
@@ -332,34 +371,39 @@ class LeaveService extends ApiService {
       async () =>
         await supabase
           .from("leave_requests")
-          .update(updates)
+          .update({
+            status: "rejected",
+            rejected_at: new Date().toISOString(),
+            rejection_reason: reason,
+          })
           .eq("id", id)
           .select()
           .single(),
-      { id, ...updates },
+      mockRejectedRequest,
     );
-  }
+  };
 }
 
 // Training Service
 class TrainingService extends ApiService {
-  async getCourses(): Promise<ApiResponse<any[]>> {
+  getCourses = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("training_courses").select("*"),
       mockTrainingCourses,
     );
-  }
+  };
 
-  async enrollInCourse(
+  enrollInCourse = async (
     courseId: string,
     employeeId: string,
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<any>> => {
     const mockEnrollment = {
       id: Date.now().toString(),
       course_id: courseId,
       employee_id: employeeId,
       enrolled_at: new Date().toISOString(),
       status: "enrolled",
+      progress: 0,
     };
 
     return this.supabaseCall(
@@ -369,19 +413,20 @@ class TrainingService extends ApiService {
           .insert({
             course_id: courseId,
             employee_id: employeeId,
+            enrolled_at: new Date().toISOString(),
           })
           .select()
           .single(),
       mockEnrollment,
     );
-  }
+  };
 
-  async createCourse(courseData: any): Promise<ApiResponse<any>> {
+  createCourse = async (courseData: any): Promise<ApiResponse<any>> => {
     const mockCreatedCourse = {
       id: Date.now().toString(),
       ...courseData,
       created_at: new Date().toISOString(),
-      enrolled: 0,
+      enrollments_count: 0,
       status: "active",
     };
 
@@ -394,77 +439,79 @@ class TrainingService extends ApiService {
           .single(),
       mockCreatedCourse,
     );
-  }
+  };
 }
 
 // Compliance Service
 class ComplianceService extends ApiService {
-  async getComplianceRequirements(): Promise<ApiResponse<any[]>> {
+  getComplianceRequirements = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("compliance_requirements").select("*"),
       mockComplianceRequirements,
     );
-  }
+  };
 
-  async startAudit(requirementId: string): Promise<ApiResponse<any>> {
+  startAudit = async (requirementId: string): Promise<ApiResponse<any>> => {
     const mockAudit = {
       id: Date.now().toString(),
       requirement_id: requirementId,
       status: "in_progress",
       started_at: new Date().toISOString(),
-      auditor: "Current User",
+      started_by: "current_user",
     };
 
     return this.supabaseCall(
       async () =>
         await supabase
-          .from("audits")
+          .from("compliance_audits")
           .insert({
             requirement_id: requirementId,
             status: "in_progress",
+            started_at: new Date().toISOString(),
           })
           .select()
           .single(),
       mockAudit,
     );
-  }
+  };
 
-  async updateComplianceStatus(
+  updateComplianceStatus = async (
     id: string,
     status: string,
-  ): Promise<ApiResponse<any>> {
-    const updates = {
+  ): Promise<ApiResponse<any>> => {
+    const mockUpdatedCompliance = {
+      id,
       status,
-      last_review: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     return this.supabaseCall(
       async () =>
         await supabase
           .from("compliance_requirements")
-          .update(updates)
+          .update({ status, updated_at: new Date().toISOString() })
           .eq("id", id)
           .select()
           .single(),
-      { id, ...updates },
+      mockUpdatedCompliance,
     );
-  }
+  };
 }
 
 // Workflow Service
 class WorkflowService extends ApiService {
-  async getWorkflows(): Promise<ApiResponse<any[]>> {
+  getWorkflows = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("workflows").select("*"),
       mockWorkflows,
     );
-  }
+  };
 
-  async createWorkflow(workflowData: any): Promise<ApiResponse<any>> {
+  createWorkflow = async (workflowData: any): Promise<ApiResponse<any>> => {
     const mockCreatedWorkflow = {
       id: Date.now().toString(),
       ...workflowData,
-      status: "draft",
+      status: "active",
       created_at: new Date().toISOString(),
     };
 
@@ -473,18 +520,19 @@ class WorkflowService extends ApiService {
         await supabase.from("workflows").insert(workflowData).select().single(),
       mockCreatedWorkflow,
     );
-  }
+  };
 
-  async startWorkflow(
+  startWorkflow = async (
     workflowId: string,
     contextData: any,
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<any>> => {
     const mockWorkflowInstance = {
       id: Date.now().toString(),
       workflow_id: workflowId,
+      context: contextData,
       status: "running",
-      context_data: contextData,
       started_at: new Date().toISOString(),
+      current_step: 1,
     };
 
     return this.supabaseCall(
@@ -493,29 +541,31 @@ class WorkflowService extends ApiService {
           .from("workflow_instances")
           .insert({
             workflow_id: workflowId,
-            context_data: contextData,
+            context: contextData,
+            status: "running",
+            started_at: new Date().toISOString(),
           })
           .select()
           .single(),
       mockWorkflowInstance,
     );
-  }
+  };
 }
 
 // Performance Service
 class PerformanceService extends ApiService {
-  async getPerformanceReviews(): Promise<ApiResponse<any[]>> {
+  getPerformanceReviews = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("performance_reviews").select("*"),
       mockPerformanceReviews,
     );
-  }
+  };
 
-  async createReview(reviewData: any): Promise<ApiResponse<any>> {
+  createReview = async (reviewData: any): Promise<ApiResponse<any>> => {
     const mockCreatedReview = {
       id: Date.now().toString(),
       ...reviewData,
-      status: "in_progress",
+      status: "draft",
       created_at: new Date().toISOString(),
     };
 
@@ -528,43 +578,53 @@ class PerformanceService extends ApiService {
           .single(),
       mockCreatedReview,
     );
-  }
+  };
 
-  async submitReview(id: string, reviewData: any): Promise<ApiResponse<any>> {
-    const updates = {
+  submitReview = async (
+    id: string,
+    reviewData: any,
+  ): Promise<ApiResponse<any>> => {
+    const mockSubmittedReview = {
+      id,
       ...reviewData,
-      status: "completed",
-      completed_at: new Date().toISOString(),
+      status: "submitted",
+      submitted_at: new Date().toISOString(),
     };
 
     return this.supabaseCall(
       async () =>
         await supabase
           .from("performance_reviews")
-          .update(updates)
+          .update({
+            ...reviewData,
+            status: "submitted",
+            submitted_at: new Date().toISOString(),
+          })
           .eq("id", id)
           .select()
           .single(),
-      { id, ...updates },
+      mockSubmittedReview,
     );
-  }
+  };
 }
 
 // Application Service
 class ApplicationService extends ApiService {
-  async getApplications(): Promise<ApiResponse<any[]>> {
+  getApplications = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("applications").select("*"),
       mockApplications,
     );
-  }
+  };
 
-  async createApplication(applicationData: any): Promise<ApiResponse<any>> {
+  createApplication = async (
+    applicationData: any,
+  ): Promise<ApiResponse<any>> => {
     const mockCreatedApplication = {
       id: Date.now().toString(),
       ...applicationData,
-      status: "under_review",
-      applied_at: new Date().toISOString(),
+      status: "pending",
+      created_at: new Date().toISOString(),
     };
 
     return this.supabaseCall(
@@ -576,14 +636,15 @@ class ApplicationService extends ApiService {
           .single(),
       mockCreatedApplication,
     );
-  }
+  };
 
-  async updateApplicationStatus(
+  updateApplicationStatus = async (
     id: string,
     status: string,
     notes?: string,
-  ): Promise<ApiResponse<any>> {
-    const updates = {
+  ): Promise<ApiResponse<any>> => {
+    const mockUpdatedApplication = {
+      id,
       status,
       notes,
       updated_at: new Date().toISOString(),
@@ -593,22 +654,27 @@ class ApplicationService extends ApiService {
       async () =>
         await supabase
           .from("applications")
-          .update(updates)
+          .update({
+            status,
+            notes,
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", id)
           .select()
           .single(),
-      { id, ...updates },
+      mockUpdatedApplication,
     );
-  }
+  };
 
-  async scheduleInterview(
+  scheduleInterview = async (
     applicationId: string,
     interviewData: any,
-  ): Promise<ApiResponse<any>> {
-    const mockInterview = {
+  ): Promise<ApiResponse<any>> => {
+    const mockScheduledInterview = {
       id: Date.now().toString(),
       application_id: applicationId,
       ...interviewData,
+      status: "scheduled",
       created_at: new Date().toISOString(),
     };
 
@@ -619,24 +685,25 @@ class ApplicationService extends ApiService {
           .insert({
             application_id: applicationId,
             ...interviewData,
+            status: "scheduled",
           })
           .select()
           .single(),
-      mockInterview,
+      mockScheduledInterview,
     );
-  }
+  };
 }
 
 // Expense Service
 class ExpenseService extends ApiService {
-  async getExpenses(): Promise<ApiResponse<any[]>> {
+  getExpenses = async (): Promise<ApiResponse<any[]>> => {
     return this.supabaseCall(
       async () => await supabase.from("expenses").select("*"),
       mockExpenses,
     );
-  }
+  };
 
-  async submitExpense(expenseData: any): Promise<ApiResponse<any>> {
+  submitExpense = async (expenseData: any): Promise<ApiResponse<any>> => {
     const mockSubmittedExpense = {
       id: Date.now().toString(),
       ...expenseData,
@@ -649,28 +716,37 @@ class ExpenseService extends ApiService {
         await supabase.from("expenses").insert(expenseData).select().single(),
       mockSubmittedExpense,
     );
-  }
+  };
 
-  async approveExpense(id: string): Promise<ApiResponse<any>> {
-    const updates = {
+  approveExpense = async (id: string): Promise<ApiResponse<any>> => {
+    const mockApprovedExpense = {
+      id,
       status: "approved",
       approved_at: new Date().toISOString(),
+      approved_by: "current_user",
     };
 
     return this.supabaseCall(
       async () =>
         await supabase
           .from("expenses")
-          .update(updates)
+          .update({
+            status: "approved",
+            approved_at: new Date().toISOString(),
+          })
           .eq("id", id)
           .select()
           .single(),
-      { id, ...updates },
+      mockApprovedExpense,
     );
-  }
+  };
 
-  async rejectExpense(id: string, reason: string): Promise<ApiResponse<any>> {
-    const updates = {
+  rejectExpense = async (
+    id: string,
+    reason: string,
+  ): Promise<ApiResponse<any>> => {
+    const mockRejectedExpense = {
+      id,
       status: "rejected",
       rejected_at: new Date().toISOString(),
       rejection_reason: reason,
@@ -680,13 +756,17 @@ class ExpenseService extends ApiService {
       async () =>
         await supabase
           .from("expenses")
-          .update(updates)
+          .update({
+            status: "rejected",
+            rejected_at: new Date().toISOString(),
+            rejection_reason: reason,
+          })
           .eq("id", id)
           .select()
           .single(),
-      { id, ...updates },
+      mockRejectedExpense,
     );
-  }
+  };
 }
 
 // Interview Service

@@ -46,24 +46,24 @@ const mockJobs = [
   },
 ];
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase/client";
 import {
-  employeeService,
-  jobService,
-  leaveService,
-  trainingService,
-  complianceService,
-  workflowService,
-  performanceService,
+  ApiResponse,
   applicationService,
+  complianceService,
+  employeeService,
   expenseService,
-  notificationService,
   fileService,
   getInterviews,
   getOffers,
-  ApiResponse,
+  jobService,
+  leaveService,
+  notificationService,
+  performanceService,
+  trainingService,
+  workflowService,
 } from "../services/api";
-import { supabase } from "../lib/supabase/client";
 
 // Generic hook for API calls with loading and error states
 export function useApiCall<T>(
@@ -105,8 +105,8 @@ export function useApiCall<T>(
 
 // Employee Management Hooks
 export function useEmployees() {
-  const { data, loading, error, refetch } = useApiCall(
-    employeeService.getEmployees,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    employeeService.getEmployees(),
   );
 
   const createEmployee = async (employeeData: any) => {
@@ -164,7 +164,9 @@ export function useEmployee(id: string) {
 
 // Job Management Hooks
 export function useJobs() {
-  const { data, loading, error, refetch } = useApiCall(jobService.getJobs);
+  const { data, loading, error, refetch } = useApiCall(() =>
+    jobService.getJobs(),
+  );
 
   const createJob = async (jobData: any) => {
     const response = await jobService.createJob(jobData);
@@ -236,8 +238,8 @@ export function useJobApplications(jobId: string) {
 
 // Leave Management Hooks
 export function useLeaveRequests() {
-  const { data, loading, error, refetch } = useApiCall(
-    leaveService.getLeaveRequests,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    leaveService.getLeaveRequests(),
   );
 
   const submitRequest = async (leaveData: any) => {
@@ -303,8 +305,8 @@ export function useLeaveRequests() {
 
 // Training Management Hooks
 export function useTrainingCourses() {
-  const { data, loading, error, refetch } = useApiCall(
-    trainingService.getCourses,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    trainingService.getCourses(),
   );
 
   const enrollInCourse = async (courseId: string, employeeId: string) => {
@@ -337,8 +339,8 @@ export function useTrainingCourses() {
 
 // Compliance Management Hooks
 export function useCompliance() {
-  const { data, loading, error, refetch } = useApiCall(
-    complianceService.getComplianceRequirements,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    complianceService.getComplianceRequirements(),
   );
 
   const startAudit = async (requirementId: string) => {
@@ -377,8 +379,8 @@ export function useCompliance() {
 
 // Workflow Management Hooks
 export function useWorkflows() {
-  const { data, loading, error, refetch } = useApiCall(
-    workflowService.getWorkflows,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    workflowService.getWorkflows(),
   );
 
   const createWorkflow = async (workflowData: any) => {
@@ -419,8 +421,8 @@ export function useWorkflows() {
 
 // Performance Review Hooks
 export function usePerformanceReviews() {
-  const { data, loading, error, refetch } = useApiCall(
-    performanceService.getPerformanceReviews,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    performanceService.getPerformanceReviews(),
   );
 
   const createReview = async (reviewData: any) => {
@@ -464,8 +466,8 @@ export function usePerformanceReviews() {
 
 // Application Management Hooks
 export function useApplications() {
-  const { data, loading, error, refetch } = useApiCall(
-    applicationService.getApplications,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    applicationService.getApplications(),
   );
 
   const createApplication = async (applicationData: any) => {
@@ -544,8 +546,8 @@ export function useApplications() {
 
 // Expense Management Hooks
 export function useExpenses() {
-  const { data, loading, error, refetch } = useApiCall(
-    expenseService.getExpenses,
+  const { data, loading, error, refetch } = useApiCall(() =>
+    expenseService.getExpenses(),
   );
 
   const submitExpense = async (expenseData: any) => {
