@@ -59,15 +59,21 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.log("Login form submitted for:", email);
       const result = await signIn(email, password);
+      console.log("SignIn result:", result);
+      
       if (result.success) {
-        router.push(redirectUrl);
+        console.log("Login successful, navigating to:", redirectUrl);
+        // Use replace instead of push to prevent going back to login
+        router.replace(redirectUrl);
       } else {
+        console.error("Login failed:", result.error);
         setError(result.error || "Invalid credentials");
       }
     } catch (err) {
-      setError("An error occurred during login");
       console.error("Login error:", err);
+      setError("An error occurred during login");
     } finally {
       setLoading(false);
     }

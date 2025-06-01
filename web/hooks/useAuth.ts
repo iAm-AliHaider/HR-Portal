@@ -1,6 +1,6 @@
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase/client";
-import { User as SupabaseUser } from "@supabase/supabase-js";
 
 // Extended user type to include profile information
 export interface User {
@@ -18,6 +18,7 @@ export function useAuth() {
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   // Helper to convert Supabase user to our User type
   const convertSupabaseUser = (
@@ -161,7 +162,8 @@ export function useAuth() {
           const isAuthPage =
             window.location.pathname.includes("login") ||
             window.location.pathname.includes("logout") ||
-            window.location.pathname.includes("signup");
+            window.location.pathname.includes("signup") ||
+            window.location.pathname.includes("register");
 
           if (isAuthPage) {
             setUser(null);
@@ -210,14 +212,16 @@ export function useAuth() {
             setError("Failed to load user profile");
           }
         } else {
-          // No active session - redirect to login
+          // No active session - redirect to login ONLY if not currently signing in
           console.log("No active session found");
           setUser(null);
           setRole(null);
 
           if (
             typeof window !== "undefined" &&
-            !window.location.pathname.includes("login")
+            !window.location.pathname.includes("login") &&
+            !window.location.pathname.includes("register") &&
+            !isSigningIn
           ) {
             console.log("Redirecting to login...");
             window.location.href = "/login";
@@ -249,6 +253,7 @@ export function useAuth() {
               );
               setUser(userWithProfile);
               setRole(profileData.role);
+              console.log("Auth state change - user set:", userWithProfile.email);
             }
           } else {
             setUser(null);
@@ -264,12 +269,13 @@ export function useAuth() {
       listener.subscription.unsubscribe();
       clearTimeout(timeout);
     };
-  }, []);
+  }, [isSigningIn]);
 
   const signIn = async (email: string, password: string) => {
     try {
       setError(null);
       setLoading(true);
+      setIsSigningIn(true);
 
       console.log("Attempting to sign in user:", email);
 
@@ -318,6 +324,7 @@ export function useAuth() {
       return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
+      setIsSigningIn(false);
     }
   };
 
