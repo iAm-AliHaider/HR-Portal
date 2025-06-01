@@ -12,6 +12,7 @@ export default async function handler(
   try {
     const { email, password, fullName, role, department, position, phone, hireDate } = req.body;
 
+    // Validation
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
@@ -25,10 +26,16 @@ export default async function handler(
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
+    // Environment validation
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ Missing Supabase environment variables');
+      return res.status(500).json({ error: "Server configuration error" });
+    }
+
     // Use service role key for admin operations
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
     console.log('🔧 Registering user with admin privileges:', email);
@@ -38,7 +45,7 @@ export default async function handler(
       process.env.NODE_ENV === "development" &&
       process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true"
     ) {
-      // Create a mock user profile
+      console.log('🔧 Using mock auth for development');
       const mockUser = {
         id: `mock-${Date.now()}`,
         email,
@@ -51,15 +58,6 @@ export default async function handler(
         created_at: new Date().toISOString(),
       };
 
-      // Store in localStorage for development
-      if (typeof window !== "undefined") {
-        const existingUsers = JSON.parse(
-          localStorage.getItem("dev_users") || "[]",
-        );
-        existingUsers.push(mockUser);
-        localStorage.setItem("dev_users", JSON.stringify(existingUsers));
-      }
-
       return res.status(200).json({
         success: true,
         message: "Registration successful (development mode)",
@@ -68,78 +66,68 @@ export default async function handler(
     }
 
     // Check if user already exists in auth.users
+    console.log('🔍 Checking for existing users...');
     const { data: existingAuthUsers, error: authCheckError } = await supabase.auth.admin.listUsers();
     
     if (authCheckError) {
-      console.error("Error checking auth users:", authCheckError);
-    } else {
-      const existingAuthUser = existingAuthUsers.users.find(u => u.email === email);
-      if (existingAuthUser) {
-        console.log('🔍 User exists in auth.users, checking profile...');
-        
-        // Check if profile exists
-        const { data: existingProfile, error: profileCheckError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", existingAuthUser.id)
-          .single();
-        
-        if (existingProfile) {
-          return res.status(400).json({ 
-            error: "Email is already registered. Please use the login page.", 
-            loginUrl: "/login" 
-          });
-        } else if (!profileCheckError || profileCheckError.code === 'PGRST116') {
-          // User exists in auth but no profile - create profile
-          console.log('🔧 Creating missing profile for existing user...');
-          
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: existingAuthUser.id,
-              email,
-              first_name: firstName,
-              last_name: lastName,
-              phone: phone || null,
-              role: role || 'employee',
-              department,
-              position,
-              hire_date: hireDate || null,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
+      console.error("❌ Error checking auth users:", authCheckError.message);
+      return res.status(500).json({ error: "Failed to check existing users" });
+    }
 
-          if (profileError) {
-            console.error('Profile creation failed:', profileError);
-            return res.status(500).json({ error: "Failed to create user profile" });
-          }
-
-          return res.status(200).json({
-            success: true,
-            message: "Profile created for existing user. You can now login.",
-            user: existingAuthUser,
+    const existingAuthUser = existingAuthUsers.users.find(u => u.email === email);
+    if (existingAuthUser) {
+      console.log('🔍 User exists in auth.users, checking profile...');
+      
+      // Check if profile exists
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", existingAuthUser.id)
+        .single();
+      
+      if (existingProfile) {
+        return res.status(400).json({ 
+          error: "Email is already registered. Please use the login page.", 
+          loginUrl: "/login" 
+        });
+      } else if (!profileCheckError || profileCheckError.code === 'PGRST116') {
+        // User exists in auth but no profile - create profile
+        console.log('🔧 Creating missing profile for existing user...');
+        
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: existingAuthUser.id,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone || null,
+            role: role || 'employee',
+            department,
+            position,
+            hire_date: hireDate || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
+
+        if (profileError) {
+          console.error('❌ Profile creation failed:', profileError.message);
+          return res.status(500).json({ error: "Failed to create user profile" });
         }
+
+        return res.status(200).json({
+          success: true,
+          message: "Profile created for existing user. You can now login.",
+          user: existingAuthUser,
+        });
+      } else {
+        console.error('❌ Profile check error:', profileCheckError.message);
+        return res.status(500).json({ error: "Database error checking profile" });
       }
     }
 
-    // Check if user already exists in profiles (backup check)
-    const { data: existingProfiles, error: profilesCheckError } = await supabase
-      .from("profiles")
-      .select("email")
-      .eq("email", email)
-      .limit(1);
-
-    if (profilesCheckError) {
-      console.error("Error checking for existing profiles:", profilesCheckError);
-    } else if (existingProfiles && existingProfiles.length > 0) {
-      return res.status(400).json({ 
-        error: "Email is already registered. Please use the login page.", 
-        loginUrl: "/login" 
-      });
-    }
-
-    // Create user
+    // Create new user with proper metadata
+    console.log('👤 Creating new user...');
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -156,34 +144,69 @@ export default async function handler(
     });
 
     if (authError) {
-      console.error('Auth creation failed:', authError);
+      console.error('❌ Auth creation failed:', authError.message);
+      
+      // Check if it's a duplicate email error
+      if (authError.message.includes('already registered') || authError.message.includes('duplicate')) {
+        return res.status(400).json({ 
+          error: "Email is already registered. Please use the login page.", 
+          loginUrl: "/login" 
+        });
+      }
+      
       return res.status(400).json({ error: authError.message });
     }
 
-    // Create profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: authData.user.id,
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone || null,
-        role: role || 'employee',
-        department,
-        position,
-        hire_date: hireDate || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
+    console.log('✅ User created successfully:', authData.user.id);
 
-    if (profileError) {
-      console.error('Profile creation failed:', profileError);
-      return res.status(500).json({ error: "Failed to create user profile" });
+    // Wait a moment for trigger to execute
+    console.log('⏳ Waiting for database trigger...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Verify profile was created by trigger
+    const { data: profile, error: profileFetchError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single();
+
+    if (profileFetchError || !profile) {
+      console.log('⚠️ Trigger did not create profile, creating manually...');
+      console.log('Profile fetch error:', profileFetchError?.message || 'No profile found');
+      
+      // Manually create profile if trigger failed
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone || null,
+          role: role || 'employee',
+          department,
+          position,
+          hire_date: hireDate || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (profileError) {
+        console.error('❌ Manual profile creation failed:', profileError.message);
+        return res.status(500).json({ 
+          error: "Failed to create user profile",
+          details: profileError.message 
+        });
+      }
+      
+      console.log('✅ Profile created manually');
+    } else {
+      console.log('✅ Profile created by trigger');
     }
 
     // Create employee record if role is employee
     if (role === "employee") {
+      console.log('👥 Creating employee record...');
       const employeeRecord = {
         profile_id: authData.user.id,
         employee_id: `EMP${Date.now().toString().slice(-6)}`,
@@ -199,18 +222,22 @@ export default async function handler(
         .insert(employeeRecord);
 
       if (employeeError) {
-        console.error("Employee record creation failed:", employeeError);
+        console.error("⚠️ Employee record creation failed:", employeeError.message);
         // Continue anyway, this is not critical
+      } else {
+        console.log('✅ Employee record created');
       }
     }
 
+    console.log('🎉 Registration completed successfully');
     return res.status(200).json({
       success: true,
       message: "User registered successfully",
       user: authData.user,
     });
+
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("❌ Registration error:", error);
     return res.status(500).json({
       error: "Registration failed",
       details: error instanceof Error ? error.message : "Unknown error",
