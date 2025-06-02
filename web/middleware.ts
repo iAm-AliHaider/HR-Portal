@@ -1,54 +1,67 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  const url = request.nextUrl.pathname;
-  const searchParams = request.nextUrl.searchParams;
+// Public routes that don't require authentication
+const publicRoutes = [
+  "/login",
+  "/register",
+  "/careers",
+  "/forgot-password",
+  "/api/auth",
+  "/debug",
+];
 
-  // Public pages that don't require authentication
-  const publicPages = [
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password",
-    "/logout",
-    "/dev-entry",
-    "/careers",
-    "/candidate",
-    "/unauthorized",
-    "/",
-  ];
+// Routes that require authentication
+const protectedRoutes = [
+  "/dashboard",
+  "/people",
+  "/jobs",
+  "/leave",
+  "/assets",
+  "/requests",
+  "/settings",
+  "/admin",
+];
 
-  // Skip middleware for public pages, static assets, and API routes
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Allow all routes in development mode for testing
+  if (process.env.NODE_ENV === "development") {
+    return NextResponse.next();
+  }
+
+  // Check if the route is public
+  const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
+
+  // Allow public routes and API routes
   if (
-    publicPages.some((page) => url === page || url.startsWith(page + "/")) ||
-    url.startsWith("/_next/") ||
-    url.startsWith("/favicon.ico") ||
-    url.startsWith("/public/") ||
-    url.startsWith("/api/") ||
-    url.includes(".") // Skip files with extensions
+    isPublicRoute ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next")
   ) {
     return NextResponse.next();
   }
 
-  // Always allow access in development mode or demo mode
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.NEXT_PUBLIC_DEMO_MODE === "true"
-  ) {
-    return NextResponse.next();
+  // Check if the route requires authentication
+  const isProtectedRoute = protectedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
+
+  if (isProtectedRoute) {
+    // Check for authentication token in cookies
+    const token = request.cookies.get("supabase-auth-token");
+
+    if (!token) {
+      // Redirect to login with return URL
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  // Check for bypass parameters
-  if (
-    searchParams.get("bypass") === "true" ||
-    searchParams.get("mockBypass") === "true"
-  ) {
-    return NextResponse.next();
-  }
-
-  // In production, let the component-level authentication handle redirects
-  // This prevents middleware from interfering with the routing
   return NextResponse.next();
 }
 
@@ -59,9 +72,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public directory
-     * - api routes
      */
-    "/((?!_next/static|_next/image|favicon.ico|public|api).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

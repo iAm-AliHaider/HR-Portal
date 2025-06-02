@@ -22,7 +22,6 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
-  swcMinify: true,
   // Ensure proper static generation
   generateBuildId: async () => {
     return "build-" + Date.now();

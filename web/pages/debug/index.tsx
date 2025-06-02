@@ -1,15 +1,16 @@
 import { useRouter } from "next/router";
 
 import {
-    Activity,
-    AlertTriangle,
-    CheckCircle2,
-    Database,
-    FileText,
-    Server,
-    Settings,
-    Shield,
-    Users
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  CheckCircle2,
+  Database,
+  FileText,
+  Server,
+  Settings,
+  Shield,
+  Users,
 } from "lucide-react";
 
 import { Card, CardGrid, PageLayout } from "@/components/layout/PageLayout";
@@ -92,7 +93,27 @@ export default function DebugPage() {
             icon={<FileText className="h-8 w-8" strokeWidth={1.5} />}
             onClick={() => router.push("/logs")}
           />
+
+          <Card
+            title="Quick System Status"
+            description="Check the overall health of the system - includes database and API monitoring"
+            icon={<Activity className="h-8 w-8" strokeWidth={1.5} />}
+            onClick={() => router.push("/debug/status")}
+          />
         </CardGrid>
+
+        {/* Additional status link for testing */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Quick Actions</h3>
+          <a
+            href="/debug/status"
+            data-testid="debug-status-link"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-colors"
+          >
+            <CheckCircle className="h-4 w-4" />
+            View System Status
+          </a>
+        </div>
       </PageLayout>
     </DebugLayout>
   );

@@ -14,7 +14,6 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 
 import { PageLayout } from "@/components/layout/PageLayout";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +40,25 @@ import {
 } from "../../lib/supabase/admin-utils";
 
 import DebugLayout from "./_layout";
+
+// Simple Alert component replacement
+const Alert = ({
+  children,
+  variant = "default",
+}: {
+  children: React.ReactNode;
+  variant?: "default" | "destructive";
+}) => (
+  <Card
+    className={`border ${variant === "destructive" ? "border-red-200 bg-red-50" : "border-blue-200 bg-blue-50"}`}
+  >
+    <CardContent className="p-4">{children}</CardContent>
+  </Card>
+);
+
+const AlertDescription = ({ children }: { children: React.ReactNode }) => (
+  <div className="text-sm">{children}</div>
+);
 
 export default function SupabaseAdminPage() {
   // Authentication state
@@ -766,7 +784,6 @@ export default function SupabaseAdminPage() {
             </div>
             {loginError && (
               <Alert>
-                <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{loginError}</AlertDescription>
               </Alert>
             )}

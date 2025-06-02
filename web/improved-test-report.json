@@ -1,0 +1,137 @@
+{
+  "routes": {
+    "Homepage": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:35:51.753Z"
+    },
+    "Login Page": {
+      "status": "PASS",
+      "details": "Page loaded successfully - Login | HR Portal",
+      "timestamp": "2025-06-01T19:35:53.425Z"
+    },
+    "Dashboard": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:35:56.445Z"
+    },
+    "People Management": {
+      "status": "PASS",
+      "details": "Page loaded successfully - People Directory | HR Portal",
+      "timestamp": "2025-06-01T19:35:58.768Z"
+    },
+    "Jobs": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:36:01.653Z"
+    },
+    "Leave Management": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:36:04.391Z"
+    },
+    "Asset Management": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:36:06.836Z"
+    },
+    "Request Panel": {
+      "status": "PASS",
+      "details": "Page loaded successfully - My Requests | HR Portal",
+      "timestamp": "2025-06-01T19:36:08.736Z"
+    },
+    "Settings": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:36:11.162Z"
+    },
+    "Debug Panel": {
+      "status": "PASS",
+      "details": "Page loaded successfully - Login | HR Portal",
+      "timestamp": "2025-06-01T19:36:14.085Z"
+    },
+    "Auth Test": {
+      "status": "PASS",
+      "details": "Page loaded successfully - ",
+      "timestamp": "2025-06-01T19:36:15.790Z"
+    }
+  },
+  "authentication": {
+    "LoginPageForm": {
+      "status": "PASS",
+      "details": "Login form structure verified with improved selectors",
+      "timestamp": "2025-06-01T19:36:17.514Z"
+    }
+  },
+  "database": {
+    "ConnectionStatus": {
+      "status": "FAIL",
+      "details": "Database connection status unclear",
+      "timestamp": "2025-06-01T19:36:19.939Z"
+    },
+    "AssetManagement": {
+      "status": "PASS",
+      "details": "Assets page accessible",
+      "timestamp": "2025-06-01T19:36:22.113Z"
+    }
+  },
+  "buttons": {
+    "Login Submit": {
+      "status": "PASS",
+      "details": "Found 1 clickable element(s)",
+      "timestamp": "2025-06-01T19:36:23.630Z"
+    },
+    "Debug Status Link": {
+      "status": "FAIL",
+      "details": "No elements found with selector: a[data-testid=\"debug-status-link\"], a[href=\"/debug/status\"]",
+      "timestamp": "2025-06-01T19:36:26.002Z"
+    },
+    "People Management Buttons": {
+      "status": "PASS",
+      "details": "Found 9 clickable element(s)",
+      "timestamp": "2025-06-01T19:36:28.348Z"
+    },
+    "Jobs Buttons": {
+      "status": "PASS",
+      "details": "Found 7 clickable element(s)",
+      "timestamp": "2025-06-01T19:36:30.834Z"
+    },
+    "Leave Request Buttons": {
+      "status": "PASS",
+      "details": "Found 7 clickable element(s)",
+      "timestamp": "2025-06-01T19:36:33.294Z"
+    },
+    "Asset Management Buttons": {
+      "status": "PASS",
+      "details": "Found 7 clickable element(s)",
+      "timestamp": "2025-06-01T19:36:35.764Z"
+    }
+  },
+  "navigation": {
+    "NavigationStructure": {
+      "status": "FAIL",
+      "details": "No navigation links found with any selector pattern",
+      "timestamp": "2025-06-01T19:36:38.217Z"
+    },
+    "InteractiveElements": {
+      "status": "PASS",
+      "details": "Found 9 interactive elements",
+      "timestamp": "2025-06-01T19:36:40.333Z"
+    },
+    "CriticalConsoleErrors": {
+      "status": "FAIL",
+      "details": "194 critical console errors found",
+      "timestamp": "2025-06-01T19:36:40.334Z"
+    },
+    "NonCriticalErrors": {
+      "status": "PASS",
+      "details": "26 non-critical errors (404s, timeouts) - filtered out",
+      "timestamp": "2025-06-01T19:36:40.337Z"
+    }
+  },
+  "summary": {
+    "passed": 20,
+    "failed": 4,
+    "total": 24
+  }
+}

@@ -1,85 +1,125 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-type HealthResponse = {
-  status: "healthy" | "degraded" | "down";
-  version: string;
-  timestamp: string;
-  environment: string;
-  uptime: number;
-  services: {
-    [key: string]: {
-      status: "healthy" | "degraded" | "down";
-      latency?: number;
-      message?: string;
-    };
+interface HealthResponse {
+  status: "healthy" | "degraded" | "error";
+  database: {
+    connected: boolean;
+    responseTime: number;
+    error?: string;
   };
-};
-
-// Track server start time
-const serverStartTime = Date.now();
+  services: {
+    auth: boolean;
+    api: boolean;
+    storage: boolean;
+  };
+  environment: {
+    nodeEnv: string;
+    version: string;
+    uptime: number;
+  };
+  timestamp: string;
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<HealthResponse>,
 ) {
-  // Basic CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
-
-  // Only allow GET method
-  if (req.method !== "GET") {
-    res.setHeader("Allow", "GET");
-    res.status(405).end("Method Not Allowed");
-    return;
-  }
-
-  // Calculate uptime in seconds
-  const uptime = Math.floor((Date.now() - serverStartTime) / 1000);
+  const startTime = performance.now();
 
   try {
-    // Simplified health check response
-    const healthResponse: HealthResponse = {
-      status: "healthy",
-      version: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || "development",
-      uptime,
-      services: {
-        api: {
-          status: "healthy",
-          latency: 1, // Simplified for this example
-          message: "API is operational",
-        },
-        database: {
-          status: "healthy",
-          latency: 5, // Simplified for this example
-          message: "Database connections healthy",
-        },
+    // Check environment configuration
+    const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const hasSupabaseKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    let dbConnected = false;
+    let dbError = "";
+    let responseTime = 0;
+
+    // Test database connection if credentials are available
+    if (hasSupabaseUrl && hasSupabaseKey) {
+      try {
+        // Dynamic import to avoid initialization errors
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        );
+
+        // Simple connectivity test
+        const { error } = await supabase
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .limit(1);
+
+        responseTime = Math.round(performance.now() - startTime);
+
+        if (!error) {
+          dbConnected = true;
+        } else {
+          dbError = error.message;
+        }
+      } catch (error) {
+        dbError =
+          error instanceof Error ? error.message : "Unknown database error";
+        responseTime = Math.round(performance.now() - startTime);
+      }
+    } else {
+      dbError = "Database credentials not configured";
+      responseTime = Math.round(performance.now() - startTime);
+    }
+
+    // Determine overall status
+    let status: "healthy" | "degraded" | "error" = "healthy";
+    if (!dbConnected) {
+      status = hasSupabaseUrl && hasSupabaseKey ? "degraded" : "error";
+    }
+
+    const healthData: HealthResponse = {
+      status,
+      database: {
+        connected: dbConnected,
+        responseTime,
+        ...(dbError && { error: dbError }),
       },
+      services: {
+        auth: hasSupabaseUrl && hasSupabaseKey,
+        api: true, // API is responding
+        storage: dbConnected,
+      },
+      environment: {
+        nodeEnv: process.env.NODE_ENV || "development",
+        version: "1.0.0",
+        uptime: process.uptime(),
+      },
+      timestamp: new Date().toISOString(),
     };
 
-    // Return health check
-    res.status(200).json(healthResponse);
-  } catch (error) {
-    console.error("Health check error:", error);
+    // Return appropriate status code
+    const statusCode =
+      status === "healthy" ? 200 : status === "degraded" ? 200 : 503;
 
-    // Return error response
-    res.status(500).json({
-      status: "down",
-      version: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || "development",
-      uptime,
-      services: {
-        api: {
-          status: "down",
-          message: "Health check failed",
-        },
-        database: {
-          status: "down",
-          message: "Could not determine database status",
-        },
+    res.status(statusCode).json(healthData);
+  } catch (error) {
+    const responseTime = Math.round(performance.now() - startTime);
+
+    res.status(503).json({
+      status: "error",
+      database: {
+        connected: false,
+        responseTime,
+        error: error instanceof Error ? error.message : "Health check failed",
       },
+      services: {
+        auth: false,
+        api: true,
+        storage: false,
+      },
+      environment: {
+        nodeEnv: process.env.NODE_ENV || "development",
+        version: "1.0.0",
+        uptime: process.uptime(),
+      },
+      timestamp: new Date().toISOString(),
     });
   }
 }

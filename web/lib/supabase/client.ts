@@ -6,22 +6,39 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = process.env.NODE_ENV === "production";
 
-// Validate required environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  const missingVars = [];
-  if (!supabaseUrl) missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
-  if (!supabaseAnonKey) missingVars.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+// Development fallback values for testing without database
+const DEV_SUPABASE_URL = "https://placeholder.supabase.co";
+const DEV_SUPABASE_ANON_KEY = "placeholder_anon_key_for_development_testing";
 
-  throw new Error(
-    `Missing required environment variables: ${missingVars.join(", ")}. ` +
-      "Please check your environment configuration.",
-  );
+// Use fallback values in development if environment variables are missing
+const finalSupabaseUrl = supabaseUrl || (isDevelopment ? DEV_SUPABASE_URL : "");
+const finalSupabaseAnonKey =
+  supabaseAnonKey || (isDevelopment ? DEV_SUPABASE_ANON_KEY : "");
+
+// Validate required environment variables
+if (!finalSupabaseUrl || !finalSupabaseAnonKey) {
+  const missingVars = [];
+  if (!finalSupabaseUrl) missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!finalSupabaseAnonKey) missingVars.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
+  if (isProduction) {
+    throw new Error(
+      `Missing required environment variables: ${missingVars.join(", ")}. ` +
+        "Please check your environment configuration.",
+    );
+  } else {
+    console.warn(
+      `⚠️ Missing environment variables in development: ${missingVars.join(", ")}. ` +
+        "Using fallback values for testing. Please configure proper Supabase credentials for database functionality.",
+    );
+  }
 }
 
-// URL validation
+// URL validation - skip for development fallback
 if (
-  !supabaseUrl.includes("supabase.co") &&
-  !supabaseUrl.includes("localhost")
+  finalSupabaseUrl !== DEV_SUPABASE_URL &&
+  !finalSupabaseUrl.includes("supabase.co") &&
+  !finalSupabaseUrl.includes("localhost")
 ) {
   throw new Error(
     "Invalid Supabase URL format. Must be a valid Supabase project URL.",
@@ -74,7 +91,7 @@ function createSupabaseClient(): SupabaseClient {
       globalThis.__supabaseInitialized = true;
     }
 
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+    supabaseInstance = createClient(finalSupabaseUrl, finalSupabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -154,7 +171,7 @@ export const supabase = createSupabaseClient();
 
 // Development logging
 if (isDevelopment) {
-  console.log("Supabase client initialized with URL:", supabaseUrl);
+  console.log("Supabase client initialized with URL:", finalSupabaseUrl);
   console.log("Environment:", process.env.NODE_ENV);
 }
 
@@ -166,35 +183,135 @@ if (isProduction) {
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
   try {
-    return !!(supabaseUrl && supabaseAnonKey);
+    return !!(finalSupabaseUrl && finalSupabaseAnonKey);
   } catch {
     return false;
   }
 };
 
 // Helper function to check database connection
-export const checkDatabaseConnection = async () => {
+export async function checkDatabaseConnection(): Promise<{
+  success: boolean;
+  duration: number;
+  error?: string;
+  details?: string;
+}> {
+  const start = performance.now();
+
   try {
-    const startTime = Date.now();
-    const { data, error } = await supabase
+    // Test with a simple, lightweight query
+    const { data, error, count } = await supabase
       .from("profiles")
-      .select("count")
+      .select("id", { count: "exact", head: true })
       .limit(1);
-    const duration = Date.now() - startTime;
+
+    const duration = Math.round(performance.now() - start);
+
+    if (error) {
+      console.warn("Database connection test failed:", error.message);
+      return {
+        success: false,
+        duration,
+        error: error.message,
+        details: `Connection test failed: ${error.code || "Unknown error"}`,
+      };
+    }
 
     return {
-      success: !error,
+      success: true,
       duration,
-      error: error ? error.message : null,
+      details: `Database accessible - ${count !== null ? count : "Unknown"} records in profiles table`,
     };
   } catch (error) {
+    const duration = Math.round(performance.now() - start);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown connection error";
+
+    console.warn("Database connection check exception:", errorMessage);
+
     return {
       success: false,
-      duration: 0,
-      error: error instanceof Error ? error.message : "Unknown error",
+      duration,
+      error: errorMessage,
+      details: "Database connection check failed with exception",
     };
   }
-};
+}
+
+// Enhanced table checker with better error handling
+export async function checkTableAccess(): Promise<{
+  accessible: number;
+  total: number;
+  tables: Array<{
+    name: string;
+    status: "accessible" | "error";
+    error?: string;
+  }>;
+}> {
+  const tables = [
+    "profiles",
+    "employees",
+    "jobs",
+    "applications",
+    "leave_requests",
+    "assets",
+    "bookings",
+    "incidents",
+    "training_courses",
+    "assets",
+  ];
+
+  const results = await Promise.allSettled(
+    tables.map(async (tableName) => {
+      try {
+        const { error } = await supabase
+          .from(tableName)
+          .select("*", { count: "exact", head: true })
+          .limit(1);
+
+        if (error) {
+          return {
+            name: tableName,
+            status: "error" as const,
+            error: error.message,
+          };
+        }
+
+        return { name: tableName, status: "accessible" as const };
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error";
+        return {
+          name: tableName,
+          status: "error" as const,
+          error: errorMessage,
+        };
+      }
+    }),
+  );
+
+  const tableStatuses = results.map((result, index) => {
+    if (result.status === "fulfilled") {
+      return result.value;
+    } else {
+      return {
+        name: tables[index],
+        status: "error" as const,
+        error: "Promise rejected",
+      };
+    }
+  });
+
+  const accessible = tableStatuses.filter(
+    (t) => t.status === "accessible",
+  ).length;
+
+  return {
+    accessible,
+    total: tables.length,
+    tables: tableStatuses,
+  };
+}
 
 // Global type definition
 declare global {

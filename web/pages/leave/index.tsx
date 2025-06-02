@@ -1,794 +1,595 @@
-import React, { useState, useEffect } from "react";
-
 import Head from "next/head";
-import { useRouter } from "next/router";
+import React, { useState } from "react";
+import Layout from "../../components/layout/Layout";
 
-import { GetServerSideProps } from "next";
-
-import ModernDashboardLayout from "@/components/layout/ModernDashboardLayout";
-import { shouldBypassAuth } from "@/lib/auth";
-
-import {
-  PermissionGuard,
-  PermissionButton,
-} from "../../components/ui/PermissionGuard";
-import { useLeaveRequests, useToast, useForm } from "../../hooks/useApi";
-import { useAuth } from "../../hooks/useAuth";
-import { usePermissions } from "../../hooks/usePermissions";
-
-// Leave request form interface
-interface LeaveRequestForm {
-  type: string;
-  start_date: string;
-  end_date: string;
-  reason: string;
-  manager_email: string;
+interface LeaveRequest {
+  id: number;
   employee_name: string;
   employee_email: string;
+  type: "vacation" | "sick" | "personal" | "maternity" | "paternity";
+  start_date: string;
+  end_date: string;
+  days: number;
+  status: "pending" | "approved" | "rejected";
+  reason: string;
+  created_at: string;
+  manager_notes?: string;
 }
 
-const LeaveManagementPage = () => {
-  const router = useRouter();
-  const { user } = useAuth();
-  const { hasPermission } = usePermissions();
-  const allowAccess = shouldBypassAuth(router.query);
-  const toast = useToast();
+const mockLeaveRequests: LeaveRequest[] = [
+  {
+    id: 1,
+    employee_name: "John Doe",
+    employee_email: "john.doe@company.com",
+    type: "vacation",
+    start_date: "2024-02-15",
+    end_date: "2024-02-20",
+    days: 4,
+    status: "pending",
+    reason: "Family vacation to Hawaii",
+    created_at: "2024-01-15T10:00:00Z",
+  },
+  {
+    id: 2,
+    employee_name: "Jane Smith",
+    employee_email: "jane.smith@company.com",
+    type: "sick",
+    start_date: "2024-01-22",
+    end_date: "2024-01-23",
+    days: 2,
+    status: "approved",
+    reason: "Doctor appointment and recovery",
+    created_at: "2024-01-20T09:30:00Z",
+    manager_notes: "Approved. Get well soon!",
+  },
+  {
+    id: 3,
+    employee_name: "Bob Wilson",
+    employee_email: "bob.wilson@company.com",
+    type: "personal",
+    start_date: "2024-02-01",
+    end_date: "2024-02-01",
+    days: 1,
+    status: "rejected",
+    reason: "Personal errands",
+    created_at: "2024-01-25T14:15:00Z",
+    manager_notes: "Not enough notice provided",
+  },
+];
 
-  // API hooks
-  const {
-    requests: supabaseRequests,
-    loading,
-    error: apiError,
-    submitRequest,
-    approveRequest,
-    rejectRequest,
-  } = useLeaveRequests();
-
-  // States
-  const [requests, setRequests] = useState<any[]>([]);
-  const [error, setError] = useState(apiError);
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [rejectModalRequest, setRejectModalRequest] = useState<any>(null);
-  const [showRequestModal, setShowRequestModal] = useState(false);
-
-  // Fallback mock data in case Supabase fails
-  useEffect(() => {
-    // Only update state if we have new data or different error state
-    if (
-      supabaseRequests?.length > 0 &&
-      (!requests.length ||
-        JSON.stringify(supabaseRequests) !== JSON.stringify(requests))
-    ) {
-      setRequests(supabaseRequests);
-      if (error) setError(null);
-    } else if (apiError && error !== apiError) {
-      // If there's an error and we haven't loaded mock data yet
-      console.warn("Using fallback mock data due to error:", apiError);
-      const mockData = [
-        {
-          id: "1",
-          employee_id: "1",
-          employee_name: "John Smith",
-          employee_email: "john.smith@company.com",
-          type: "Annual Leave",
-          start_date: "2024-06-15",
-          end_date: "2024-06-20",
-          days: 5,
-          status: "pending",
-          reason: "Family vacation",
-          created_at: "2024-06-01T10:00:00Z",
-          manager_email: "manager@company.com",
-        },
-        {
-          id: "2",
-          employee_id: "2",
-          employee_name: "Sarah Johnson",
-          employee_email: "sarah.johnson@company.com",
-          type: "Sick Leave",
-          start_date: "2024-06-10",
-          end_date: "2024-06-11",
-          days: 2,
-          status: "approved",
-          reason: "Medical appointment",
-          created_at: "2024-06-05T14:30:00Z",
-          approved_at: "2024-06-06T09:15:00Z",
-          manager_email: "manager@company.com",
-        },
-        {
-          id: "3",
-          employee_id: "3",
-          employee_name: "Alex Chen",
-          employee_email: "alex.chen@company.com",
-          type: "Personal Leave",
-          start_date: "2024-07-01",
-          end_date: "2024-07-03",
-          days: 3,
-          status: "pending",
-          reason: "Moving to new apartment",
-          created_at: "2024-06-10T16:45:00Z",
-          manager_email: "manager@company.com",
-        },
-      ];
-      setRequests(mockData);
-      setError(apiError);
-    }
-  }, [supabaseRequests, apiError, requests, error]);
-
-  // Form management
-  const form = useForm<LeaveRequestForm>({
-    type: "",
+export default function LeaveManagement() {
+  const [leaveRequests, setLeaveRequests] =
+    useState<LeaveRequest[]>(mockLeaveRequests);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(
+    null,
+  );
+  const [formData, setFormData] = useState({
+    employee_name: "",
+    employee_email: "",
+    type: "vacation" as LeaveRequest["type"],
     start_date: "",
     end_date: "",
     reason: "",
-    manager_email: "",
-    employee_name: user?.name || user?.email || "",
-    employee_email: user?.email || "",
   });
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "approved" | "rejected"
+  >("all");
 
-  // Make sure modals can be closed even if there are errors
-  const closeRequestModal = () => {
-    setShowRequestModal(false);
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const closeRejectModal = () => {
-    setRejectModalRequest(null);
+  const calculateDays = (startDate: string, endDate: string): number => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return diffDays;
   };
 
-  // Handle form submission
-  const handleSubmitRequest = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Validate form
-    let hasErrors = false;
-
-    if (!form.values.type) {
-      form.setError("type", "Leave type is required");
-      hasErrors = true;
-    }
-
-    if (!form.values.start_date) {
-      form.setError("start_date", "Start date is required");
-      hasErrors = true;
-    }
-
-    if (!form.values.end_date) {
-      form.setError("end_date", "End date is required");
-      hasErrors = true;
-    }
-
-    if (!form.values.reason) {
-      form.setError("reason", "Reason is required");
-      hasErrors = true;
-    }
-
-    if (hasErrors) return;
-
-    setIsSubmitting(true);
+    setLoading(true);
 
     try {
-      // Create the request data
-      const requestData = {
-        ...form.values,
-        id: `temp-${Date.now()}`,
+      const days = calculateDays(formData.start_date, formData.end_date);
+
+      const newRequest: LeaveRequest = {
+        id: Date.now(),
+        ...formData,
+        days,
         status: "pending",
         created_at: new Date().toISOString(),
-        days: calculateDays(form.values.start_date, form.values.end_date),
       };
 
-      // Optimistically update UI
-      setRequests((prev) => [requestData, ...prev]);
-
-      // Make the API call
-      await submitRequest(form.values);
-      toast.success("Leave request submitted successfully!");
-      form.reset();
-      closeRequestModal();
+      // Simulate API call
+      setTimeout(() => {
+        setLeaveRequests((prev) => [newRequest, ...prev]);
+        setShowForm(false);
+        setFormData({
+          employee_name: "",
+          employee_email: "",
+          type: "vacation",
+          start_date: "",
+          end_date: "",
+          reason: "",
+        });
+        setLoading(false);
+      }, 1000);
     } catch (error) {
-      // Remove the optimistic update
-      setRequests((prev) => prev.filter((req) => !req.id.startsWith("temp-")));
-
-      toast.error(
-        error instanceof Error ? error.message : "Failed to submit request",
-      );
-    } finally {
-      setIsSubmitting(false);
+      console.error("Failed to submit leave request:", error);
+      setLoading(false);
     }
   };
 
-  // Helper function to calculate days between dates
-  const calculateDays = (startDate: string, endDate: string): number => {
+  const handleStatusChange = async (
+    id: number,
+    status: "approved" | "rejected",
+    notes?: string,
+  ) => {
+    setLoading(true);
     try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const diffTime = Math.abs(end.getTime() - start.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
-      return diffDays;
-    } catch (err) {
-      console.error("Error calculating days:", err);
-      return 1;
-    }
-  };
-
-  // Handle approve request
-  const handleApprove = async (requestId: string) => {
-    try {
-      // Optimistically update the UI
-      setRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId
-            ? {
-                ...req,
-                status: "approved",
-                approved_at: new Date().toISOString(),
-              }
-            : req,
-        ),
-      );
-
-      // Make the API call
-      await approveRequest(requestId);
-      toast.success("Leave request approved!");
+      // Simulate API call
+      setTimeout(() => {
+        setLeaveRequests((prev) =>
+          prev.map((request) =>
+            request.id === id
+              ? { ...request, status, manager_notes: notes }
+              : request,
+          ),
+        );
+        setSelectedRequest(null);
+        setLoading(false);
+      }, 500);
     } catch (error) {
-      // Revert the optimistic update
-      if (supabaseRequests) {
-        setRequests([...supabaseRequests]);
-      }
-      toast.error(
-        error instanceof Error ? error.message : "Failed to approve request",
-      );
+      console.error("Failed to update leave request:", error);
+      setLoading(false);
     }
   };
 
-  // Handle reject request
-  const handleReject = async (requestId: string, reason: string) => {
-    try {
-      // Optimistically update the UI
-      setRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId
-            ? {
-                ...req,
-                status: "rejected",
-                rejected_at: new Date().toISOString(),
-                rejection_reason: reason,
-              }
-            : req,
-        ),
-      );
-
-      // Make the API call
-      await rejectRequest(requestId, reason);
-      toast.success("Leave request rejected");
-      setRejectModalRequest(null);
-    } catch (error) {
-      // Revert the optimistic update
-      if (supabaseRequests) {
-        setRequests([...supabaseRequests]);
-      }
-      toast.error(
-        error instanceof Error ? error.message : "Failed to reject request",
-      );
+  const getStatusColor = (status: LeaveRequest["status"]) => {
+    switch (status) {
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  // Calculate leave statistics
-  const leaveStats = {
-    pending: requests.filter((r) => r.status === "pending").length,
-    approved: requests.filter((r) => r.status === "approved").length,
-    total: requests.length,
-    thisMonth: requests.filter((r) => {
-      try {
-        return new Date(r.created_at).getMonth() === new Date().getMonth();
-      } catch (err) {
-        return false;
-      }
-    }).length,
+  const getTypeColor = (type: LeaveRequest["type"]) => {
+    switch (type) {
+      case "vacation":
+        return "bg-blue-100 text-blue-800";
+      case "sick":
+        return "bg-red-100 text-red-800";
+      case "personal":
+        return "bg-purple-100 text-purple-800";
+      case "maternity":
+        return "bg-pink-100 text-pink-800";
+      case "paternity":
+        return "bg-indigo-100 text-indigo-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
-  if (loading && !requests.length) {
-    return (
-      <ModernDashboardLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      </ModernDashboardLayout>
-    );
-  }
+  const filteredRequests =
+    filter === "all"
+      ? leaveRequests
+      : leaveRequests.filter((req) => req.status === filter);
 
-  if (!allowAccess && !user) {
-    return (
-      <ModernDashboardLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Access Denied
-            </h2>
-            <p className="text-gray-600">
-              Please log in to access leave management.
-            </p>
-          </div>
-        </div>
-      </ModernDashboardLayout>
-    );
-  }
+  const stats = {
+    total: leaveRequests.length,
+    pending: leaveRequests.filter((req) => req.status === "pending").length,
+    approved: leaveRequests.filter((req) => req.status === "approved").length,
+    rejected: leaveRequests.filter((req) => req.status === "rejected").length,
+  };
 
   return (
-    <ModernDashboardLayout>
-      <Head>
-        <title>Leave Management | HR System</title>
-      </Head>
+    <Layout>
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <Head>
+          <title>Leave Management | HR Portal</title>
+        </Head>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
                 Leave Management
               </h1>
-              <p className="text-gray-600 mt-2">
-                Manage leave requests and approvals
+              <p className="mt-2 text-gray-600">
+                Manage employee leave requests and approvals
               </p>
             </div>
             <button
-              onClick={() => setShowRequestModal(true)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
-              Request Leave
+              + Request Leave
             </button>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Pending Requests
-                </p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {leaveStats.pending}
-                </p>
-              </div>
-              <div className="text-3xl">⏳</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Approved</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {leaveStats.approved}
-                </p>
-              </div>
-              <div className="text-3xl">✅</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Requests
-                </p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {leaveStats.total}
-                </p>
-              </div>
-              <div className="text-3xl">📋</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">This Month</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {leaveStats.thisMonth}
-                </p>
-              </div>
-              <div className="text-3xl">📅</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Leave Requests Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Leave Requests
-            </h2>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 m-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {requests.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-blue-100 text-blue-500 mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No leave requests found
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900">
+                Total Requests
               </h3>
-              <p className="text-gray-500 mb-6">
-                Start by creating a new leave request using the button above.
-              </p>
-              <button
-                onClick={() => setShowRequestModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg
-                  className="-ml-1 mr-2 h-5 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Request Leave
-              </button>
+              <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Employee
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Dates
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Days
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {requests.map((request) => (
-                    <tr key={request.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900">Pending</h3>
+              <p className="text-3xl font-bold text-yellow-600">
+                {stats.pending}
+              </p>
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900">Approved</h3>
+              <p className="text-3xl font-bold text-green-600">
+                {stats.approved}
+              </p>
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-medium text-gray-900">Rejected</h3>
+              <p className="text-3xl font-bold text-red-600">
+                {stats.rejected}
+              </p>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="mb-6 flex space-x-4">
+            <label htmlFor="status-filter" className="sr-only">
+              Filter by status
+            </label>
+            {(["all", "pending", "approved", "rejected"] as const).map(
+              (status) => (
+                <button
+                  key={status}
+                  onClick={() => setFilter(status)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    filter === status
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  title={`Filter by ${status} requests`}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </button>
+              ),
+            )}
+          </div>
+
+          {/* Leave Requests Table */}
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Employee
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Dates
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Days
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredRequests.map((request) => (
+                  <tr key={request.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
                         <div className="text-sm font-medium text-gray-900">
                           {request.employee_name}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {request.type}
+                        <div className="text-sm text-gray-500">
+                          {request.employee_email}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {new Date(request.start_date).toLocaleDateString()} -{" "}
-                          {new Date(request.end_date).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {request.days}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            request.status === "approved"
-                              ? "bg-green-100 text-green-800"
-                              : request.status === "pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                          }`}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(request.type)}`}
+                      >
+                        {request.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div>
+                        {new Date(request.start_date).toLocaleDateString()}
+                      </div>
+                      <div className="text-gray-500">
+                        to {new Date(request.end_date).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {request.days}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(request.status)}`}
+                      >
+                        {request.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => setSelectedRequest(request)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        View
+                      </button>
+                      {request.status === "pending" && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleStatusChange(request.id, "approved")
+                            }
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleStatusChange(request.id, "rejected")
+                            }
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Leave Request Form Modal */}
+          {showForm && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div className="mt-3">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Request Leave
+                  </h3>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label
+                        htmlFor="employee_name"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Employee Name
+                      </label>
+                      <input
+                        type="text"
+                        id="employee_name"
+                        name="employee_name"
+                        required
+                        value={formData.employee_name}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter employee name"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="employee_email"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="employee_email"
+                        name="employee_email"
+                        required
+                        value={formData.employee_email}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="type"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Leave Type
+                      </label>
+                      <select
+                        id="type"
+                        name="type"
+                        required
+                        value={formData.type}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        title="Select leave type"
+                      >
+                        <option value="vacation">Vacation</option>
+                        <option value="sick">Sick Leave</option>
+                        <option value="personal">Personal</option>
+                        <option value="maternity">Maternity</option>
+                        <option value="paternity">Paternity</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="start_date"
+                          className="block text-sm font-medium text-gray-700"
                         >
-                          {request.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => setSelectedRequest(request)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          Start Date
+                        </label>
+                        <input
+                          type="date"
+                          id="start_date"
+                          name="start_date"
+                          required
+                          value={formData.start_date}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          title="Select start date"
+                          placeholder="YYYY-MM-DD"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="end_date"
+                          className="block text-sm font-medium text-gray-700"
                         >
-                          View
-                        </button>
-                        {request.status === "pending" &&
-                          hasPermission("leave_requests", "approve") && (
-                            <>
-                              <button
-                                onClick={() => handleApprove(request.id)}
-                                className="text-green-600 hover:text-green-900 mr-3"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => setRejectModalRequest(request)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          id="end_date"
+                          name="end_date"
+                          required
+                          value={formData.end_date}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          title="Select end date"
+                          placeholder="YYYY-MM-DD"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="reason"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Reason
+                      </label>
+                      <textarea
+                        id="reason"
+                        name="reason"
+                        rows={3}
+                        required
+                        value={formData.reason}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Please provide a reason for your leave request"
+                      />
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setShowForm(false)}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {loading ? "Submitting..." : "Submit Request"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Request Details Modal */}
+          {selectedRequest && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div className="mt-3">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Leave Request Details
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="font-medium">Employee:</span>{" "}
+                      {selectedRequest.employee_name}
+                    </div>
+                    <div>
+                      <span className="font-medium">Email:</span>{" "}
+                      {selectedRequest.employee_email}
+                    </div>
+                    <div>
+                      <span className="font-medium">Type:</span>{" "}
+                      {selectedRequest.type}
+                    </div>
+                    <div>
+                      <span className="font-medium">Dates:</span>{" "}
+                      {new Date(
+                        selectedRequest.start_date,
+                      ).toLocaleDateString()}{" "}
+                      -{" "}
+                      {new Date(selectedRequest.end_date).toLocaleDateString()}
+                    </div>
+                    <div>
+                      <span className="font-medium">Days:</span>{" "}
+                      {selectedRequest.days}
+                    </div>
+                    <div>
+                      <span className="font-medium">Status:</span>{" "}
+                      {selectedRequest.status}
+                    </div>
+                    <div>
+                      <span className="font-medium">Reason:</span>{" "}
+                      {selectedRequest.reason}
+                    </div>
+                    {selectedRequest.manager_notes && (
+                      <div>
+                        <span className="font-medium">Manager Notes:</span>{" "}
+                        {selectedRequest.manager_notes}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-end pt-4">
+                    <button
+                      onClick={() => setSelectedRequest(null)}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
-
-        {/* Request Leave Modal */}
-        {showRequestModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Request Leave
-                </h3>
-                <button
-                  onClick={closeRequestModal}
-                  className="text-gray-500 hover:text-gray-700"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmitRequest}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Leave Type
-                    </label>
-                    <select
-                      value={form.values.type}
-                      onChange={(e) => form.setValue("type", e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    >
-                      <option value="">Select leave type</option>
-                      <option value="Annual Leave">Annual Leave</option>
-                      <option value="Sick Leave">Sick Leave</option>
-                      <option value="Personal Leave">Personal Leave</option>
-                      <option value="Maternity Leave">Maternity Leave</option>
-                      <option value="Paternity Leave">Paternity Leave</option>
-                    </select>
-                    {form.errors.type && (
-                      <p className="text-red-600 text-sm mt-1">
-                        {form.errors.type}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Start Date
-                      </label>
-                      <input
-                        type="date"
-                        value={form.values.start_date}
-                        onChange={(e) =>
-                          form.setValue("start_date", e.target.value)
-                        }
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                      {form.errors.start_date && (
-                        <p className="text-red-600 text-sm mt-1">
-                          {form.errors.start_date}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        End Date
-                      </label>
-                      <input
-                        type="date"
-                        value={form.values.end_date}
-                        onChange={(e) =>
-                          form.setValue("end_date", e.target.value)
-                        }
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                      {form.errors.end_date && (
-                        <p className="text-red-600 text-sm mt-1">
-                          {form.errors.end_date}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Manager Email
-                    </label>
-                    <input
-                      type="email"
-                      value={form.values.manager_email}
-                      onChange={(e) =>
-                        form.setValue("manager_email", e.target.value)
-                      }
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      placeholder="manager@company.com"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Reason
-                    </label>
-                    <textarea
-                      value={form.values.reason}
-                      onChange={(e) => form.setValue("reason", e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      rows={3}
-                      placeholder="Please provide a reason for your leave..."
-                      required
-                    />
-                    {form.errors.reason && (
-                      <p className="text-red-600 text-sm mt-1">
-                        {form.errors.reason}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex space-x-4 mt-6">
-                  <button
-                    type="button"
-                    onClick={closeRequestModal}
-                    className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Request"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Reject Modal */}
-        {rejectModalRequest && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Reject Leave Request
-                </h3>
-                <button
-                  onClick={closeRejectModal}
-                  className="text-gray-500 hover:text-gray-700"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <p className="text-gray-600 mb-4">
-                Are you sure you want to reject this leave request for{" "}
-                {rejectModalRequest.employee_name}?
-              </p>
-
-              <textarea
-                placeholder="Reason for rejection..."
-                className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4"
-                rows={3}
-                id="rejection-reason"
-              />
-
-              <div className="flex space-x-4">
-                <button
-                  onClick={closeRejectModal}
-                  className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    const reason = (
-                      document.getElementById(
-                        "rejection-reason",
-                      ) as HTMLTextAreaElement
-                    )?.value;
-                    if (reason) {
-                      handleReject(rejectModalRequest.id, reason);
-                    } else {
-                      toast.warning("Please provide a reason for rejection");
-                    }
-                  }}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-                >
-                  Reject Request
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Toast Notifications */}
-        <div className="fixed top-4 right-4 z-50 space-y-2">
-          {toast.toasts.map((t) => (
-            <div
-              key={t.id}
-              className={`px-6 py-3 rounded-lg shadow-lg text-white ${
-                t.type === "success"
-                  ? "bg-green-500"
-                  : t.type === "error"
-                    ? "bg-red-500"
-                    : t.type === "warning"
-                      ? "bg-yellow-500"
-                      : "bg-blue-500"
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <span>{t.message}</span>
-                <button
-                  onClick={() => toast.removeToast(t.id)}
-                  className="ml-2 text-white hover:text-gray-200"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
-    </ModernDashboardLayout>
+    </Layout>
   );
-};
-
-// Force Server-Side Rendering to prevent static generation
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  return {
-    props: {},
-  };
-};
-
-export default LeaveManagementPage;
+}

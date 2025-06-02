@@ -26,6 +26,8 @@ import {
   Zap,
 } from "lucide-react";
 
+import { SkipToContent } from "@/components/ui/AccessibilityEnhancements";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ModernDashboardLayoutProps {
@@ -317,22 +319,35 @@ export default function ModernDashboardLayout({
         />
       </Head>
 
+      {/* Skip to content link for accessibility */}
+      <SkipToContent />
+
       <div className="min-h-screen bg-gray-50 flex overflow-hidden">
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
             onClick={() => setSidebarOpen(false)}
+            role="button"
+            aria-label="Close sidebar"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setSidebarOpen(false);
+              }
+            }}
           />
         )}
 
         {/* Sidebar */}
-        <div
+        <aside
           className={`
           fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           lg:relative lg:translate-x-0 lg:z-0
         `}
+          role="navigation"
+          aria-label="Main navigation"
         >
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
@@ -343,7 +358,7 @@ export default function ModernDashboardLayout({
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1 rounded-md hover:bg-gray-100"
+              className="lg:hidden p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Close sidebar"
             >
               <X size={20} />
@@ -351,7 +366,10 @@ export default function ModernDashboardLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <nav
+            className="flex-1 px-4 py-6 space-y-2 overflow-y-auto"
+            role="navigation"
+          >
             {navigationItems.map((item) => (
               <div key={item.name}>
                 {item.subItems ? (
@@ -360,15 +378,21 @@ export default function ModernDashboardLayout({
                       onClick={() => toggleExpanded(item.name)}
                       className={`
                         w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg
+                        focus:outline-none focus:ring-2 focus:ring-blue-500
                         ${
                           isActiveRoute(item.href)
                             ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
                             : "text-gray-700 hover:bg-gray-100"
                         }
                       `}
+                      aria-expanded={
+                        expandedItems.includes(item.name) ? "true" : "false"
+                      }
+                      aria-controls={`${item.name.toLowerCase()}-submenu`}
+                      aria-label={`${item.name} menu`}
                     >
                       <div className="flex items-center space-x-3">
-                        <item.icon size={18} />
+                        <item.icon size={18} aria-hidden="true" />
                         <span>{item.name}</span>
                       </div>
                       <ChevronDown
@@ -376,16 +400,22 @@ export default function ModernDashboardLayout({
                         className={`transform transition-transform ${
                           expandedItems.includes(item.name) ? "rotate-180" : ""
                         }`}
+                        aria-hidden="true"
                       />
                     </button>
                     {expandedItems.includes(item.name) && (
-                      <div className="mt-1 ml-6 space-y-1">
+                      <div
+                        className="mt-1 ml-6 space-y-1"
+                        id={`${item.name.toLowerCase()}-submenu`}
+                        role="group"
+                        aria-label={`${item.name} submenu`}
+                      >
                         {item.subItems.map((subItem) => (
                           <Link
                             key={subItem.href}
                             href={subItem.href}
                             className={`
-                              block px-3 py-2 text-sm rounded-lg
+                              block px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500
                               ${
                                 router.pathname === subItem.href
                                   ? "bg-blue-50 text-blue-700 font-medium"
@@ -404,6 +434,7 @@ export default function ModernDashboardLayout({
                     href={item.href}
                     className={`
                       flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg
+                      focus:outline-none focus:ring-2 focus:ring-blue-500
                       ${
                         isActiveRoute(item.href)
                           ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
@@ -411,7 +442,7 @@ export default function ModernDashboardLayout({
                       }
                     `}
                   >
-                    <item.icon size={18} />
+                    <item.icon size={18} aria-hidden="true" />
                     <span>{item.name}</span>
                   </Link>
                 )}
@@ -447,9 +478,9 @@ export default function ModernDashboardLayout({
               <span>Sign out</span>
             </button>
           </div>
-        </div>
+        </aside>
 
-        {/* Main Content */}
+        {/* Main content area */}
         <div className="flex-1 flex flex-col overflow-hidden w-full">
           {/* Top Header */}
           <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
@@ -457,7 +488,7 @@ export default function ModernDashboardLayout({
               <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+                  className="lg:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   aria-label="Open sidebar"
                 >
                   <Menu size={20} />
@@ -465,14 +496,20 @@ export default function ModernDashboardLayout({
 
                 {/* Search Bar */}
                 <div className="hidden md:block relative w-full max-w-xs lg:max-w-md">
+                  <label htmlFor="search" className="sr-only">
+                    Search
+                  </label>
                   <Search
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                     size={16}
+                    aria-hidden="true"
                   />
                   <input
+                    id="search"
                     type="text"
                     placeholder="Search..."
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-label="Search the application"
                   />
                 </div>
               </div>
@@ -480,11 +517,15 @@ export default function ModernDashboardLayout({
               <div className="flex items-center space-x-2 sm:space-x-4">
                 {/* Notifications */}
                 <button
-                  className="p-2 text-gray-400 hover:text-gray-600 relative"
+                  className="p-2 text-gray-400 hover:text-gray-600 relative focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
                   aria-label="View notifications"
                 >
                   <Bell size={20} />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  <span
+                    className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"
+                    aria-hidden="true"
+                  ></span>
+                  <span className="sr-only">You have unread notifications</span>
                 </button>
 
                 {/* Actions - Wrap in a scrollable container on small screens */}
@@ -497,28 +538,30 @@ export default function ModernDashboardLayout({
             </div>
           </header>
 
-          {/* Page Content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">
-            {/* Page Header */}
-            {(title || subtitle) && (
-              <div className="px-4 sm:px-6 pt-6 pb-4">
-                {title && (
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">
-                    {title}
-                  </h1>
+          {/* Main Content */}
+          <main
+            id="main-content"
+            className="flex-1 overflow-auto bg-gray-50"
+            role="main"
+            aria-label="Main content"
+          >
+            <ErrorBoundary>
+              <div className="responsive-container py-6 sm:py-8">
+                {(title || subtitle) && (
+                  <div className="mb-6 sm:mb-8">
+                    {title && (
+                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                        {title}
+                      </h1>
+                    )}
+                    {subtitle && (
+                      <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
+                    )}
+                  </div>
                 )}
-                {subtitle && (
-                  <p className="text-base sm:text-lg text-gray-600 break-words">
-                    {subtitle}
-                  </p>
-                )}
+                {children}
               </div>
-            )}
-
-            {/* Page Content */}
-            <div className="px-4 sm:px-6 pb-6 w-full">
-              <div className="max-w-full overflow-x-auto">{children}</div>
-            </div>
+            </ErrorBoundary>
           </main>
         </div>
       </div>

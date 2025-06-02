@@ -1,0 +1,124 @@
+{
+  "routes": {
+    "Homepage": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:26.119Z"
+    },
+    "Login Page": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:26.629Z"
+    },
+    "Dashboard": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:27.135Z"
+    },
+    "People Management": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:27.641Z"
+    },
+    "Jobs": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:28.147Z"
+    },
+    "Leave Management": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:28.663Z"
+    },
+    "Asset Management": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:29.179Z"
+    },
+    "Request Panel": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:29.695Z"
+    },
+    "Settings": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:30.209Z"
+    },
+    "Debug Panel": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:30.722Z"
+    },
+    "Auth Test": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:31.236Z"
+    }
+  },
+  "authentication": {
+    "LoginPageForm": {
+      "status": "PASS",
+      "details": "Login form structure verified",
+      "timestamp": "2025-06-01T19:14:32.300Z"
+    }
+  },
+  "navigation": {},
+  "database": {
+    "ConnectionStatus": {
+      "status": "FAIL",
+      "details": "Database connection status unclear",
+      "timestamp": "2025-06-01T19:14:33.095Z"
+    },
+    "AssetManagement": {
+      "status": "PASS",
+      "details": "Assets page loads without database errors",
+      "timestamp": "2025-06-01T19:14:37.071Z"
+    }
+  },
+  "buttons": {
+    "Login Submit": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:33.095Z"
+    },
+    "Debug Status Link": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:33.599Z"
+    },
+    "Add Employee": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:34.114Z"
+    },
+    "Create Job": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:34.625Z"
+    },
+    "Leave Request Buttons": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:35.128Z"
+    },
+    "Asset Management Buttons": {
+      "status": "FAIL",
+      "details": "testFunction is not a function",
+      "timestamp": "2025-06-01T19:14:35.639Z"
+    }
+  },
+  "forms": {},
+  "summary": {
+    "passed": 2,
+    "failed": 19,
+    "total": 21
+  },
+  "system": {
+    "TestExecution": {
+      "status": "FAIL",
+      "details": "getErrors is not a function",
+      "timestamp": "2025-06-01T19:14:37.072Z"
+    }
+  }
+}

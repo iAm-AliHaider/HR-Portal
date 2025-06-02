@@ -1,0 +1,142 @@
+{
+  "routes": {
+    "Homepage": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:43:22.213Z"
+    },
+    "Login Page": {
+      "status": "PASS",
+      "details": "Page loaded successfully - Login | HR Portal",
+      "timestamp": "2025-06-01T19:43:23.841Z"
+    },
+    "Dashboard": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:43:26.146Z"
+    },
+    "People Management": {
+      "status": "PASS",
+      "details": "Page loaded successfully - People Directory | HR Portal",
+      "timestamp": "2025-06-01T19:43:28.244Z"
+    },
+    "Jobs": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:43:30.432Z"
+    },
+    "Leave Management": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:43:32.727Z"
+    },
+    "Asset Management": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:43:35.031Z"
+    },
+    "Request Panel": {
+      "status": "PASS",
+      "details": "Page loaded successfully - My Requests | HR Portal",
+      "timestamp": "2025-06-01T19:43:36.768Z"
+    },
+    "Settings": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:43:39.107Z"
+    },
+    "Debug Panel": {
+      "status": "PASS",
+      "details": "Page loaded successfully - Login | HR Portal",
+      "timestamp": "2025-06-01T19:43:41.370Z"
+    },
+    "System Status": {
+      "status": "PASS",
+      "details": "Page loaded successfully - Login | HR Portal",
+      "timestamp": "2025-06-01T19:43:43.740Z"
+    }
+  },
+  "authentication": {
+    "EnhancedLoginForm": {
+      "status": "PASS",
+      "details": "Enhanced login form structure verified with multiple selectors",
+      "timestamp": "2025-06-01T19:43:45.435Z"
+    }
+  },
+  "database": {
+    "EnhancedConnectionStatus": {
+      "status": "FAIL",
+      "details": "Database connection status unclear",
+      "timestamp": "2025-06-01T19:43:47.471Z"
+    },
+    "AssetManagementVerified": {
+      "status": "PASS",
+      "details": "Assets page loads without critical database errors",
+      "timestamp": "2025-06-01T19:43:49.488Z"
+    }
+  },
+  "buttons": {
+    "Login Submit": {
+      "status": "PASS",
+      "details": "Found 8 element(s), 8 clickable",
+      "timestamp": "2025-06-01T19:43:51.038Z"
+    },
+    "Debug Status Link": {
+      "status": "PASS",
+      "details": "Found 7 element(s), 7 clickable",
+      "timestamp": "2025-06-01T19:43:53.537Z"
+    },
+    "People Management Buttons": {
+      "status": "PASS",
+      "details": "Found 9 element(s), 9 clickable",
+      "timestamp": "2025-06-01T19:43:55.799Z"
+    },
+    "Jobs Buttons": {
+      "status": "PASS",
+      "details": "Found 7 element(s), 7 clickable",
+      "timestamp": "2025-06-01T19:43:58.131Z"
+    },
+    "Leave Request Buttons": {
+      "status": "PASS",
+      "details": "Found 7 element(s), 7 clickable",
+      "timestamp": "2025-06-01T19:44:00.615Z"
+    },
+    "Asset Management Buttons": {
+      "status": "PASS",
+      "details": "Found 7 element(s), 7 clickable",
+      "timestamp": "2025-06-01T19:44:02.911Z"
+    }
+  },
+  "navigation": {
+    "EnhancedNavigationStructure": {
+      "status": "PASS",
+      "details": "Enhanced navigation found: nav a: 8 links, [role=\"navigation\"] a: 8 links, .sidebar a: 8 links (120 total links)",
+      "timestamp": "2025-06-01T19:44:05.410Z"
+    },
+    "EnhancedInteractiveElements": {
+      "status": "PASS",
+      "details": "Found 57 enhanced interactive elements",
+      "timestamp": "2025-06-01T19:44:07.619Z"
+    },
+    "CriticalErrors": {
+      "status": "FAIL",
+      "details": "34 critical errors found",
+      "timestamp": "2025-06-01T19:44:07.620Z"
+    },
+    "SuppressedErrors": {
+      "status": "PASS",
+      "details": "6 non-critical errors properly suppressed",
+      "timestamp": "2025-06-01T19:44:07.621Z"
+    },
+    "WarningLevel": {
+      "status": "FAIL",
+      "details": "High warning count: 258 warnings",
+      "timestamp": "2025-06-01T19:44:07.622Z"
+    }
+  },
+  "summary": {
+    "passed": 22,
+    "failed": 3,
+    "total": 25
+  }
+}

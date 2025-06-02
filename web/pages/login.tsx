@@ -1,154 +1,84 @@
-import React, { useEffect, useState } from "react";
-
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import React, { useState } from "react";
 
-import { GetServerSideProps } from "next";
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
-import RealUserInfo, { RealUser } from "../components/auth/RealUserInfo";
-import { useAuth } from "../hooks/useAuth";
-import { supabase } from "../lib/supabase/client";
-
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showTestAccounts, setShowTestAccounts] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<string>("all");
-
+export default function Login() {
   const router = useRouter();
-  const { user, signIn } = useAuth();
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Get redirect URL from query params with fallback
-  const getRedirectUrl = () => {
-    const returnUrl = router.query.returnUrl as string;
-    const redirect = router.query.redirect as string;
-
-    // Prioritize returnUrl, then redirect, then default
-    if (returnUrl && returnUrl.startsWith("/")) {
-      return decodeURIComponent(returnUrl);
-    }
-    if (redirect && redirect.startsWith("/")) {
-      return redirect;
-    }
-    return "/dashboard";
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (error) setError("");
   };
 
-  const redirectUrl = getRedirectUrl();
-
-  const roleFilters = {
-    all: "All Accounts",
-    admin: "Administrators",
-    hr: "HR Team",
-    manager: "Managers",
-    employee: "Employees",
-  };
-
-  // Handle redirection if the user is already logged in when page loads
-  useEffect(() => {
-    if (user) {
-      console.log("User already logged in, redirecting to:", redirectUrl);
-
-      // Use Next.js router for initial redirects
-      router.push(redirectUrl).catch((err) => {
-        console.error("Router push failed, using window.location:", err);
-        window.location.href = redirectUrl;
-      });
-    }
-  }, [user, redirectUrl, router]);
-
-  // Test Supabase connection
-  const testConnection = async () => {
-    try {
-      console.log("🔍 Testing Supabase connection...");
-      const { data, error } = await supabase.auth.getSession();
-      console.log(
-        "📊 Current session:",
-        data.session?.user?.email || "No active session",
-      );
-
-      if (error) {
-        console.error("❌ Session error:", error);
-      } else {
-        console.log("✅ Supabase connection working");
-      }
-    } catch (err) {
-      console.error("💥 Connection test failed:", err);
-    }
-  };
-
-  // Run connection test on mount
-  useEffect(() => {
-    testConnection();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
+    setIsLoading(true);
+    setError("");
+
+    // Validation
+    if (!formData.email) {
+      setError("Email is required");
+      setIsLoading(false);
+      return;
+    }
+    if (!formData.password) {
+      setError("Password is required");
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      console.log("🔐 Starting login process for:", email);
-      const result = await signIn(email, password);
-      console.log("📋 SignIn result:", result);
+      const response = await fetch("/api/auth/user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      if (result.success && result.user) {
-        console.log("✅ Login successful! User data:", result.user.email);
-        console.log("🎯 Redirecting to:", redirectUrl);
+      const data = await response.json();
 
-        // Immediate navigation after successful login
-        try {
-          // Try Next.js router first (more reliable for client-side routing)
-          await router.push(redirectUrl);
-          console.log("✅ Navigation successful via router.push");
-        } catch (routerError) {
-          console.warn(
-            "⚠️ Router.push failed, using window.location:",
-            routerError,
-          );
-          // Fallback to window.location
-          window.location.href = redirectUrl;
+      if (data.success && data.user) {
+        if (data.token) {
+          localStorage.setItem("auth-token", data.token);
+          document.cookie = `supabase-auth-token=${data.token}; path=/; max-age=86400`;
         }
+        localStorage.setItem("user-data", JSON.stringify(data.user));
 
-        return; // Exit early on success
+        const { returnUrl } = router.query;
+        router.push((returnUrl as string) || "/dashboard");
       } else {
-        // Handle login failure
-        const errorMsg = result.error || "Login failed - please try again";
-        console.error("❌ Login failed:", errorMsg);
-        setError(errorMsg);
+        setError(data.error || "Login failed");
       }
-    } catch (err) {
-      console.error("💥 Login error:", err);
-      setError(
-        "An error occurred during login: " +
-          (err instanceof Error ? err.message : String(err)),
-      );
+    } catch (error) {
+      setError("Network error. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleAccountSelect = (user: RealUser) => {
-    setEmail(user.email);
-    // Note: Real users don't expose passwords, this is just for display
-    // Users should use the test passwords: admin123, hr123, employee123
-  };
-
-  const getFilteredRoles = (filter: string): string[] => {
-    switch (filter) {
-      case "admin":
-        return ["admin"];
-      case "hr":
-        return ["hr", "hr_director", "hr_manager"];
-      case "manager":
-        return ["manager", "team_lead"];
-      case "employee":
-        return ["employee"];
-      default:
-        return [];
-    }
+  const handleDemoLogin = (role: "admin" | "hr" | "employee") => {
+    const credentials = {
+      admin: { email: "admin@company.com", password: "admin123" },
+      hr: { email: "hr@company.com", password: "hr123" },
+      employee: { email: "user@company.com", password: "user123" },
+    };
+    setFormData(credentials[role]);
   };
 
   return (
@@ -158,47 +88,23 @@ export default function LoginPage() {
       </Head>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-20 h-20 rounded bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
-            HR
-          </div>
+        <div className="mx-auto w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center">
+          <span className="text-white text-2xl font-bold">HR</span>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          HR Portal Login
+        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+          Sign in to HR Portal
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to access the HR management system
-        </p>
-        <p className="mt-2 text-center text-sm">
-          <a href="/careers" className="text-blue-600 hover:text-blue-500">
-            Looking for jobs? Visit our careers page
-          </a>
-        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        {/* Development Mode Notice */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">
-              🧪 Development Mode - Test Accounts
-            </h3>
-            <div className="text-xs text-blue-700 space-y-1">
-              <div>
-                <strong>Admin:</strong> admin@company.com / admin123
-              </div>
-              <div>
-                <strong>HR:</strong> hr@company.com / hr123
-              </div>
-              <div>
-                <strong>Employee:</strong> employee@company.com / employee123
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                <div className="text-sm text-red-800">{error}</div>
+              </div>
+            )}
+
             <div>
               <label
                 htmlFor="email"
@@ -213,9 +119,10 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your email"
                 />
               </div>
             </div>
@@ -227,122 +134,122 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <div className="mt-1">
+              <div className="mt-1 relative">
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                  placeholder="Enter your password"
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  <svg
+                    className="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
 
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-400 p-4">
-                <div className="flex">
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
-                </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900"
+                >
+                  Remember me
+                </label>
               </div>
-            )}
+              <div className="text-sm">
+                <Link
+                  href="/forgot-password"
+                  className="font-medium text-blue-600 hover:text-blue-500"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
 
             <div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                {loading ? "Signing in..." : "Sign in"}
+                {isLoading ? "Signing in..." : "Sign in"}
               </button>
             </div>
-
-            {/* Add helpful message for non-existent users */}
-            {error && error.includes("Invalid login credentials") && (
-              <div className="text-center">
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
-                  <Link
-                    href="/register"
-                    className="font-medium text-blue-600 hover:text-blue-500"
-                  >
-                    Create one here
-                  </Link>
-                </p>
-              </div>
-            )}
           </form>
 
-          {showTestAccounts && (
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
-                    Available System Users
-                  </span>
-                </div>
+          {/* Demo Accounts */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
               </div>
-
-              <div className="mt-4">
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <div className="text-sm text-gray-600 mr-2">
-                    Filter by role:
-                  </div>
-                  {Object.entries(roleFilters).map(([key, label]) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedFilter(key)}
-                      className={`px-3 py-1 text-xs rounded-full ${
-                        selectedFilter === key
-                          ? "bg-blue-100 text-blue-800 font-medium"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                <RealUserInfo
-                  onSelect={handleAccountSelect}
-                  filterRoles={
-                    selectedFilter !== "all"
-                      ? getFilteredRoles(selectedFilter)
-                      : undefined
-                  }
-                />
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Demo Accounts
+                </span>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Add Registration Link */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{" "}
-            <Link
-              href="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              Create Account
-            </Link>
-          </p>
+            <div className="mt-6 grid gap-3">
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("admin")}
+                className="w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Admin Demo (admin@company.com)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("hr")}
+                className="w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                HR Manager (hr@company.com)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLogin("employee")}
+                className="w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Employee (user@company.com)
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-// Force Server-Side Rendering to prevent static generation
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  return {
-    props: {},
-  };
-};

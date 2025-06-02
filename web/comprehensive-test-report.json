@@ -1,0 +1,132 @@
+{
+  "routes": {
+    "Homepage": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:15:29.493Z"
+    },
+    "Login Page": {
+      "status": "PASS",
+      "details": "Page loaded successfully - Login | HR Portal",
+      "timestamp": "2025-06-01T19:15:31.385Z"
+    },
+    "Dashboard": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:15:35.092Z"
+    },
+    "People Management": {
+      "status": "PASS",
+      "details": "Page loaded successfully - People Directory | HR Portal",
+      "timestamp": "2025-06-01T19:15:38.347Z"
+    },
+    "Jobs": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:15:41.257Z"
+    },
+    "Leave Management": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:15:43.928Z"
+    },
+    "Asset Management": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:15:46.721Z"
+    },
+    "Request Panel": {
+      "status": "PASS",
+      "details": "Page loaded successfully - My Requests | HR Portal",
+      "timestamp": "2025-06-01T19:15:48.903Z"
+    },
+    "Settings": {
+      "status": "PASS",
+      "details": "Correctly redirected to login",
+      "timestamp": "2025-06-01T19:15:51.751Z"
+    },
+    "Debug Panel": {
+      "status": "PASS",
+      "details": "Page loaded successfully - Login | HR Portal",
+      "timestamp": "2025-06-01T19:15:54.782Z"
+    },
+    "Auth Test": {
+      "status": "PASS",
+      "details": "Page loaded successfully - ",
+      "timestamp": "2025-06-01T19:15:56.809Z"
+    }
+  },
+  "authentication": {
+    "LoginPageForm": {
+      "status": "FAIL",
+      "details": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button[type=\"submit\"], button:contains(\"Login\"), button:contains(\"Sign in\")' is not a valid selector.",
+      "timestamp": "2025-06-01T19:15:58.808Z"
+    }
+  },
+  "database": {
+    "ConnectionStatus": {
+      "status": "FAIL",
+      "details": "Database connection status unclear",
+      "timestamp": "2025-06-01T19:16:01.450Z"
+    },
+    "AssetManagement": {
+      "status": "PASS",
+      "details": "Assets page accessible",
+      "timestamp": "2025-06-01T19:16:03.654Z"
+    }
+  },
+  "buttons": {
+    "Login Submit": {
+      "status": "PASS",
+      "details": "Found 1 clickable element(s)",
+      "timestamp": "2025-06-01T19:16:05.047Z"
+    },
+    "Debug Status Link": {
+      "status": "FAIL",
+      "details": "No elements found with selector: [href=\"/debug/status\"]",
+      "timestamp": "2025-06-01T19:16:07.740Z"
+    },
+    "People Management Buttons": {
+      "status": "PASS",
+      "details": "Found 9 clickable element(s)",
+      "timestamp": "2025-06-01T19:16:10.297Z"
+    },
+    "Jobs Buttons": {
+      "status": "PASS",
+      "details": "Found 7 clickable element(s)",
+      "timestamp": "2025-06-01T19:16:13.968Z"
+    },
+    "Leave Request Buttons": {
+      "status": "PASS",
+      "details": "Found 7 clickable element(s)",
+      "timestamp": "2025-06-01T19:16:16.708Z"
+    },
+    "Asset Management Buttons": {
+      "status": "PASS",
+      "details": "Found 7 clickable element(s)",
+      "timestamp": "2025-06-01T19:16:19.372Z"
+    }
+  },
+  "navigation": {
+    "MainNavigation": {
+      "status": "FAIL",
+      "details": "No navigation links found",
+      "timestamp": "2025-06-01T19:16:22.012Z"
+    },
+    "InteractiveElements": {
+      "status": "PASS",
+      "details": "Found 7 interactive elements",
+      "timestamp": "2025-06-01T19:16:24.127Z"
+    },
+    "ConsoleErrors": {
+      "status": "FAIL",
+      "details": "256 console errors found",
+      "timestamp": "2025-06-01T19:16:24.128Z"
+    }
+  },
+  "summary": {
+    "passed": 18,
+    "failed": 5,
+    "total": 23
+  }
+}

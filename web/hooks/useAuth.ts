@@ -20,17 +20,38 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // Use refs to prevent stale closures and infinite loops
-  const authListenerRef = useRef<any>(null);
-  const isInitializedRef = useRef(false);
+  // Refs for cleanup and preventing memory leaks
   const mountedRef = useRef(true);
+  const isInitializedRef = useRef(false);
+  const authListenerRef = useRef<any>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Helper to safely update state only if component is still mounted
-  const safeSetState = useCallback((updater: () => void) => {
+  // Safe state setter to prevent updates on unmounted components
+  const safeSetState = useCallback((stateFn: () => void) => {
     if (mountedRef.current) {
-      updater();
+      stateFn();
     }
   }, []);
+
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (authListenerRef.current) {
+      authListenerRef.current.subscription.unsubscribe();
+      authListenerRef.current = null;
+    }
+  }, []);
+
+  // Handle component unmount - prevent memory leaks
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      cleanup();
+    };
+  }, [cleanup]);
 
   // Helper to convert Supabase user to our User type
   const convertSupabaseUser = useCallback(
@@ -158,43 +179,6 @@ export function useAuth() {
     [],
   );
 
-  // Handle auth state changes
-  const handleAuthStateChange = useCallback(
-    async (event: string, session: any) => {
-      console.log("Auth state changed:", event);
-
-      if (!mountedRef.current) return;
-
-      try {
-        if (session?.user) {
-          const profileData = await fetchUserProfile(session.user.id);
-          if (profileData && mountedRef.current) {
-            const userWithProfile = convertSupabaseUser(
-              session.user,
-              profileData.profile,
-            );
-            safeSetState(() => {
-              setUser(userWithProfile);
-              setRole(profileData.role);
-            });
-            console.log("Auth state change - user set:", userWithProfile.email);
-          }
-        } else {
-          safeSetState(() => {
-            setUser(null);
-            setRole(null);
-          });
-        }
-      } catch (err) {
-        console.error("Auth state change error:", err);
-        safeSetState(() => {
-          setError("Authentication state error");
-        });
-      }
-    },
-    [fetchUserProfile, convertSupabaseUser, safeSetState],
-  );
-
   // Initialize auth state
   useEffect(() => {
     if (isInitializedRef.current) return;
@@ -203,7 +187,7 @@ export function useAuth() {
     console.log("Initializing auth state...");
 
     // Set a timeout to prevent infinite loading
-    const timeout = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       if (mountedRef.current && loading) {
         console.warn("Authentication timeout reached");
         safeSetState(() => {
@@ -232,13 +216,21 @@ export function useAuth() {
               setRole(null);
               setLoading(false);
             });
-            clearTimeout(timeout);
+            cleanup();
             return;
           }
         }
 
-        // Get current session
-        const { data, error: sessionError } = await supabase.auth.getSession();
+        // Get current session with timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session timeout")), 5000),
+        );
+
+        const { data, error: sessionError } = (await Promise.race([
+          sessionPromise,
+          timeoutPromise,
+        ])) as any;
 
         if (sessionError) {
           console.error("Session error:", sessionError);
@@ -246,7 +238,7 @@ export function useAuth() {
             setError(sessionError.message);
             setLoading(false);
           });
-          clearTimeout(timeout);
+          cleanup();
           return;
         }
 
@@ -256,30 +248,50 @@ export function useAuth() {
             data.session.user.email,
           );
 
-          // Fetch user profile
-          const profileData = await fetchUserProfile(data.session.user.id);
+          // Fetch user profile with timeout
+          try {
+            const profilePromise = fetchUserProfile(data.session.user.id);
+            const profileTimeoutPromise = new Promise((_, reject) =>
+              setTimeout(
+                () => reject(new Error("Profile fetch timeout")),
+                3000,
+              ),
+            );
 
-          if (profileData && mountedRef.current) {
-            const userWithProfile = convertSupabaseUser(
-              data.session.user,
-              profileData.profile,
+            const profileData = (await Promise.race([
+              profilePromise,
+              profileTimeoutPromise,
+            ])) as any;
+
+            if (profileData && mountedRef.current) {
+              const userWithProfile = convertSupabaseUser(
+                data.session.user,
+                profileData.profile,
+              );
+              safeSetState(() => {
+                setUser(userWithProfile);
+                setRole(profileData.role);
+              });
+              console.log(
+                "User authenticated successfully:",
+                userWithProfile.email,
+                "Role:",
+                profileData.role,
+              );
+            }
+          } catch (profileError) {
+            console.warn(
+              "Profile fetch failed, using default role:",
+              profileError,
             );
+            const userWithoutProfile = convertSupabaseUser(data.session.user);
             safeSetState(() => {
-              setUser(userWithProfile);
-              setRole(profileData.role);
+              setUser(userWithoutProfile);
+              setRole("employee");
             });
-            console.log(
-              "User authenticated successfully:",
-              userWithProfile.email,
-              "Role:",
-              profileData.role,
-            );
-          } else {
-            console.error("Failed to fetch profile data");
-            safeSetState(() => setError("Failed to load user profile"));
           }
         } else {
-          // No active session - redirect to login ONLY if not currently signing in
+          // No active session
           console.log("No active session found");
           safeSetState(() => {
             setUser(null);
@@ -294,9 +306,10 @@ export function useAuth() {
             !isSigningIn
           ) {
             console.log("Redirecting to login...");
-            // Use a timeout to prevent infinite redirect loops
             setTimeout(() => {
-              window.location.href = "/login";
+              if (mountedRef.current) {
+                window.location.href = "/login";
+              }
             }, 100);
           }
         }
@@ -305,37 +318,63 @@ export function useAuth() {
         safeSetState(() => setError("Authentication system error"));
       } finally {
         safeSetState(() => setLoading(false));
-        clearTimeout(timeout);
+        cleanup();
       }
     };
 
     getInitialSession();
 
-    // Set up auth state change listener
+    // Set up auth change listener with proper cleanup
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      handleAuthStateChange,
+      async (event, session) => {
+        if (!mountedRef.current) return;
+
+        try {
+          console.log("Auth state changed:", event, !!session?.user);
+
+          if (session?.user) {
+            try {
+              const profileData = await fetchUserProfile(session.user.id);
+              if (mountedRef.current) {
+                const userWithProfile = convertSupabaseUser(
+                  session.user,
+                  profileData?.profile,
+                );
+                safeSetState(() => {
+                  setUser(userWithProfile);
+                  setRole(profileData?.role || "employee");
+                  setError(null);
+                });
+              }
+            } catch (profileError) {
+              console.warn("Auth change profile fetch failed:", profileError);
+              if (mountedRef.current) {
+                const userWithoutProfile = convertSupabaseUser(session.user);
+                safeSetState(() => {
+                  setUser(userWithoutProfile);
+                  setRole("employee");
+                });
+              }
+            }
+          } else {
+            safeSetState(() => {
+              setUser(null);
+              setRole(null);
+            });
+          }
+        } catch (error) {
+          console.error("Error handling auth state change:", error);
+        }
+      },
     );
+
     authListenerRef.current = authListener;
 
+    // Cleanup on effect cleanup
     return () => {
-      clearTimeout(timeout);
-      if (authListenerRef.current) {
-        authListenerRef.current.subscription.unsubscribe();
-        authListenerRef.current = null;
-      }
+      cleanup();
     };
-  }, []); // Remove isSigningIn dependency to prevent re-initialization
-
-  // Handle component unmount
-  useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-      if (authListenerRef.current) {
-        authListenerRef.current.subscription.unsubscribe();
-        authListenerRef.current = null;
-      }
-    };
-  }, []);
+  }, []); // Empty dependency array - only run once
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -358,47 +397,11 @@ export function useAuth() {
         return { success: false, error: error.message };
       }
 
-      if (data.user) {
-        console.log("Sign in successful for:", data.user.email);
-
-        // Fetch user profile
-        const profileData = await fetchUserProfile(data.user.id);
-        if (profileData && mountedRef.current) {
-          const userWithProfile = convertSupabaseUser(
-            data.user,
-            profileData.profile,
-          );
-
-          // IMMEDIATELY set user state - don't wait for auth listener
-          console.log("Setting user state immediately:", userWithProfile.email);
-          safeSetState(() => {
-            setUser(userWithProfile);
-            setRole(profileData.role);
-          });
-
-          console.log(
-            "User profile loaded:",
-            userWithProfile.name,
-            "Role:",
-            profileData.role,
-          );
-
-          // Return success with user data for immediate use
-          return {
-            success: true,
-            user: userWithProfile,
-            role: profileData.role,
-          };
-        } else {
-          safeSetState(() => setError("Failed to load user profile"));
-          return { success: false, error: "Failed to load user profile" };
-        }
-      }
-
-      return { success: false, error: "Login failed - no user data returned" };
-    } catch (err: any) {
-      const errorMessage = err.message || "An unexpected error occurred";
-      console.error("Sign in exception:", errorMessage);
+      console.log("Sign in successful");
+      return { success: true, user: data.user };
+    } catch (error: any) {
+      console.error("Sign in exception:", error);
+      const errorMessage = error.message || "Sign in failed";
       safeSetState(() => setError(errorMessage));
       return { success: false, error: errorMessage };
     } finally {
@@ -411,30 +414,28 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
-      console.log("Starting sign out process...");
+      safeSetState(() => setLoading(true));
 
-      // Clear local state immediately
+      await supabase.auth.signOut();
+
       safeSetState(() => {
         setUser(null);
         setRole(null);
         setError(null);
       });
 
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        console.error("Sign out error:", error.message);
-        safeSetState(() => setError(error.message));
-        return { success: false, error: error.message };
+      // Clear any stored session data
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("hr-portal-auth");
       }
 
-      console.log("Sign out successful");
       return { success: true };
-    } catch (err: any) {
-      const errorMessage = err.message || "An unexpected error occurred";
-      console.error("Sign out exception:", errorMessage);
-      safeSetState(() => setError(errorMessage));
-      return { success: false, error: errorMessage };
+    } catch (error: any) {
+      console.error("Sign out error:", error);
+      safeSetState(() => setError(error.message));
+      return { success: false, error: error.message };
+    } finally {
+      safeSetState(() => setLoading(false));
     }
   };
 
@@ -484,5 +485,6 @@ export function useAuth() {
     signIn,
     signOut,
     signUp,
+    isAuthenticated: !!user,
   };
 }

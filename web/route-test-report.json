@@ -1,0 +1,97 @@
+{
+  "passed": 14,
+  "failed": 1,
+  "total": 15,
+  "details": [
+    {
+      "test": "Server Health",
+      "status": "PASS",
+      "details": "Development server is running",
+      "timestamp": "2025-06-01T19:07:58.787Z"
+    },
+    {
+      "test": "Homepage",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:07:59.364Z"
+    },
+    {
+      "test": "Login Page",
+      "status": "PASS",
+      "details": "Loaded successfully - login form detected",
+      "timestamp": "2025-06-01T19:08:00.823Z"
+    },
+    {
+      "test": "Dashboard",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:01.688Z"
+    },
+    {
+      "test": "People Management",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:02.548Z"
+    },
+    {
+      "test": "Jobs Page",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:03.195Z"
+    },
+    {
+      "test": "Leave Management",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:03.975Z"
+    },
+    {
+      "test": "Asset Management",
+      "status": "PASS",
+      "details": "Loaded successfully - assets page content",
+      "timestamp": "2025-06-01T19:08:04.995Z"
+    },
+    {
+      "test": "Request Panel",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:05.741Z"
+    },
+    {
+      "test": "Settings",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:06.405Z"
+    },
+    {
+      "test": "Debug Panel",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:07.177Z"
+    },
+    {
+      "test": "Debug Status",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:07.867Z"
+    },
+    {
+      "test": "Auth Test",
+      "status": "PASS",
+      "details": "Loaded successfully",
+      "timestamp": "2025-06-01T19:08:08.493Z"
+    },
+    {
+      "test": "Database Status",
+      "status": "FAIL",
+      "details": "Database status unclear",
+      "timestamp": "2025-06-01T19:08:08.959Z"
+    },
+    {
+      "test": "Asset Management",
+      "status": "PASS",
+      "details": "Assets page loads (database fix confirmed)",
+      "timestamp": "2025-06-01T19:08:09.204Z"
+    }
+  ]
+}

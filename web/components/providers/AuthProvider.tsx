@@ -1,16 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-import { supabase } from "@/lib/supabase/client";
-
 interface AuthContextType {
   initialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({ initialized: false });
-
-// Global auth listener to prevent multiple instances
-let globalAuthListener: any = null;
-let isAuthInitialized = false;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -18,46 +12,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    // Only initialize once globally
-    if (isAuthInitialized) {
+    // Simple initialization without global listeners
+    // The useAuth hook handles all auth state management
+    const timer = setTimeout(() => {
       setInitialized(true);
-      return;
-    }
+    }, 100);
 
-    isAuthInitialized = true;
-
-    // Set up global auth listener
-    const initializeAuth = async () => {
-      try {
-        // Clean up any existing listener
-        if (globalAuthListener) {
-          globalAuthListener.unsubscribe();
-        }
-
-        // Create single global listener
-        const { data: listener } = supabase.auth.onAuthStateChange(
-          (event, session) => {
-            console.log("Global auth state change:", event, !!session?.user);
-          },
-        );
-
-        globalAuthListener = listener;
-        setInitialized(true);
-      } catch (error) {
-        console.error("Auth initialization error:", error);
-        setInitialized(true); // Still mark as initialized to prevent blocking
-      }
-    };
-
-    initializeAuth();
-
-    // Cleanup on unmount
     return () => {
-      if (globalAuthListener) {
-        globalAuthListener.unsubscribe();
-        globalAuthListener = null;
-        isAuthInitialized = false;
-      }
+      clearTimeout(timer);
     };
   }, []);
 
@@ -68,5 +30,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useAuthProvider = () => useContext(AuthContext);
-export default AuthProvider;
+export const useAuthContext = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuthContext must be used within an AuthProvider");
+  }
+  return context;
+};

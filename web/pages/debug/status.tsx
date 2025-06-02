@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
-  RefreshCw,
   AlertTriangle,
   CheckCircle,
   Clock,
-  Server,
   Database,
   Globe,
+  RefreshCw,
+  Server,
 } from "lucide-react";
 
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -21,7 +21,11 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase, checkDatabaseConnection } from "@/lib/supabase/client";
+import {
+  formatDatabaseStatusMessage,
+  getComprehensiveDatabaseStatus,
+} from "@/lib/database-status-checker";
+import { supabase } from "@/lib/supabase/client";
 
 import DebugLayout from "./_layout";
 
@@ -64,16 +68,36 @@ export default function SystemStatusPage() {
     const now = new Date();
     const checkResults: StatusCheck[] = [];
 
-    // Check database connection
+    // Enhanced database connection check
     try {
-      const dbResult = await checkDatabaseConnection();
+      const comprehensiveStatus = await getComprehensiveDatabaseStatus();
+
       checkResults.push({
         name: "Database Connection",
-        status: dbResult.success ? "healthy" : "error",
-        message: dbResult.success
-          ? `Connected successfully (${dbResult.duration}ms)`
-          : `Connection failed: ${dbResult.error}`,
-        latency: dbResult.duration,
+        status:
+          comprehensiveStatus.healthStatus === "healthy"
+            ? "healthy"
+            : comprehensiveStatus.healthStatus === "degraded"
+              ? "degraded"
+              : "error",
+        message: formatDatabaseStatusMessage(comprehensiveStatus),
+        latency: comprehensiveStatus.connectionTime,
+        lastChecked: now,
+        icon: <Database className="h-5 w-5" />,
+      });
+
+      // Add detailed table status
+      checkResults.push({
+        name: "Database Tables",
+        status:
+          comprehensiveStatus.tablesAccessible ===
+          comprehensiveStatus.totalTables
+            ? "healthy"
+            : comprehensiveStatus.tablesAccessible >
+                comprehensiveStatus.totalTables * 0.8
+              ? "degraded"
+              : "error",
+        message: `${comprehensiveStatus.tablesAccessible}/${comprehensiveStatus.totalTables} tables accessible - ${comprehensiveStatus.details.filter((d) => d.includes("✅")).length} working`,
         lastChecked: now,
         icon: <Database className="h-5 w-5" />,
       });
@@ -81,7 +105,7 @@ export default function SystemStatusPage() {
       checkResults.push({
         name: "Database Connection",
         status: "error",
-        message: `Connection check failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        message: `Enhanced check failed: ${error instanceof Error ? error.message : "Unknown error"}`,
         lastChecked: now,
         icon: <Database className="h-5 w-5" />,
       });
