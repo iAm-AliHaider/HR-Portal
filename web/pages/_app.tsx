@@ -2,6 +2,10 @@ import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
 
+import {
+  createErrorBoundary,
+  initializeProductionErrorHandler,
+} from "@/lib/production-error-handler";
 import { ChakraProvider } from "@chakra-ui/react";
 import { NextPage } from "next";
 
@@ -64,6 +68,14 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
+// Initialize error handler as early as possible
+if (typeof window !== "undefined") {
+  initializeProductionErrorHandler();
+}
+
+// Create production error boundary
+const ProductionErrorBoundary = createErrorBoundary();
+
 export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const router = useRouter();
 
@@ -103,5 +115,9 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     return <Component {...pageProps} />;
   };
 
-  return <ChakraProvider>{getPageContent()}</ChakraProvider>;
+  return (
+    <ProductionErrorBoundary>
+      <ChakraProvider>{getPageContent()}</ChakraProvider>
+    </ProductionErrorBoundary>
+  );
 }
