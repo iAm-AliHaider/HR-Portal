@@ -1,198 +1,183 @@
-# HR Portal - Complete Human Resources Management System
+# Supabase CLI
 
-A comprehensive HR management platform with recruitment portal, built with Next.js, TypeScript, and Supabase.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## 🌟 Features
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-### Core HR Management
-- **Employee Management**: Complete employee lifecycle management
-- **Recruitment**: Job posting, candidate tracking, interview scheduling
-- **Applications**: Streamlined application process and status tracking
-- **Analytics**: HR analytics and reporting dashboards
-- **Compliance**: Policy management and compliance tracking
+This repository contains all the functionality for Supabase CLI.
 
-### Recruitment Portal
-- **Public Job Board**: Modern, responsive careers page
-- **Candidate Registration**: Comprehensive candidate onboarding
-- **Application System**: Detailed job application forms
-- **Candidate Dashboard**: Personal application tracking
-- **Real-time Updates**: Live application status updates
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-### Technical Features
-- **Authentication**: Secure user authentication with Supabase
-- **Role-Based Access**: Granular permissions system
-- **Mobile Responsive**: Optimized for all devices
-- **Real-time Data**: Live updates across the platform
-- **Modern UI**: Clean, professional interface with Tailwind CSS
+## Getting started
 
-## 🚀 Quick Start
+### Install the CLI
 
-### Prerequisites
-- Node.js 16.8 or later
-- npm or yarn
-- Supabase account
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd hr-portal
-   ```
-
-2. **Install dependencies**
-   ```bash
-   cd web
-   npm install
-   ```
-
-3. **Set up environment variables**
-   Create a `.env.local` file in the `web` directory:
-   ```bash
-   NEXT_PUBLIC_SUPABASE_URL=https://tqtwdkobrzzrhrqdxprs.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-   NODE_ENV=development
-   ```
-
-4. **Set up the database**
-   - Run the SQL files in the `supabase` directory:
-     - `schema.sql` - Creates tables and structure
-     - `seed.sql` - Populates with sample data
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Open your browser**
-   Visit `http://localhost:3000`
-
-## 📁 Project Structure
-
-```
-hr-portal/
-├── web/                          # Next.js application
-│   ├── pages/                    # Application pages
-│   │   ├── careers/              # Public job board
-│   │   ├── candidate/            # Candidate portal
-│   │   ├── dashboard/            # HR dashboard
-│   │   └── ...
-│   ├── components/               # Reusable components
-│   ├── lib/                      # Utilities and configurations
-│   └── styles/                   # Styling files
-├── supabase/                     # Database schema and migrations
-├── types/                        # TypeScript type definitions
-└── docs/                         # Documentation
+```bash
+npm i supabase --save-dev
 ```
 
-## 🎯 Key Routes
+To install the beta release channel:
 
-### Public Routes
-- `/careers` - Public job board
-- `/careers/jobs/[id]` - Job details
-- `/careers/jobs/[id]/apply` - Job application
-- `/candidate/register` - Candidate registration
-- `/candidate/login` - Candidate login
+```bash
+npm i supabase@beta --save-dev
+```
 
-### Protected Routes
-- `/candidate/dashboard` - Candidate portal
-- `/dashboard` - HR dashboard
-- `/jobs` - Job management
-- `/applications` - Application management
-- `/employees` - Employee management
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-## 🔧 Configuration
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-### Supabase Setup
-1. Create a new Supabase project
-2. Run the schema migrations
-3. Configure authentication providers
-4. Set up Row Level Security policies
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-### Vercel Deployment
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+<details>
+  <summary><b>macOS</b></summary>
 
-## 🛠️ Development
+  Available via [Homebrew](https://brew.sh). To install:
 
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript checks
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-### Code Quality
-- TypeScript for type safety
-- ESLint for code linting
-- Prettier for code formatting
-- Husky for pre-commit hooks
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-## 📊 Database Schema
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-The application uses the following main tables:
-- `employees` - Employee information
-- `jobs` - Job postings
-- `candidates` - External candidate profiles
-- `applications` - Job applications
-- `interviews` - Interview scheduling
-- `users` - System users and authentication
+<details>
+  <summary><b>Windows</b></summary>
 
-## 🔐 Security
+  Available via [Scoop](https://scoop.sh). To install:
 
-- Row Level Security (RLS) enabled on all tables
-- JWT-based authentication
-- Role-based access control
-- Input validation and sanitization
-- HTTPS everywhere in production
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-## 🚀 Deployment
+  To upgrade:
 
-### Vercel (Recommended)
-1. Push your code to GitHub
-2. Connect repository to Vercel
-3. Set environment variables
-4. Deploy automatically
+  ```powershell
+  scoop update supabase
+  ```
+</details>
 
-### Manual Deployment
-1. Build the application: `npm run build`
-2. Deploy the `out` directory to your hosting provider
+<details>
+  <summary><b>Linux</b></summary>
 
-## 📈 Monitoring
+  Available via [Homebrew](https://brew.sh) and Linux packages.
 
-- Real-time error tracking
-- Performance monitoring
-- User analytics
-- Application metrics
+  #### via Homebrew
 
-## 🤝 Contributing
+  To install:
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-## 📄 License
+  To upgrade:
 
-This project is licensed under the MIT License.
+  ```sh
+  brew upgrade supabase
+  ```
 
-## 🆘 Support
+  #### via Linux packages
 
-- Check the documentation in the `/docs` folder
-- Review the FAQ section
-- Submit issues on GitHub
-- Contact the development team
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
 
-## 🎉 Features Coming Soon
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
 
-- [ ] Advanced analytics dashboard
-- [ ] Mobile app for candidates
-- [ ] Integration with external job boards
-- [ ] Advanced reporting features
-- [ ] Multi-language support
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
 
----
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
 
-Built with ❤️ using Next.js, TypeScript, and Supabase.
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```
