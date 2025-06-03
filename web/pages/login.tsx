@@ -210,6 +210,18 @@ export default function Login() {
                 {isLoading ? "Signing in..." : "Sign in"}
               </button>
             </div>
+
+            <div className="text-sm text-center mt-4">
+              <p className="text-gray-600">
+                Don't have an account?{" "}
+                <Link
+                  href="/register"
+                  className="font-medium text-blue-600 hover:text-blue-500"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
           </form>
 
           {/* Demo Accounts */}

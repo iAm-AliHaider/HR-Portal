@@ -76,6 +76,9 @@ export default function HomePage() {
           <a href="/login" className="text-blue-600 hover:underline">
             HR Login
           </a>
+          <a href="/register" className="text-blue-600 hover:underline">
+            Sign Up
+          </a>
           <a href="/dev-entry" className="text-blue-600 hover:underline">
             Dev Entry
           </a>
