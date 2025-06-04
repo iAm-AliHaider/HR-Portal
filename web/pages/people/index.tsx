@@ -1,13 +1,11 @@
-import Head from 'next/head';
+import Head from "next/head";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
-import Layout from '../../components/layout/Layout';
+import Layout from "../../components/layout/Layout";
 
 import { GetServerSideProps } from "next";
 
-
-import {
-    useToast
-} from "../../hooks/useApi";
+import { useToast } from "../../hooks/useApi";
 
 interface Employee {
   id: number;
@@ -17,7 +15,7 @@ interface Employee {
   department: string;
   position: string;
   hire_date: string;
-  status: 'active' | 'inactive' | 'terminated';
+  status: "active" | "inactive" | "terminated";
   phone?: string;
   address?: string;
   salary?: number;
@@ -26,56 +24,56 @@ interface Employee {
 const mockEmployees: Employee[] = [
   {
     id: 1,
-    first_name: 'John',
-    last_name: 'Doe',
-    email: 'john.doe@company.com',
-    department: 'Engineering',
-    position: 'Senior Software Engineer',
-    hire_date: '2023-01-15',
-    status: 'active',
-    phone: '+1 (555) 123-4567',
-    address: '123 Tech Street, San Francisco, CA',
-    salary: 120000
+    first_name: "John",
+    last_name: "Doe",
+    email: "john.doe@company.com",
+    department: "Engineering",
+    position: "Senior Software Engineer",
+    hire_date: "2023-01-15",
+    status: "active",
+    phone: "+1 (555) 123-4567",
+    address: "123 Tech Street, San Francisco, CA",
+    salary: 120000,
   },
   {
     id: 2,
-    first_name: 'Jane',
-    last_name: 'Smith',
-    email: 'jane.smith@company.com',
-    department: 'Sales',
-    position: 'Sales Manager',
-    hire_date: '2022-08-20',
-    status: 'active',
-    phone: '+1 (555) 234-5678',
-    address: '456 Business Ave, New York, NY',
-    salary: 95000
+    first_name: "Jane",
+    last_name: "Smith",
+    email: "jane.smith@company.com",
+    department: "Sales",
+    position: "Sales Manager",
+    hire_date: "2022-08-20",
+    status: "active",
+    phone: "+1 (555) 234-5678",
+    address: "456 Business Ave, New York, NY",
+    salary: 95000,
   },
   {
     id: 3,
-    first_name: 'Bob',
-    last_name: 'Wilson',
-    email: 'bob.wilson@company.com',
-    department: 'Human Resources',
-    position: 'HR Manager',
-    hire_date: '2023-03-10',
-    status: 'active',
-    phone: '+1 (555) 345-6789',
-    address: '789 HR Plaza, Chicago, IL',
-    salary: 85000
+    first_name: "Bob",
+    last_name: "Wilson",
+    email: "bob.wilson@company.com",
+    department: "Human Resources",
+    position: "HR Manager",
+    hire_date: "2023-03-10",
+    status: "active",
+    phone: "+1 (555) 345-6789",
+    address: "789 HR Plaza, Chicago, IL",
+    salary: 85000,
   },
   {
     id: 4,
-    first_name: 'Alice',
-    last_name: 'Brown',
-    email: 'alice.brown@company.com',
-    department: 'Marketing',
-    position: 'Marketing Specialist',
-    hire_date: '2023-06-01',
-    status: 'active',
-    phone: '+1 (555) 456-7890',
-    address: '321 Marketing Blvd, Los Angeles, CA',
-    salary: 70000
-  }
+    first_name: "Alice",
+    last_name: "Brown",
+    email: "alice.brown@company.com",
+    department: "Marketing",
+    position: "Marketing Specialist",
+    hire_date: "2023-06-01",
+    status: "active",
+    phone: "+1 (555) 456-7890",
+    address: "321 Marketing Blvd, Los Angeles, CA",
+    salary: 70000,
+  },
 ];
 
 const PeopleDirectory = () => {
@@ -86,27 +84,38 @@ const PeopleDirectory = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    department: '',
-    position: '',
-    hire_date: '',
-    phone: '',
-    address: '',
-    salary: ''
+    first_name: "",
+    last_name: "",
+    email: "",
+    department: "",
+    position: "",
+    hire_date: "",
+    phone: "",
+    address: "",
+    salary: "",
   });
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const departments = ['Engineering', 'Sales', 'Human Resources', 'Marketing', 'Finance', 'Operations'];
+  const departments = [
+    "Engineering",
+    "Sales",
+    "Human Resources",
+    "Marketing",
+    "Finance",
+    "Operations",
+  ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -123,41 +132,43 @@ const PeopleDirectory = () => {
         department: formData.department,
         position: formData.position,
         hire_date: formData.hire_date,
-        status: 'active',
+        status: "active",
         phone: formData.phone,
         address: formData.address,
-        salary: formData.salary ? parseFloat(formData.salary) : undefined
+        salary: formData.salary ? parseFloat(formData.salary) : undefined,
       };
 
       // Simulate API call
       setTimeout(() => {
         if (editingEmployee) {
           // Update existing employee
-          setEmployees(prev => 
-            prev.map(emp => emp.id === editingEmployee.id ? employeeData : emp)
+          setEmployees((prev) =>
+            prev.map((emp) =>
+              emp.id === editingEmployee.id ? employeeData : emp,
+            ),
           );
         } else {
           // Add new employee
-          setEmployees(prev => [employeeData, ...prev]);
+          setEmployees((prev) => [employeeData, ...prev]);
         }
-        
+
         setShowForm(false);
         setEditingEmployee(null);
         setFormData({
-          first_name: '',
-          last_name: '',
-          email: '',
-          department: '',
-          position: '',
-          hire_date: '',
-          phone: '',
-          address: '',
-          salary: ''
+          first_name: "",
+          last_name: "",
+          email: "",
+          department: "",
+          position: "",
+          hire_date: "",
+          phone: "",
+          address: "",
+          salary: "",
         });
         setLoading(false);
       }, 1000);
     } catch (error) {
-      console.error('Failed to save employee:', error);
+      console.error("Failed to save employee:", error);
       setLoading(false);
     }
   };
@@ -171,75 +182,86 @@ const PeopleDirectory = () => {
       department: employee.department,
       position: employee.position,
       hire_date: employee.hire_date,
-      phone: employee.phone || '',
-      address: employee.address || '',
-      salary: employee.salary?.toString() || ''
+      phone: employee.phone || "",
+      address: employee.address || "",
+      salary: employee.salary?.toString() || "",
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this employee?')) {
+    if (confirm("Are you sure you want to delete this employee?")) {
       setLoading(true);
       try {
         // Simulate API call
         setTimeout(() => {
-          setEmployees(prev => prev.filter(emp => emp.id !== id));
+          setEmployees((prev) => prev.filter((emp) => emp.id !== id));
           setLoading(false);
         }, 500);
       } catch (error) {
-        console.error('Failed to delete employee:', error);
+        console.error("Failed to delete employee:", error);
         setLoading(false);
       }
     }
   };
 
-  const handleStatusChange = async (id: number, status: 'active' | 'inactive' | 'terminated') => {
+  const handleStatusChange = async (
+    id: number,
+    status: "active" | "inactive" | "terminated",
+  ) => {
     setLoading(true);
     try {
       // Simulate API call
       setTimeout(() => {
-        setEmployees(prev => 
-          prev.map(emp => emp.id === id ? { ...emp, status } : emp)
+        setEmployees((prev) =>
+          prev.map((emp) => (emp.id === id ? { ...emp, status } : emp)),
         );
         setLoading(false);
       }, 500);
     } catch (error) {
-      console.error('Failed to update employee status:', error);
+      console.error("Failed to update employee status:", error);
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: Employee['status']) => {
+  const getStatusColor = (status: Employee["status"]) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-yellow-100 text-yellow-800';
-      case 'terminated': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-yellow-100 text-yellow-800";
+      case "terminated":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const filteredEmployees = employees.filter(emp => {
-    const matchesFilter = filter === 'all' || emp.status === filter;
-    const matchesSearch = searchTerm === '' || 
+  const filteredEmployees = employees.filter((emp) => {
+    const matchesFilter = filter === "all" || emp.status === filter;
+    const matchesSearch =
+      searchTerm === "" ||
       emp.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.position.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesFilter && matchesSearch;
   });
 
   const stats = {
     total: employees.length,
-    active: employees.filter(emp => emp.status === 'active').length,
-    departments: new Set(employees.map(emp => emp.department)).size,
-    thisMonth: employees.filter(emp => {
+    active: employees.filter((emp) => emp.status === "active").length,
+    departments: new Set(employees.map((emp) => emp.department)).size,
+    thisMonth: employees.filter((emp) => {
       const hireDate = new Date(emp.hire_date);
       const now = new Date();
-      return hireDate.getMonth() === now.getMonth() && hireDate.getFullYear() === now.getFullYear();
-    }).length
+      return (
+        hireDate.getMonth() === now.getMonth() &&
+        hireDate.getFullYear() === now.getFullYear()
+      );
+    }).length,
   };
 
   return (
@@ -253,8 +275,12 @@ const PeopleDirectory = () => {
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">People Management</h1>
-              <p className="mt-2 text-gray-600">Manage employee information and records</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                People Management
+              </h1>
+              <p className="mt-2 text-gray-600">
+                Manage employee information and records
+              </p>
             </div>
             <button
               onClick={() => setShowForm(true)}
@@ -267,20 +293,30 @@ const PeopleDirectory = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900">Total Employees</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                Total Employees
+              </h3>
               <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
             </div>
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-medium text-gray-900">Active</h3>
-              <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+              <p className="text-3xl font-bold text-green-600">
+                {stats.active}
+              </p>
             </div>
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-medium text-gray-900">Departments</h3>
-              <p className="text-3xl font-bold text-purple-600">{stats.departments}</p>
+              <p className="text-3xl font-bold text-purple-600">
+                {stats.departments}
+              </p>
             </div>
             <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900">New This Month</h3>
-              <p className="text-3xl font-bold text-orange-600">{stats.thisMonth}</p>
+              <h3 className="text-lg font-medium text-gray-900">
+                New This Month
+              </h3>
+              <p className="text-3xl font-bold text-orange-600">
+                {stats.thisMonth}
+              </p>
             </div>
           </div>
 
@@ -296,14 +332,14 @@ const PeopleDirectory = () => {
               />
             </div>
             <div className="flex space-x-2">
-              {(['all', 'active', 'inactive'] as const).map((status) => (
+              {(["all", "active", "inactive"] as const).map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilter(status)}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
                     filter === status
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -317,12 +353,24 @@ const PeopleDirectory = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hire Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Employee
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Department
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Position
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hire Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -333,7 +381,9 @@ const PeopleDirectory = () => {
                         <div className="text-sm font-medium text-gray-900">
                           {employee.first_name} {employee.last_name}
                         </div>
-                        <div className="text-sm text-gray-500">{employee.email}</div>
+                        <div className="text-sm text-gray-500">
+                          {employee.email}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -346,34 +396,40 @@ const PeopleDirectory = () => {
                       {new Date(employee.hire_date).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(employee.status)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(employee.status)}`}
+                      >
                         {employee.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button 
+                      <button
                         onClick={() => handleEdit(employee)}
                         className="text-blue-600 hover:text-blue-900"
                       >
                         Edit
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDelete(employee.id)}
                         className="text-red-600 hover:text-red-900"
                       >
                         Delete
                       </button>
-                      {employee.status === 'active' && (
-                        <button 
-                          onClick={() => handleStatusChange(employee.id, 'inactive')}
+                      {employee.status === "active" && (
+                        <button
+                          onClick={() =>
+                            handleStatusChange(employee.id, "inactive")
+                          }
                           className="text-yellow-600 hover:text-yellow-900"
                         >
                           Deactivate
                         </button>
                       )}
-                      {employee.status === 'inactive' && (
-                        <button 
-                          onClick={() => handleStatusChange(employee.id, 'active')}
+                      {employee.status === "inactive" && (
+                        <button
+                          onClick={() =>
+                            handleStatusChange(employee.id, "active")
+                          }
                           className="text-green-600 hover:text-green-900"
                         >
                           Activate
@@ -392,12 +448,15 @@ const PeopleDirectory = () => {
               <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
                 <div className="mt-3">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
+                    {editingEmployee ? "Edit Employee" : "Add New Employee"}
                   </h3>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="first_name"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           First Name
                         </label>
                         <input
@@ -413,7 +472,10 @@ const PeopleDirectory = () => {
                       </div>
 
                       <div>
-                        <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="last_name"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Last Name
                         </label>
                         <input
@@ -430,7 +492,10 @@ const PeopleDirectory = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Email
                       </label>
                       <input
@@ -447,7 +512,10 @@ const PeopleDirectory = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="department"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Department
                         </label>
                         <select
@@ -459,14 +527,19 @@ const PeopleDirectory = () => {
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         >
                           <option value="">Select Department</option>
-                          {departments.map(dept => (
-                            <option key={dept} value={dept}>{dept}</option>
+                          {departments.map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
                           ))}
                         </select>
                       </div>
 
                       <div>
-                        <label htmlFor="position" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="position"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Position
                         </label>
                         <input
@@ -484,7 +557,10 @@ const PeopleDirectory = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="hire_date" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="hire_date"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Hire Date
                         </label>
                         <input
@@ -499,7 +575,10 @@ const PeopleDirectory = () => {
                       </div>
 
                       <div>
-                        <label htmlFor="salary" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="salary"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Salary (Optional)
                         </label>
                         <input
@@ -515,7 +594,10 @@ const PeopleDirectory = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="phone"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Phone (Optional)
                       </label>
                       <input
@@ -530,7 +612,10 @@ const PeopleDirectory = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="address"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Address (Optional)
                       </label>
                       <textarea
@@ -551,15 +636,15 @@ const PeopleDirectory = () => {
                           setShowForm(false);
                           setEditingEmployee(null);
                           setFormData({
-                            first_name: '',
-                            last_name: '',
-                            email: '',
-                            department: '',
-                            position: '',
-                            hire_date: '',
-                            phone: '',
-                            address: '',
-                            salary: ''
+                            first_name: "",
+                            last_name: "",
+                            email: "",
+                            department: "",
+                            position: "",
+                            hire_date: "",
+                            phone: "",
+                            address: "",
+                            salary: "",
                           });
                         }}
                         className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
@@ -571,7 +656,11 @@ const PeopleDirectory = () => {
                         disabled={loading}
                         className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {loading ? 'Saving...' : editingEmployee ? 'Update Employee' : 'Add Employee'}
+                        {loading
+                          ? "Saving..."
+                          : editingEmployee
+                            ? "Update Employee"
+                            : "Add Employee"}
                       </button>
                     </div>
                   </form>
